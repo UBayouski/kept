@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kept: linking test</title>
+    <style>
+      body { font: 15px/1.5 system-ui, sans-serif; max-width: 1000px; margin: 32px auto; padding: 0 16px; }
+      h1 { font-size: 20px; }
+      h2 { font-size: 16px; margin-top: 28px; }
+      button { font: inherit; padding: 6px 12px; margin-right: 8px; }
+      textarea { width: 100%; height: 160px; font: 12px/1.4 ui-monospace, monospace; box-sizing: border-box; }
+      table { border-collapse: collapse; font-size: 13px; } th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; vertical-align: top; }
+      .ok { color: #0a7a2f; } .bad { color: #b00020; }
+    </style>
+  </head>
+  <body>
+    <h1>Kept: candidate-linking test</h1>
+    <p>Gives the model a note and a short list of existing commitments, and checks which commitment it attaches the note to. Each case runs twice, with the list in two orders. Nothing is saved to the store.</p>
+    <p>Each answer is scored twice: as the model returned it, and after the app rules, which turn a contradictory answer into a question for the user. "pass" is the expected answer. "question" means nothing wrong would be proposed, but the user is asked to choose. "unsafe" means a wrong change would be proposed or one is lost.</p>
+
+    <p id="model-status">Checking the device model…</p>
+    <p id="appcheck"></p>
+    <p>
+      <label>Prompt: <select id="variant"></select></label>
+    </p>
+    <p>
+      <button id="run-device">Run on the device model</button>
+      <button id="run-cloud">Run in the cloud</button>
+      <span id="progress"></span>
+    </p>
+
+    <h2>Summary</h2>
+    <pre id="summary">Not run yet.</pre>
+
+    <h2>Runs</h2>
+    <div id="rows"></div>
+
+    <h2>Result to copy</h2>
+    <p><button id="copy">Copy</button> <button id="save">Save as file</button> Save every run: put the file in <code>kept/test/fixtures/</code> so the answers can be scored again later.</p>
+    <textarea id="report" readonly></textarea>
+
+    <script type="module" src="/src/linking.js"></script>
+  </body>
+</html>

@@ -91,19 +91,19 @@ const deviceOptions = {
   expectedOutputs: [{ type: 'text', languages: ['en'] }],
 };
 
-function modelFor(mode) {
+function modelFor(mode, schema = extractionSchema) {
   return getGenerativeModel(ai, {
     mode,
     inCloudParams: {
       model: CLOUD_MODEL,
       generationConfig: {
         responseMimeType: 'application/json',
-        responseJsonSchema: extractionSchema,
+        responseJsonSchema: schema,
       },
     },
     onDeviceParams: {
       createOptions: deviceOptions,
-      promptOptions: { responseConstraint: extractionSchema },
+      promptOptions: { responseConstraint: schema },
     },
   });
 }
@@ -118,7 +118,12 @@ export async function deviceModelState() {
   return LanguageModel.availability(deviceOptions);
 }
 
-export async function extract(note, mode) {
+export function extract(note, mode) {
+  return generateStructured(instructions + note, extractionSchema, mode);
+}
+
+// One schema-constrained call through Firebase AI Logic, in the given mode.
+export async function generateStructured(prompt, schema, mode) {
   // Only-on-device must fail at once when the model is not ready. Left to the
   // SDK, a click would start the model download and the call would wait for it.
   if (mode === InferenceMode.ONLY_ON_DEVICE) {
@@ -128,7 +133,7 @@ export async function extract(note, mode) {
     }
   }
   const started = performance.now();
-  const result = await modelFor(mode).generateContent(instructions + note);
+  const result = await modelFor(mode, schema).generateContent(prompt);
   const text = result.response.text();
   let parsed = null;
   let parseError = null;

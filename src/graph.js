@@ -63,7 +63,10 @@ export async function saveExtraction(note, extraction) {
   return saved;
 }
 
+// The seed creates its commitments, so running it twice would duplicate them.
 export async function loadSeed() {
+  const [{ n }] = await db.query("MATCH (c:Commitment {id: 'c-proposal'}) RETURN count(c) AS n");
+  if (n > 0) return;
   for (const { statement, params } of seedStatements) await db.query(statement, params);
 }
 

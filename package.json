@@ -10,7 +10,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "seed-store": "node scripts/seed-store.mjs"
+    "seed-store": "node scripts/seed-store.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@relate/relate-wasm": "1.0.1",
