@@ -3,3 +3,4 @@ dist/
 public/relate/
 .env
 .env.local
+.firebase/
