@@ -6,9 +6,11 @@ let worker;
 let nextId = 1;
 const pending = new Map();
 let onStatus = () => {};
+let storeName;
 
 function start() {
   worker = new Worker(new URL('./db.worker.js', import.meta.url), { type: 'module' });
+  worker.postMessage({ op: 'open', store: storeName });
   worker.onmessage = (event) => {
     const msg = event.data;
     if (msg.type === 'ready' || msg.type === 'open-failed') {
@@ -44,8 +46,11 @@ export function restart() {
   start();
 }
 
-export function init(statusCallback) {
+// store: an OPFS store such as 'opfs://kept-demo'. Left out, the worker opens
+// the slice's store. Each workspace has its own.
+export function init(statusCallback, store) {
   onStatus = statusCallback;
+  storeName = store;
   start();
 }
 

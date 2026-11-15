@@ -133,12 +133,16 @@ async function addCommitmentNow(q, { what, ownerId, toId = null, due = null, due
 // A change to an existing commitment. Extracted changes stay proposed and do
 // not touch the commitment. Manual changes are the user's own action and are
 // applied at once; they are ordered by the time of that action.
+// asOfNote: a manual change that says what a note said (the user corrected
+// which commitment a proposal was about). It happened when the note did, so it
+// takes the note's time, and it is applied because the user decided it, even
+// over a value set later.
 //   kind: deadline (due, dueText, or clear) | owner (namesId = person) | recipient (namesId = person, or clear)
 //         | blocked, unblocked (namesId = commitment) | completed | cancelled | reopened | evidence
 export const addChange = (q, args) => serial(q, () => addChangeNow(q, args));
 
 async function addChangeNow(q, { commitmentId, kind, noteId = null, source = noteId ? 'extracted' : 'manual',
-  quote = null, due = null, dueText = null, namesId = null, clear = false, key = null, now = nowIso() }) {
+  quote = null, due = null, dueText = null, namesId = null, clear = false, asOfNote = false, key = null, now = nowIso() }) {
   // clear: the change removes the value. Only a deadline or a recipient can be cleared.
   if (clear && kind !== 'deadline' && kind !== 'recipient') throw new Error(`A ${kind} change cannot clear a value`);
   if ((kind === 'owner' || isDependency(kind) || (kind === 'recipient' && !clear)) && !namesId) {
@@ -146,7 +150,8 @@ async function addChangeNow(q, { commitmentId, kind, noteId = null, source = not
   }
   if (clear) { due = null; dueText = null; namesId = null; }
   const field = fieldOf(kind, namesId);
-  const time = source === 'manual' ? { at: now, precision: 'time' } : await noteTime(q, noteId);
+  const atNote = source !== 'manual' || (asOfNote && noteId);
+  const time = atNote ? await noteTime(q, noteId) : { at: now, precision: 'time' };
   const changeId = uid();
   const rows = await q(
     `MATCH (c:Commitment {id: $commitmentId})
@@ -170,7 +175,7 @@ async function addChangeNow(q, { commitmentId, kind, noteId = null, source = not
   );
   if (rows.length !== 1) throw new Error(`Commitment ${commitmentId} or what the change names was not found`);
   if (source !== 'manual') return { changeId, outcome: 'proposed' };
-  return { changeId, ...(await acceptNow(q, changeId, { now })) };
+  return { changeId, ...(await acceptNow(q, changeId, { now, replaceCurrent: Boolean(asOfNote) })) };
 }
 
 // What makes two assertions from the same note "the same assertion". The key

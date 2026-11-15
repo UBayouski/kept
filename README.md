@@ -14,7 +14,8 @@ As of 2026-11-15 this repository holds the groundwork, not the finished app.
 | Commitment model (`src/model.js`) | Rules written and tested on Relate's Node binding. Not run in the browser build, not used by the page yet |
 | Answer validation (`src/reading.js`) | Written and tested. Not used by the page yet |
 | Linking experiment (`linking.html`) | A development tool. Results in `docs/linking-experiment.md` |
-| Capture, review and correction | Not built |
+| Review screen (`review.html`) | First increment, **not yet opened in a browser**: the demo scenario loaded through the model's rules, the review queue with accept, reject and "it is about another commitment", and the four core questions. No model runs on this page yet |
+| Capture, and the model's answers feeding the review screen | Not built |
 | Store file in the repository (`store/kept.rl`) | **Out of date:** still the slice's first seed model. See "The graph" |
 
 ## Run it
@@ -26,7 +27,7 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173/. The linking experiment is at http://localhost:5173/linking.html.
+Then open http://localhost:5173/ for the feasibility slice, http://localhost:5173/review.html for the review screen, and http://localhost:5173/linking.html for the linking experiment. The review screen uses its own store (`opfs://kept-demo`), so it can be open beside the slice.
 
 - `npm install` copies Relate's browser files into `public/relate/` with `mkdir -p` and `cp`. On Windows, run `npm ci --ignore-scripts` and then the `copy-relate` command from `package.json` in Git Bash.
 - **The device model.** Chrome serves Gemini Nano 3 by default. For Gemma 4, set `chrome://flags/#gemma4-for-built-in-ai` to Enabled and relaunch. The linking page shows which model answers.
@@ -40,7 +41,7 @@ A hosted build of the slice is at https://relate-hybrid.web.app.
 npm test
 ```
 
-98 tests: the commitment rules against a real Relate store through the Node binding, the validation of model answers, and the scoring of the linking experiment. No model and no browser are involved.
+105 tests: the commitment rules and the review screen's data against a real Relate store through the Node binding, the validation of model answers, and the scoring of the linking experiment. No model and no browser are involved.
 
 ## The graph
 

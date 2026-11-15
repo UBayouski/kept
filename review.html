@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kept: review</title>
+    <style>
+      body { font: 15px/1.5 system-ui, sans-serif; max-width: 860px; margin: 32px auto; padding: 0 16px; color: #1c1c1c; }
+      h1 { font-size: 20px; margin-bottom: 4px; }
+      h2 { font-size: 16px; margin-top: 32px; }
+      button, select, input { font: inherit; }
+      button { padding: 5px 12px; margin-right: 6px; }
+      table { border-collapse: collapse; width: 100%; font-size: 14px; }
+      th, td { border-bottom: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+      .muted { color: #666; }
+      .ok { color: #0a7a2f; } .bad { color: #b00020; }
+      .card { border: 1px solid #ccc; border-radius: 6px; padding: 12px 14px; margin: 12px 0; }
+      .card .summary { font-weight: 600; }
+      .card blockquote { margin: 8px 0; padding-left: 10px; border-left: 3px solid #bbb; }
+      .card .source { font-size: 13px; }
+      .card .actions { margin-top: 10px; }
+      .flag { display: inline-block; font-size: 12px; padding: 1px 6px; border-radius: 3px; background: #fde7c2; margin-left: 6px; }
+      .message { font-size: 13px; margin-top: 8px; }
+      .answer { margin: 8px 0 0; }
+      mark { background: #fff1a8; }
+    </style>
+  </head>
+  <body>
+    <h1>Kept: review</h1>
+    <p class="muted">Demo workspace. What a note is read to say waits here until you confirm it. Nothing changes a commitment before that.</p>
+    <p id="status">Opening the store…</p>
+    <p>
+      <button id="seed">Load the demo scenario</button>
+      <button id="reset">Empty the store</button>
+    </p>
+
+    <h2>To review <span id="review-count" class="muted"></span></h2>
+    <div id="review"></div>
+    <div id="decided"></div>
+
+    <h2>Commitments</h2>
+    <div id="commitments"></div>
+
+    <h2>Questions</h2>
+    <p>
+      <label>What do I owe on or before <input type="date" id="before" /></label>
+      <button id="ask-owe">Ask</button>
+    </p>
+    <div id="answer-owe" class="answer"></div>
+    <p><button id="ask-waiting">Which commitments are waiting on someone else?</button></p>
+    <div id="answer-waiting" class="answer"></div>
+    <p>
+      <label>What changed since the last meeting with <select id="person"></select></label>
+      <label><input type="checkbox" id="previous" /> the meeting before that</label>
+      <button id="ask-changed">Ask</button>
+    </p>
+    <div id="answer-changed" class="answer"></div>
+    <div id="answer-why" class="answer"></div>
+
+    <script type="module" src="/src/review.js"></script>
+  </body>
+</html>
