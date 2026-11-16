@@ -107,6 +107,7 @@ export function validateReading(answer, { shape, candidates, note }) {
 
   const updates = [];
   const newCommitments = [];
+  const hasValidNew = entries.some((e) => e.target === 'new' && !check(e));
   for (const e of entries) {
     // A new deadline whose date is a dependency ("after Dana signs off on it")
     // keeps only the part before it ("tomorrow after lunch" -> "tomorrow"). If
@@ -124,6 +125,13 @@ export function validateReading(answer, { shape, candidates, note }) {
       }
     }
     const reason = check(e);
+    // Device readings often add an empty deadline beside a valid new
+    // commitment. It adds no date to review; keep the new commitment and
+    // record the ignored extra only in the log. Other validation still applies.
+    if (reason === 'a new deadline has no date' && hasValidNew && !check({ ...e, due: 'date' })) {
+      problems.push({ reason: 'an empty deadline beside a valid new commitment was dropped', entry: e.raw });
+      continue;
+    }
     if (reason) {
       problems.push({ reason, entry: e.raw });
       // Keep the words if they really are in the note, so the user sees what to link.

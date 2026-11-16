@@ -83,6 +83,41 @@ test('a new deadline needs a date, and a new commitment has to say what it is', 
   assert.deepEqual(r.manual.map((x) => x.quote), ['send the proposal Tuesday', 'Omar booked the venue']);
 });
 
+test('empty deadlines beside a valid new commitment do not need manual linking in either shape', () => {
+  for (const text of ['I promised Priya the slides.', 'Sam promised me the logo files.']) {
+    for (const shape of ['v1', 'v2']) {
+      for (const due of ['', '   ', 'not set', 'none', 'N/A', '-']) {
+        const answer = shape === 'v1'
+          ? { updates: [up('K7', 'new deadline', due, text)], newCommitments: [{ quote: text, what: 'Send the files', owner: 'me', to: 'Priya', due: '' }] }
+          : { items: [item('K7', 'new deadline', due, text), item('new', 'new commitment', '', text, 'Send the files')] };
+        const r = readNote(answer, { shape, candidates, note: text });
+        assert.deepEqual([r.ok, r.created.length, r.manual, r.proposals, r.questions], [true, 1, [], [], []], `${shape}: ${text} (${due})`);
+        assert.match(r.problems[0].reason, /empty deadline.*dropped/);
+      }
+    }
+  }
+});
+
+test('a new commitment does not hide other invalid entries or a deadline with a date', () => {
+  const text = 'I promised Priya the slides. Dana wants the proposal Tuesday.';
+  const created = item('new', 'new commitment', '', 'I promised Priya the slides', 'Send the slides');
+  for (const extra of [
+    item('Z9', 'new deadline', '', text),
+    item('K7', 'new deadline', '', 'Words outside the note'),
+    { quote: text, about: 'K7', change: 'new deadline', what: '' },
+    item('new', 'new deadline', '', text),
+  ]) {
+    assert.equal(v2({ items: [created, extra] }, text).manual.length, 1);
+  }
+  const empty = item('K7', 'new deadline', '', text);
+  assert.equal(v2({ items: [empty] }, text).manual.length, 1);
+  assert.equal(v2({ items: [empty, { ...created, what: '' }] }, text).manual.length, 2);
+  assert.equal(v2({ items: [empty, { ...created, quote: 'Words outside the note' }] }, text).manual.length, 2);
+  const dated = readNote({ items: [created, item('K7', 'new deadline', 'Tuesday', 'Dana wants the proposal Tuesday')] }, { shape: 'v2', candidates, note: text });
+  assert.deepEqual(dated.proposals.map((p) => [p.label, p.due]), [['K7', 'Tuesday']]);
+  assert.equal(dated.created.length, 1);
+});
+
 test('the quote has to be in the note', () => {
   const r = v1({ updates: [up('K7', 'new deadline', 'Tuesday', 'Dana wants the proposal on Tuesday'), up('Q4', 'done', '', '')],
     newCommitments: [{ quote: '', what: 'send the invoice', owner: '', to: 'Dana', due: '' }] });
