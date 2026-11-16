@@ -504,3 +504,16 @@ test('"done" and "cancelled" look at the whole sentence, across a semicolon', ()
   const r = readNote({ updates: [up('R2', 'done', '', 'Dana has the contract')], newCommitments: [] }, { shape: 'v1', candidates, note: text });
   assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['R2', 'done']]);
 });
+
+test('two of the same wording: the person named decides; "looks dated" is not done', () => {
+  const list = [...candidates, { label: 'L5', id: 'id-proposal-lee', what: 'Send the proposal', owner: 'me', to: 'Lee' }];
+  const text = 'Lee would like the proposal by Friday.';
+  const r = readNote({ updates: [up('K7', 'new deadline', 'Friday', text), up('L5', 'new deadline', 'Friday', text)], newCommitments: [] }, { shape: 'v1', candidates: list, note: text });
+  assert.deepEqual([r.proposals.map((p) => p.label), r.questions], [['L5'], []]);
+
+  const dated = 'Dana mentioned the contract template looks dated.';
+  const d = readNote({ updates: [up('R2', 'done', '', dated)], newCommitments: [] }, { shape: 'v1', candidates, note: dated });
+  assert.deepEqual([d.proposals, d.manual.length], [[], 1]);
+  const booked = 'The venue looks great and Omar booked it.';
+  assert.equal(readNote({ updates: [up('Q4', 'done', '', booked)], newCommitments: [] }, { shape: 'v1', candidates, note: booked }).proposals.length, 1);
+});

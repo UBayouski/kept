@@ -264,7 +264,13 @@ export function applyRules(parsed, list) {
     if (labels.length < 2) continue;
     // "Omar sorted out the venue" given as done on the venue and on pricing:
     // when the words name exactly one of them, that one is the change.
-    const named = labels.filter((l) => byLabel.has(l) && mentions(group[0].quote, byLabel.get(l).what));
+    // With two of the same wording ("the proposal" for Dana and for Lee), the
+    // person the words name decides: "Lee would like the proposal by Friday".
+    const said = ` ${norm(group[0].quote)} `;
+    const ofPerson = (ls) => ls.filter((l) => [byLabel.get(l).to, byLabel.get(l).owner]
+      .some((p) => norm(p) && norm(p) !== 'me' && said.includes(` ${norm(p)} `)));
+    let named = labels.filter((l) => byLabel.has(l) && mentions(group[0].quote, byLabel.get(l).what));
+    if (named.length > 1) named = ofPerson(named);
     if (named.length === 1) {
       updates = updates.filter((u) => !group.includes(u) || (u.commitment === named[0] && u === group.find((g) => g.commitment === named[0])));
       notes.push(`rule 2: ${labels.join(' and ')} given the same change from the same words, which name only ${named[0]}`);
@@ -395,7 +401,7 @@ export function readNote(answer, { shape, candidates, note }) {
     // "booked", "is done"), "cancelled" words that say it is off ("called
     // off", "no longer"); without them it is not proposed or asked about, and
     // the user links it if it was.
-    if (u.change === 'done' && !HAPPENED.test(wholeSentence(note, u.quote))) {
+    if (u.change === 'done' && !HAPPENED.test(wholeSentence(note, u.quote).replace(DESCRIBED, ''))) {
       manual.push({ quote: u.quote, reason: 'It was read as "done", but the words do not say that anything happened. Link it by hand if it was done.' });
       continue;
     }
@@ -476,6 +482,9 @@ function isCondition(note, quote) {
 // Not a past tense, or one of feeling, speaking or thinking, which says nothing
 // was done: "Dana liked the venue photos", "Priya asked how the review is going".
 const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
+// An "-ed" word that describes, after "looks", "seems" and the like: "the
+// template looks dated" says nothing was done.
+const DESCRIBED = /\b(looks?|looked|seems?|seemed|sounds?|sounded|feels?|felt|appears?|appeared)\s+(\w+\s+)?\w+ed\b/gi;
 // Words that say it will not happen: "called off", "no longer needs",
 // "doesn't need ... anymore", "after all".
 const STOPPED = /\bcancel\w*|\bcall(ed)? off\b|\boff\b|\bno longer\b|\bany ?more\b|\bafter all\b|n'?t need|\bnot needed\b|\bno need\b|\bdrop(ped)?\b|\bscrap(ped)?\b|\bstop(ped)?\b|\babandon(ed)?\b|\bshelved\b|\bnot happening\b/i;
