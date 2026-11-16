@@ -704,6 +704,14 @@ missed or wrong. With round 18, two rounds in a row with no unsafe answer.
 per run): round 5 6/2, 3/2, 2/0 (before the word rules); round 11 6/0 x3;
 round 14 9/1, 9/0, 8/0; round 18 6/0, 7/0, 9/0; round 19 8/0, 8/0, 9/0.
 
+## Cloud model, round 19
+
+Cloud route, 2026-11-16, at 69e838e: **11 pass, 1 safe, 0 unsafe**, no
+needless question, the dependency right; about 24 requests. The safe one is
+a rule at work: the cloud model read "Lee thinks the pricing is fair." as
+done, and the "done" word rule held it back. Every rule added today for the
+device route also runs here, and none cost a pass.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
