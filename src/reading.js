@@ -127,6 +127,7 @@ export function validateReading(answer, { shape, candidates, note }) {
       // but "new commitment") is still refused; what it said is kept, so the
       // user can take its reading with one click instead of typing it again.
       manual.push({ quote: !e.problem && inNote(e.quote) ? e.quote.trim() : note, reason: `An entry was refused: ${reason}.`,
+        newLike: !e.problem && e.change === 'new commitment',
         ...(!e.problem && e.change === 'new commitment' && norm(e.what) ? { saidNew: { what: e.what.trim(), owner: e.owner, to: e.to, due: e.due.trim(), quote: e.quote.trim() } } : {}) });
       continue;
     }
@@ -161,6 +162,20 @@ export function validateReading(answer, { shape, candidates, note }) {
     manual.push({ quote: distinct[0].quote, commitment: label, options: distinct.map(({ change, due, quote }) => ({ change, due, quote })),
       reason: `The answer gives ${label} conflicting changes: ${said}.` });
   }
+
+  // A refused "new commitment" whose words a valid new commitment of the same
+  // reading already covers is that one said twice, not something to link by hand.
+  const overlaps = (a, b) => {
+    const [x, y] = [norm(a), norm(b)];
+    return x.length > 0 && y.length > 0 && (x.includes(y) || y.includes(x));
+  };
+  for (let i = manual.length - 1; i >= 0; i--) {
+    if (manual[i].newLike && newCommitments.some((n) => overlaps(n.quote, manual[i].quote))) {
+      problems.push({ reason: 'a refused new commitment repeated a valid one and was dropped' });
+      manual.splice(i, 1);
+    }
+  }
+  for (const item of manual) delete item.newLike;
 
   return {
     ok: true,

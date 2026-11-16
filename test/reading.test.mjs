@@ -358,3 +358,23 @@ test('a change whose words do not mention the commitment becomes a question: tha
   assert.equal(r.questions.length, 1);
   assert.deepEqual(r.questions[0].options.map((o) => [o.type, o.label ?? '', o.due ?? '']), [['commitment', 'P1', 'Monday'], ['new', '', 'Monday']]);
 });
+
+test('a refused new commitment that repeats a valid one is not a card', async () => {
+  const { readNote } = await import('../src/reading.js');
+  const candidates = [{ id: 'p', label: 'P1', what: 'Send the proposal' }];
+  // New sentence; the live test on 2026-11-15 had this shape with a contract.
+  const note = "I'll send Sam the invoice on Monday, once Lee confirms pricing.";
+  const r = readNote({ items: [
+    { quote: "I'll send Sam the invoice on Monday", about: 'new', change: 'new commitment', due: 'Monday', what: 'Send the invoice' },
+    { quote: "I'll send Sam the invoice on Monday, once Lee confirms pricing", about: 'P1', change: 'new commitment', due: 'Monday', what: 'Send the invoice' },
+  ] }, { shape: 'v2', candidates, note });
+  assert.equal(r.created.length, 1);
+  assert.deepEqual(r.manual, []);
+  // On its own, the contradictory entry is still refused and offered with one click.
+  const alone = readNote({ items: [
+    { quote: "I'll send Sam the invoice on Monday", about: 'P1', change: 'new commitment', due: 'Monday', what: 'Send the invoice' },
+  ] }, { shape: 'v2', candidates, note });
+  assert.equal(alone.manual.length, 1);
+  assert.equal(alone.manual[0].saidNew.what, 'Send the invoice');
+  assert.equal(alone.manual[0].newLike, undefined);
+});
