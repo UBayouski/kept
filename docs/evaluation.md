@@ -743,6 +743,26 @@ cancelled and nothing to do). Device, 2026-11-16:
   like are not off; "nothing is settled", "not yet", "isn't final" are not
   done.
 
+## The review screen, by hand (localhost, demo workspace, cloud route)
+
+2026-11-16, at e9558fb, notes typed into the review screen:
+
+- "Lee no longer needs to confirm pricing." -> card **Mark "Confirm pricing"
+  as cancelled.**, Accept / Reject / move to another commitment.
+- "I'll call Dana about the proposal on Friday." -> question with **New:
+  "Call about the proposal"**; choosing it opens the card filled in: Me to
+  Dana, due Friday.
+- "I'll send Dana the proposal once Lee confirms pricing." -> **"Send the
+  proposal" cannot be done until "Confirm pricing" is.** It also showed a
+  refused "it is new: Send the proposal once Lee confirms pricing" card;
+  fixed (e9558fb), and "... the invoice after Lee confirms pricing" then
+  showed the dependency alone.
+- "Sent it to Dana this morning." -> the model's own question offered every
+  commitment, Lee's too, and "all"; fixed (e9558fb): "Gave it to Dana an
+  hour ago." then offered only Dana's two, "something new" and "none".
+
+The demo store keeps these test notes; "Load the demo scenario" resets it.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
