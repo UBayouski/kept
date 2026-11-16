@@ -436,7 +436,7 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
     // review" were read as done; the words say it is off. It is proposed as
     // cancelled, which the user confirms like any other proposal.
     const off = read.change === 'done' && STOPPED.test(sentenceOf(note, read.quote));
-    const u = off ? { ...read, change: 'cancelled' } : read;
+    let u = off ? { ...read, change: 'cancelled' } : read;
     if (off) ruled.notes.push(`"${read.quote}" was read as done; the words say it is off, so it is proposed as cancelled`);
     // "The venue can't be booked until Dana confirms" says it waits, not that it
     // is done or cancelled. Such a reading is not proposed; the user links it.
@@ -470,12 +470,23 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
     // is not "Send the contract" to Dana. It becomes a question: that one, or new.
     if (u.commitment !== 'unclear') {
       const chosen = byLabel.get(u.commitment);
-      const said = ` ${norm(clauseWithReferent(note, u.quote))} `;
+      const peopleIn = (text) => PEOPLE(candidates, people).filter((p) => ` ${norm(text)} `.includes(` ${p} `));
       const ownPeople = [chosen.to, chosen.owner].map(norm);
-      const named = PEOPLE(candidates, people).filter((p) => said.includes(` ${p} `));
+      // The quoted words first: "I sent the contract to Dana, and Lee wants
+      // his proposal by Friday" quotes "Lee wants his proposal by Friday".
+      const inQuote = peopleIn(u.quote);
+      const named = inQuote.length ? inQuote : peopleIn(clauseWithReferent(note, u.quote));
       if (named.length && !named.some((p) => ownPeople.includes(p))) {
-        questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
-        continue;
+        // The one of the same wording that has the person named is meant.
+        const twins = candidates.filter((c) => c.label !== chosen.label && norm(c.what) === norm(chosen.what)
+          && named.some((p) => [c.to, c.owner].map(norm).includes(p)));
+        if (twins.length === 1) {
+          ruled.notes.push(`"${u.quote}" names ${named.join(', ')}: ${twins[0].label}, not ${chosen.label}`);
+          u = { ...u, commitment: twins[0].label };
+        } else {
+          questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
+          continue;
+        }
       }
     }
     // Words that do not mention the commitment ("I'll send Dana the contract"
@@ -550,7 +561,7 @@ function isCondition(note, quote) {
 // "confirmed") or a finished state ("done", "out", "sorted").
 // Not a past tense, or one of feeling, speaking or thinking, which says nothing
 // was done: "Dana liked the venue photos", "Priya asked how the review is going".
-const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|(?:is|was|are|were|went|gone|all|it.s)\s+(?:out|over)|sorted|handled|delivered|received|got)\b/i;
+const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|(?:is|was|are|were|all|it.s)\s+over|(?:is|was|are|were|went|gone|it.s)\s+out|sorted|handled|delivered|received|got)\b/i;
 // True when every word of the commitment the text names comes right after
 // "about" or "regarding" (with "the", "my" and the like between).
 function onlyAsTopic(text, what) {

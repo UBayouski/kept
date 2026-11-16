@@ -43,16 +43,15 @@ test('the set: 40 notes, unique ids, every group present', () => {
   assert.deepEqual([...new Set(e.cases.map((x) => x.group))], ['deadline', 'status', 'new', 'nothing', 'ambiguous', 'several', 'dependency']);
 });
 
-test('a right deadline change passes; the same change on the twin commitment is asked about, not proposed', async () => {
+test('a right deadline change passes; the same change on the twin commitment goes to the one the words name', async () => {
   const right = await run(byId('a3'), fake({ linking: (label) => ({ items: [
     { quote: 'Lee can wait until Tuesday for the proposal', about: label('Send the proposal', 'Lee'), change: 'new deadline', due: 'Tuesday', what: '' }] }) }));
   assert.equal(right.score.verdict, 'pass');
-  // The words name Lee, not Dana, so the twin's change becomes a question.
+  // The words name Lee, not Dana: the proposal for Lee is meant.
   const twin = await run(byId('a3'), fake({ linking: (label) => ({ items: [
     { quote: 'Lee can wait until Tuesday for the proposal', about: label('Send the proposal', 'Dana'), change: 'new deadline', due: 'Tuesday', what: '' }] }) }));
-  assert.equal(twin.score.verdict, 'safe');
+  assert.equal(twin.score.verdict, 'pass');
   assert.deepEqual(twin.score.wrong, []);
-  assert.deepEqual(twin.score.missed, ['proposalLee: deadline']);
 });
 
 test('a wrong date is unsafe; a note that says nothing passes only with nothing', async () => {

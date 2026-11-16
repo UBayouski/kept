@@ -581,3 +581,13 @@ test('"over coffee" is not done; "it went out" and "is over" are', () => {
     assert.equal(readNote({ updates: [up('K7', 'done', '', said)], newCommitments: [] }, { shape: 'v1', candidates, note: said }).proposals.length, 1, said);
   }
 });
+
+test('round 15: "went over" is not done; the quoted words pick the proposal for Lee', () => {
+  const list = [...candidates, { label: 'L5', id: 'id-proposal-lee', what: 'Send the proposal', owner: 'me', to: 'Lee' }, { label: 'P9', id: 'id-pricing', what: 'Confirm pricing', owner: 'Lee', to: 'me' }];
+  const over = 'Lee and I went over the pricing on the phone.';
+  assert.deepEqual(readNote({ updates: [up('P9', 'done', '', over)], newCommitments: [] }, { shape: 'v1', candidates: list, note: over }).proposals, []);
+  const two = 'I sent the contract to Dana, and Lee wants his proposal by Friday.';
+  const r = readNote({ updates: [up('R2', 'done', '', 'I sent the contract to Dana'), up('K7', 'new deadline', 'Friday', 'Lee wants his proposal by Friday.')], newCommitments: [] },
+    { shape: 'v1', candidates: list, note: two });
+  assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['R2', 'done'], ['L5', 'new deadline']]);
+});
