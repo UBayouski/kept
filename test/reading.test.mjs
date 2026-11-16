@@ -425,6 +425,9 @@ test('"done" is proposed only when the words say something happened', () => {
     const ok = readNote({ updates: [up('Q4', 'done', '', said)], newCommitments: [] }, { shape: 'v1', candidates, note: said });
     assert.deepEqual(ok.proposals.map((p) => [p.label, p.change]), [['Q4', 'done']], said);
   }
+  for (const felt of ['Dana liked the venue photos.', 'Omar asked how the venue booking is going.']) {
+    assert.deepEqual(readNote({ updates: [up('Q4', 'done', '', felt)], newCommitments: [] }, { shape: 'v1', candidates, note: felt }).proposals, [], felt);
+  }
   const need = "Omar won't need the venue after all.";
   assert.deepEqual(readNote({ updates: [up('Q4', 'done', '', need)], newCommitments: [] }, { shape: 'v1', candidates, note: need }).proposals, []);
 });

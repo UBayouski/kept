@@ -426,7 +426,9 @@ function isCondition(note, quote) {
 }
 // Words that say something happened: a past tense ("sent", "booked",
 // "confirmed") or a finished state ("done", "out", "sorted").
-const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
+// Not a past tense, or one of feeling, speaking or thinking, which says nothing
+// was done: "Dana liked the venue photos", "Priya asked how the review is going".
+const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
 // Words that say it will not happen: "called off", "no longer needs",
 // "doesn't need ... anymore", "after all".
 const STOPPED = /\bcancel\w*|\bcall(ed)? off\b|\boff\b|\bno longer\b|\bany ?more\b|\bafter all\b|n'?t need|\bnot needed\b|\bno need\b|\bdrop(ped)?\b|\bscrap(ped)?\b|\bstop(ped)?\b|\babandon(ed)?\b|\bshelved\b|\bnot happening\b/i;
