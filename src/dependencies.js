@@ -123,6 +123,11 @@ export function readDependencies(answer, { list, note }) {
       if (same) waitsFor = same.label;
     } else if (!labels.has(waitsFor)) { refuse(`"${waitsFor}" is not a commitment the model was given`); continue; }
     if (waitsFor === entry.waiting) { refuse('a commitment cannot wait for itself'); continue; }
+    // Nor for a copy of itself: the same wording, listed or new in this note
+    // ("I'll send Dana the proposal tomorrow" read as the proposal waiting on
+    // a new "Send the proposal").
+    const whatOf = (label) => (label === 'new' ? newWhat : labels.get(label).what);
+    if (norm(whatOf(waitsFor)) === norm(labels.get(entry.waiting).what)) { refuse('a commitment cannot wait for a copy of itself'); continue; }
     if (!norm(entry.quote) || !noteText.includes(norm(entry.quote))) { refuse('the quote is not in the note'); continue; }
     const dependency = waitsFor === 'new'
       ? { quote: entry.quote.trim(), waiting: entry.waiting, waitsFor, newWhat, newOwner: entry.newOwner.trim() }

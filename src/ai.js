@@ -118,6 +118,20 @@ export async function deviceModelState() {
   return LanguageModel.availability(deviceOptions);
 }
 
+const DEVICE_TIMEOUT_MS = 90000;
+
+function whenVisible() {
+  if (typeof document === 'undefined' || document.visibilityState === 'visible') return Promise.resolve();
+  return new Promise((resolve) => {
+    const shown = () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', shown);
+      resolve();
+    };
+    document.addEventListener('visibilitychange', shown);
+  });
+}
+
 export function extract(note, mode) {
   return generateStructured(instructions + note, extractionSchema, mode);
 }
@@ -132,8 +146,16 @@ export async function generateStructured(prompt, schema, mode) {
       throw new Error(`The device model is not ready (${state}). Nothing was sent anywhere.`);
     }
   }
+  // Chrome does not start the device model in a hidden tab: the call would
+  // wait with no error. It starts when the tab is shown, and a call that still
+  // does not answer is reported instead of left hanging.
+  if (mode === InferenceMode.ONLY_ON_DEVICE) await whenVisible();
   const started = performance.now();
-  const result = await modelFor(mode, schema).generateContent(prompt);
+  const call = modelFor(mode, schema).generateContent(prompt);
+  const result = mode === InferenceMode.ONLY_ON_DEVICE
+    ? await Promise.race([call, new Promise((_, reject) => setTimeout(() => reject(new Error(
+      `The device model did not answer within ${DEVICE_TIMEOUT_MS / 1000} s. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`)), DEVICE_TIMEOUT_MS))])
+    : await call;
   const text = result.response.text();
   let parsed = null;
   let parseError = null;

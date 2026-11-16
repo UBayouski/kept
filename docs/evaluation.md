@@ -194,5 +194,7 @@ listed (rule 4).
   the linking call answering about a dependency at all; a linking prompt that
   is told to leave dependencies alone is the next thing to try, measured on
   new notes.
-- The device route: a clean round, and a rule that a commitment never waits
-  on a new commitment with its own wording.
+- The device route: a clean round. Since round 2, a commitment can no longer
+  wait for one with its own wording (refused live on "I'll send Dana the
+  proposal tomorrow, before lunch"), and a device read waits until its tab is
+  shown and reports a call that takes over 90 s.

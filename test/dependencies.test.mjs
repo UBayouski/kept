@@ -77,6 +77,19 @@ test('"new" with the words of a commitment new in this note is that commitment',
   assert.deepEqual(dependencies, [{ quote: 'once Lee confirms pricing', waiting: 'K7', waitsFor: 'N1' }]);
 });
 
+test('a commitment cannot wait for a copy of itself, listed or new', () => {
+  const list = [{ label: 'K7', what: 'Send the proposal' }, { label: 'N1', what: 'send the proposal', isNew: true }];
+  const note = "I'll send Dana the proposal tomorrow, before lunch.";
+  const { dependencies, problems } = d.readDependencies({ items: [
+    dep('before lunch', 'K7', 'N1'),
+    dep('before lunch', 'K7', 'new', 'Send the proposal', 'Me'),
+  ] }, { list, note });
+  assert.deepEqual(dependencies, []);
+  assert.deepEqual(problems.map((p) => p.reason), ['a commitment cannot wait for a copy of itself', 'a commitment cannot wait for a copy of itself']);
+  const listed = d.readDependencies({ items: [dep('before lunch', 'K7', 'new', 'Send the proposal', 'Me')] }, { list: [list[0]], note });
+  assert.deepEqual(listed.problems.map((p) => p.reason), ['a commitment cannot wait for a copy of itself']);
+});
+
 // The demo store with "Send the proposal" no longer waiting on pricing, so a note can state it again.
 async function storeWithoutDependency() {
   const q = open();
