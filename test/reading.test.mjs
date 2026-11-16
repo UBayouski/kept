@@ -541,3 +541,14 @@ test('a person the store knows, on no listed commitment, still counts as someone
   const r = readNote(answer, { shape: 'v1', candidates, note: text, people: ['Sam Lee', 'Dana'] });
   assert.deepEqual([r.proposals, r.questions[0].options.map((o) => o.label ?? o.type)], [[], ['R2', 'new']]);
 });
+
+test('a change whose words name only someone else gives way to that person\'s new commitment from the same sentence', () => {
+  const text = 'Sam will email me the venue options on Monday.';
+  const answer = { updates: [up('Q4', 'new deadline', 'Monday', text)], newCommitments: [{ quote: text, what: 'Email the venue options', owner: 'Sam', to: 'me', due: 'Monday' }] };
+  const r = readNote(answer, { shape: 'v1', candidates, note: text, people: ['Sam'] });
+  assert.deepEqual([r.proposals, r.questions, r.created.map((n) => n.what)], [[], [], ['Email the venue options']]);
+  // Omar is on the venue: his words keep the change.
+  const omar = 'Omar will book the venue on Monday.';
+  const o = readNote({ updates: [up('Q4', 'new deadline', 'Monday', omar)], newCommitments: [] }, { shape: 'v1', candidates, note: omar, people: ['Sam'] });
+  assert.equal(o.proposals.length, 1);
+});

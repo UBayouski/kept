@@ -359,6 +359,20 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
   // reading, is that new commitment said twice; the change is dropped.
   let updates = checked.updates;
   let newCommitments = checked.newCommitments;
+  // "Sam will email me the venue options" given as a deadline on "Book the
+  // venue" and as Sam's new commitment: the words name only Sam, who is not on
+  // the venue, and the new one from the same sentence is Sam's. That is the
+  // answer; the change is dropped.
+  const known = PEOPLE(candidates, people);
+  updates = updates.filter((u) => {
+    const c = candidates.find((x) => x.label === u.commitment);
+    if (!c) return true;
+    const sentence = sentenceOf(note, u.quote);
+    const said = ` ${norm(sentence)} `;
+    const named = known.filter((p) => said.includes(` ${p} `));
+    if (!named.length || named.some((p) => [c.to, c.owner].map(norm).includes(p))) return true;
+    return !newCommitments.some((n) => sentenceOf(note, n.quote) === sentence && named.some((p) => [n.owner, n.to].map(norm).includes(p)));
+  });
   if (shape === 'v1') {
     // The device model also gives a listed commitment it updates as new, in
     // the same words ("Dana would like her proposal on Monday": a deadline on

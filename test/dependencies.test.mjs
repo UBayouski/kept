@@ -324,3 +324,13 @@ test('"Priya\'s budget review has to wait": a possessive is not who does what wa
   assert.deepEqual(deps.problems.map((p) => p.reason), []);
   assert.equal(deps.recorded.added.length, 1);
 });
+
+test('"Review Priya\'s budget" read as new is the listed "Review the budget" for Priya', () => {
+  const list = [
+    { label: 'B1', what: 'Review the budget', owner: 'me', to: 'Priya' },
+    { label: 'P1', what: 'Confirm pricing', owner: 'Lee', to: 'me' },
+    { label: 'N1', what: "Review Priya's budget", owner: 'me', to: 'Priya', isNew: true },
+  ];
+  const r = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] }, { list, note: "I'll review Priya's budget once Lee confirms pricing." });
+  assert.deepEqual(r.dependencies.map((x) => [x.waiting, x.waitsFor]), [['B1', 'P1']]);
+});

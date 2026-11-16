@@ -91,9 +91,9 @@ const FIELDS = ['quote', 'waiting', 'waitsFor', 'newWhat', 'newOwner'];
 // "Review the budget".
 const SMALL = new Set(['the', 'a', 'an', 'to', 'for', 'of', 'my', 'his', 'her', 'their', 'our']);
 const bag = (text) => norm(text).split(' ').filter((w) => w && !SMALL.has(w)).sort().join(' ');
-const sameWords = (a, b) => bag(a).length > 0 && bag(a) === bag(b);
+const sameBag = (a, b) => bag(a).length > 0 && bag(a) === bag(b);
 // b is a's words and exactly one more.
-const oneMore = (a, b) => {
+const oneMoreWord = (a, b) => {
   const [x, y] = [bag(a).split(' ').filter(Boolean), bag(b).split(' ').filter(Boolean)];
   const left = [...y];
   for (const w of x) { const at = left.indexOf(w); if (at < 0) return false; left.splice(at, 1); }
@@ -122,6 +122,12 @@ export function readDependencies(answer, { list, note }) {
   // for "Review the budget"). A dependency on that copy is one on the listed
   // commitment: same words in any order, and the same person if it names one.
   const copyOf = new Map();
+  // "Review Priya's budget" is "Review the budget" for Priya: the person's
+  // name and the "'s" are left out of the words compared.
+  const names = new Set(list.flatMap((c) => [c.owner, c.to]).map(norm).filter((p) => p && p !== 'me'));
+  const strip = (what) => norm(what).split(' ').filter((w) => w !== 's' && !names.has(w)).join(' ');
+  const sameWords = (a, b) => sameBag(strip(a), strip(b));
+  const oneMore = (a, b) => oneMoreWord(strip(a), strip(b));
   for (const n of list.filter((c) => c.isNew)) {
     // One word more ("Send the budget review") only when it names the same person.
     const samePerson = (c) => norm(n.to) && norm(n.to) === norm(c.to);
