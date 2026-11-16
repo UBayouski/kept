@@ -620,6 +620,25 @@ saw it; with time words that are not dependencies and "it". Device,
 - **Missed in 2 of 3:** "I can only book the caterer after Omar books the
   venue." The new commitment was not given, so there was nothing to wait.
 
+## Device model, round 15 (clean, three runs)
+
+Written and committed (8599c74) after the "over"/"out" fix, before any model
+saw it. Device, 2026-11-16: **7/4/1 in all three runs.**
+
+- **Unsafe, 2 of 3:** "Lee and I went over the pricing on the phone." as done
+  on pricing: "went over" passed the new "went ... over" words. Written to test
+  that weak spot.
+- **Unsafe, 1 of 3:** "I sent the contract to Dana, and Lee wants his proposal
+  by Friday." put the deadline on Dana's proposal: the sentence names Dana too,
+  so the person rule did not fire.
+- **Steady:** "The contract went out to Dana yesterday.", "Omar has until
+  Thursday", "won't need ... after all", "received my budget review"; the
+  dependency on pricing in all three.
+- **Fixes (not measured):** "over" says it is finished only after "is", "was"
+  and the like, not "went"; and the person rule reads the quoted words first,
+  and when they name the person of the one other commitment of the same
+  wording, that one is meant (this also turns the old twin test into a pass).
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
