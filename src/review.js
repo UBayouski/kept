@@ -521,7 +521,7 @@ $('read-note').onclick = async () => {
     const retry = /retry in ((\d+)h)?((\d+)m)?/i.exec(err.message);
     const message = quota
       ? `The cloud model's free quota is used up${retry ? `; it should work again in about ${retry[2] ? `${retry[2]} h ` : ''}${retry[4] ?? 0} min` : ''}.${PRIVATE ? ' The model on this device is not affected.' : ''}`
-      : err.message;
+      : /storage locked/i.test(err.message) ? LOCKED_MESSAGE : err.message;
     status('bad', `Not read, and nothing was stored: ${message}`,
       ai.debugToken && route().shape === 'v2' && /app.?check|\b40[13]\b/i.test(err.message) ? ` On localhost the cloud model needs this browser's App Check debug token registered in the Firebase console: ${ai.debugToken}` : '');
   } finally {
@@ -540,6 +540,8 @@ $('add-person').onclick = async () => {
   }
 };
 
+const LOCKED_MESSAGE = `The ${PRIVATE ? 'private' : 'demo'} workspace is open in another tab, and only one tab can use it at a time. Use that tab, or close it and reload this one.`;
+
 // The demo's Friday, which moves with the date the demo is loaded on.
 $('before').value = data.demoDates().friday;
 
@@ -547,8 +549,10 @@ db.init(async (msg) => {
   if (msg.type === 'open-failed') {
     const locked = /locked/i.test(msg.error);
     $('status').replaceChildren(el('span', { class: 'bad' }, locked
-      ? 'This store is open in another tab. Close that tab and reload this one.'
+      ? LOCKED_MESSAGE
       : `The store did not open: ${msg.error}`));
+    // Nothing can be read or added without the store.
+    for (const button of document.querySelectorAll('button')) button.disabled = true;
     return;
   }
   try {
