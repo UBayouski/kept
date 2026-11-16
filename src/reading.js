@@ -533,7 +533,12 @@ export function readNote(answer, { shape, candidates, note, people = [], happene
         alternatives: candidates.filter((c) => c.label !== u.commitment).map((c) => ({ commitmentId: c.id, label: c.label })),
       });
     } else {
-      const among = u.among ?? [...candidates.map((c) => c.label), 'new', 'all'];
+      // The model's own "unclear": every listed one, unless the words name
+      // someone; then only that person's ("Sent it to Dana": Dana's).
+      const said = ` ${norm(sentenceOf(note, u.quote))} `;
+      const theirs = candidates.filter((c) => [c.to, c.owner].map(norm).some((p) => p && p !== 'me' && said.includes(` ${p} `)));
+      const pool = theirs.length ? theirs : candidates;
+      const among = u.among ?? [...pool.map((c) => c.label), 'new', ...(pool.length > 1 ? ['all'] : [])];
       questions.push({ quote: u.quote, options: optionsOf(u, among), from: u.among ? 'app rule' : 'model' });
     }
   }

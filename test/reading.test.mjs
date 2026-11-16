@@ -166,10 +166,10 @@ test('readNote: a clean proposal still carries the alternatives', () => {
   assert.deepEqual([r.questions, r.manual], [[], []]);
 });
 
-test('readNote: a question the model asks offers every commitment, "new" and "all"', () => {
+test('readNote: a question the model asks offers every commitment of the person named, "new" and "all"', () => {
   const r = readNote({ items: [item('unclear', 'new deadline', 'Tuesday', 'send the proposal Tuesday')] }, { shape: 'v2', candidates, note });
   assert.deepEqual(r.proposals, []);
-  assert.deepEqual(r.questions.map((q) => [q.from, q.options.map((o) => o.label ?? o.type)]), [['model', ['K7', 'R2', 'Q4', 'new', 'all']]]);
+  assert.deepEqual(r.questions.map((q) => [q.from, q.options.map((o) => o.label ?? o.type)]), [['model', ['K7', 'R2', 'new', 'all']]]);
   const [first] = r.questions[0].options;
   assert.deepEqual(first, { type: 'commitment', commitmentId: 'id-proposal', label: 'K7', change: 'new deadline', due: 'Tuesday', quote: 'send the proposal Tuesday' });
   // The model named nothing new, so that option is for the user to fill in.
@@ -635,4 +635,13 @@ test('"signed off" is done, not off; "nothing is settled" is not done', () => {
   assert.deepEqual([r.proposals, r.manual.length], [[], 1]);
   const off = 'Omar called off the venue.';
   assert.deepEqual(readNote({ updates: [up('Q4', 'cancelled', '', off)], newCommitments: [] }, { shape: 'v1', candidates, note: off }).proposals.map((p) => p.change), ['cancelled']);
+});
+
+test('the model\'s own "unclear" from words naming someone offers only that person\'s commitments', () => {
+  const list = [...candidates, { label: 'P9', id: 'id-pricing', what: 'Confirm pricing', owner: 'Lee', to: 'me' }];
+  const text = 'Sent it to Dana this morning.';
+  const r = readNote({ updates: [up('unclear', 'done', '', text)], newCommitments: [] }, { shape: 'v1', candidates: list, note: text });
+  assert.deepEqual(r.questions[0].options.map((o) => o.label ?? o.type), ['K7', 'R2', 'new', 'all']);
+  const none = 'Sent it this morning.';
+  assert.equal(readNote({ updates: [up('unclear', 'done', '', none)], newCommitments: [] }, { shape: 'v1', candidates: list, note: none }).questions[0].options.length, 6);
 });

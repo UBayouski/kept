@@ -73,7 +73,11 @@ export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, g
         // "I'll send Dana's contract once ..." with a new "Send the contract"
         // asked about as new or the same: the dependency is on the listed one.
         const same = item.type === 'question' && item.options.some((o) => o.type === 'same' && added.involved?.includes(o.commitmentId));
-        if (copy || same) pending.splice(i, 1);
+        // A refused "it is new" for the words of the dependency: "Send the
+        // proposal once Lee confirms pricing" beside the proposal waiting.
+        const refused = item.type === 'manual' && item.saidNew
+          && (added.involvedWhat ?? []).some((c) => low(item.saidNew.what).startsWith(low(c.what)));
+        if (copy || same || refused) pending.splice(i, 1);
       }
       pending.push(...added.pending);
       const direct = added.recorded?.added.length ?? 0;

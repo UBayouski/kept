@@ -162,3 +162,13 @@ test('a new card in the words of a listed commitment a dependency is on goes', a
   const r = await run(testCase, model);
   assert.deepEqual([r.observed.deps, r.observed.created, r.observed.questions], [[{ waiting: 'proposal', on: 'pricing' }], [], []]);
 });
+
+test('a refused "it is new" for the words of a dependency goes', async () => {
+  const testCase = e.round18.find((x) => x.id === 'r18-10');
+  const model = fake({
+    linking: (label) => ({ items: [{ quote: "I'll send Dana the proposal after Lee confirms pricing", about: label('Send the proposal', 'Dana'), change: 'new commitment', due: '', what: 'Send the proposal after Lee confirms pricing' }] }),
+    deps: (label) => ({ items: [{ quote: 'after Lee confirms pricing', waiting: label('Send the proposal', 'Dana'), waitsFor: label('Confirm pricing', 'me'), newWhat: '', newOwner: '' }] }),
+  });
+  const r = await run(testCase, model);
+  assert.deepEqual([r.observed.deps, r.observed.created, r.observed.manual], [[{ waiting: 'proposal', on: 'pricing' }], [], []]);
+});
