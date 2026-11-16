@@ -1,10 +1,15 @@
 // The review screen. It reads and writes the demo workspace's store through
 // the rules in model.js; what it shows comes from review-data.js.
-// No model runs here yet: the demo scenario is loaded as already-read notes.
+// A captured note is read by the cloud model (the demo workspace's route, see
+// docs/linking-experiment.md) and goes through capture.js; the demo scenario is
+// loaded as already-read notes.
 
 import * as db from './db.js';
 import * as m from './model.js';
 import * as data from './review-data.js';
+import * as capture from './capture.js';
+import * as ai from './ai.js';
+import { variants } from './linking-cases.js';
 
 const STORE = 'opfs://kept-demo';
 const $ = (id) => document.getElementById(id);
@@ -55,6 +60,10 @@ const OUTCOME = {
 
 let me = null;
 let commitmentRows = [];
+let personRows = [];
+// What captured notes still need from the user. Kept in the page only: a
+// reload loses these, and the notes they came from stay in the store.
+const pendingItems = []; // { session, noteText, item, error }
 const messages = new Map(); // changeId -> { outcome, text }
 const decided = []; // what was done in this session, newest first: { summary, text }
 const summaries = new Map(); // changeId -> the sentence shown on its card
@@ -108,7 +117,9 @@ function card(item) {
 async function refresh() {
   const [items, list, persons] = [await data.reviewItems(q), await data.commitments(q), await data.people(q)];
   commitmentRows = list;
+  personRows = persons;
   me = persons.find((p) => p.isMe) ?? null;
+  renderPending();
 
   // A message stays on its card while the proposal is open. Once the proposal
   // is gone, what was decided moves to the list below, so it stays visible.
@@ -233,11 +244,192 @@ $('reset').onclick = async () => {
     await db.reset();
     messages.clear();
     decided.length = 0;
+    pendingItems.length = 0;
+    $('capture-status').replaceChildren();
     summaries.clear();
     for (const id of ['answer-owe', 'answer-waiting', 'answer-changed', 'answer-why']) answer(id);
     await refresh();
   } catch (err) {
     $('status').replaceChildren(el('span', { class: 'bad' }, `Error: ${err.message}`));
+  }
+};
+
+// --- Capture ---
+
+const CHANGE_WORDS = { 'new deadline': 'new deadline', done: 'done', cancelled: 'cancelled' };
+const personSelect = (chosen, none) => {
+  const select = el('select', {}, el('option', { value: '' }, none), personRows.map((p) => el('option', { value: p.id }, p.name)));
+  select.value = chosen ?? '';
+  return select;
+};
+// Shows the day the app reads from the words of a date, as they are typed.
+const resolvedHint = (input, session) => {
+  const hint = el('span', { class: 'muted' });
+  const show = () => {
+    const day = capture.resolveDate(input.value, session.baseDate);
+    hint.textContent = !input.value.trim() ? '' : day ? ` = ${day}` : ' (no single date; the words are kept)';
+  };
+  input.oninput = show;
+  show();
+  return hint;
+};
+
+// Settles one thing a note still needed: runs `work` if there is any, and
+// removes the entry unless the store rules refused what it proposed.
+async function settle(entry, work) {
+  try {
+    const result = work ? await work() : null;
+    const refused = result?.invalid?.[0];
+    if (refused) entry.error = `Not proposed: ${refused.reason}.`;
+    else {
+      pendingItems.splice(pendingItems.indexOf(entry), 1);
+      // The capture line counted this as waiting; it no longer is.
+      if (!pendingItems.length) $('capture-status').replaceChildren();
+    }
+  } catch (err) {
+    entry.error = err.message;
+  }
+  await refresh();
+}
+
+function pendingCard(entry) {
+  const { session, noteText, item } = entry;
+  const source = el('blockquote', {}, quoted(noteText, item.quote));
+  const error = entry.error && el('div', { class: 'message bad' }, entry.error);
+  const dismiss = (label) => el('button', { onclick: () => settle(entry) }, label);
+  const openOnes = commitmentRows.filter((c) => c.status === 'open');
+  const become = (next) => () => {
+    entry.item = next;
+    entry.error = null;
+    renderPending();
+  };
+
+  if (item.type === 'new') {
+    const what = el('input', { value: item.what ?? '', size: 28, placeholder: 'What is promised' });
+    const owner = personSelect(item.ownerId, 'choose…');
+    const to = personSelect(item.toId, 'nobody in particular');
+    const due = el('input', { value: item.dueText ?? '', size: 12, placeholder: 'no date' });
+    const unmatched = [[item.ownerName, item.ownerId], [item.toName, item.toId]].filter(([name, id]) => name && !id).map(([name]) => name);
+    return el('div', { class: 'card needs' },
+      el('div', { class: 'summary' }, 'A new commitment: who owes it to whom?'),
+      source,
+      unmatched.length > 0 && el('div', { class: 'source muted' }, `The model named ${unmatched.join(' and ')}, not in your list. Add them above first.`),
+      el('div', { class: 'row' }, el('label', {}, 'What ', what), el('label', {}, 'Owed by ', owner), el('label', {}, 'to ', to), el('label', {}, 'due ', due, resolvedHint(due, session))),
+      el('div', { class: 'source muted' }, 'The people and the date are how the app reads the words. Correct them before proposing.'),
+      el('div', { class: 'actions' },
+        el('button', { onclick: () => settle(entry, () => capture.proposeNew(q, session,
+          { what: what.value, ownerId: owner.value, toId: to.value, dueText: due.value.trim(), quote: item.quote })) }, 'Propose it'),
+        dismiss('Not a commitment')),
+      error);
+  }
+
+  if (item.type === 'question') {
+    const whatOf = (id) => commitmentRows.find((c) => c.id === id)?.what ?? 'a commitment';
+    const changes = item.options.filter((o) => o.type === 'commitment');
+    const said = (o) => {
+      const day = o.due && capture.resolveDate(o.due, session.baseDate);
+      return `${CHANGE_WORDS[o.change]}${o.due ? ` (${o.due}${day ? `, ${day}` : ''})` : ''}`;
+    };
+    const buttons = item.options.map((o) => {
+      if (o.type === 'commitment') return el('button', { onclick: () => settle(entry, () => capture.proposeChange(q, session, [o])) }, `"${whatOf(o.commitmentId)}": ${said(o)}`);
+      if (o.type === 'all') return changes.length > 1 && el('button', { onclick: () => settle(entry, () => capture.proposeChange(q, session, changes)) }, 'All of them');
+      if (o.type === 'same') return dismiss(`The same thing as "${whatOf(o.commitmentId)}", said twice`);
+      // Something new: the card becomes the new-commitment form.
+      return el('button', { onclick: become({ ...o, type: 'new' }) }, o.incomplete ? 'Something new' : `New: "${o.what}"`);
+    });
+    return el('div', { class: 'card needs' },
+      el('div', { class: 'summary' }, 'Which commitment does this mean?'),
+      source,
+      el('div', { class: 'source muted' }, item.from === 'model' ? 'The model could not tell.' : 'The answer fits more than one reading, so the app asks instead of choosing.'),
+      el('div', { class: 'actions' }, buttons, dismiss('None of these')),
+      error);
+  }
+
+  // manual: an entry that failed validation. The user links it by hand.
+  const target = el('select', {}, openOnes.map((c) => el('option', { value: c.id }, `${c.what} (${c.owner}${c.to ? ` to ${c.to}` : ''})`)));
+  const change = el('select', {}, Object.keys(CHANGE_WORDS).map((key) => el('option', { value: key }, CHANGE_WORDS[key])));
+  const due = el('input', { size: 12, placeholder: 'new date' });
+  return el('div', { class: 'card needs' },
+    el('div', { class: 'summary' }, 'Could not be read: link it by hand'),
+    source,
+    el('div', { class: 'source muted' }, item.reason),
+    openOnes.length > 0 && el('div', { class: 'row' }, el('label', {}, 'It changes ', target), el('label', {}, 'to ', change), el('label', {}, due, resolvedHint(due, session))),
+    el('div', { class: 'actions' },
+      openOnes.length > 0 && el('button', { onclick: () => settle(entry, () => {
+        if (change.value === 'new deadline' && !due.value.trim()) throw new Error('A new deadline needs a date.');
+        return capture.proposeChange(q, session, [{ commitmentId: target.value, change: change.value, due: due.value.trim(), quote: item.quote }]);
+      }) }, 'Propose it'),
+      item.saidNew
+        ? el('button', { onclick: become(item.saidNew) }, `It is new: "${item.saidNew.what}"`)
+        : el('button', { onclick: become({ type: 'new', what: '', quote: item.quote, dueText: '', ...capture.guessPeople(item.quote, personRows) }) }, 'It is something new'),
+      dismiss('Nothing to do')),
+    error);
+}
+
+function renderPending() {
+  $('pending').replaceChildren(...(pendingItems.length
+    ? [el('p', { class: 'muted' }, `${pendingItems.length} thing(s) from captured notes need you before they can be proposed. They are not saved: reloading the page drops them.`),
+      ...pendingItems.map(pendingCard)]
+    : []));
+}
+
+const localNow = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+$('note-when').value = localNow();
+$('cloud-model').textContent = ai.CLOUD_MODEL;
+
+$('read-note').onclick = async () => {
+  const text = $('note').value.trim();
+  const status = (cls, ...nodes) => $('capture-status').replaceChildren(el('span', { class: cls }, nodes));
+  if (!text) {
+    status('bad', 'The box is empty. Type or paste a note into it first; the grey example text is only a hint.');
+    $('note').focus();
+    return;
+  }
+  const when = $('note-when').value || localNow();
+  $('read-note').disabled = true;
+  status('muted', 'Reading the note…');
+  try {
+    const ready = await capture.prepare(q, text);
+    const before = await m.findSimilarNotes(q, text);
+    // Nothing is stored until the model has answered: a failed call leaves the note in the box.
+    const variant = variants.v2;
+    const result = await ai.generateStructured(variant.buildPrompt(text, ready.candidates), variant.buildSchema(ready.candidates), ai.InferenceMode.ONLY_IN_CLOUD);
+    const out = await capture.capture(q, {
+      text, kind: $('note-kind').value, occurredAt: new Date(when).toISOString(), baseDate: when.slice(0, 10),
+      answer: result.parsed, shape: 'v2', candidates: ready.candidates, people: ready.people, extractedBy: `cloud:${ai.CLOUD_MODEL}`,
+    });
+    for (const item of out.pending) pendingItems.push({ session: out.session, noteText: text, item });
+    $('note').value = '';
+    // The next note is from now, not from when the page was opened.
+    $('note-when').value = localNow();
+    await refresh();
+    const proposed = out.recorded.added.length;
+    status(out.usable ? 'ok' : 'bad', [
+      `Read by ${result.source === 'in_cloud' ? 'the cloud model' : result.source} in ${result.ms} ms.`,
+      out.usable ? '' : 'Its answer could not be used.',
+      proposed || out.pending.length
+        ? `${proposed} proposal(s) to review, ${out.pending.length} thing(s) that need you first.`
+        : 'It found nothing that promises or changes anything. The note is stored.',
+      out.recorded.invalid.length ? `${out.recorded.invalid.length} proposal(s) were refused by the store rules.` : '',
+      ready.leftOut ? `${ready.leftOut} open commitment(s) were not offered to the model: only the ${ready.candidates.length} closest to the note are.` : '',
+      before.length ? 'The same text was captured before; this is stored as a new note.' : '',
+    ].filter(Boolean).join(' '));
+  } catch (err) {
+    status('bad', `Not read, and nothing was stored: ${err.message}`,
+      ai.debugToken ? ` On localhost the cloud model needs this browser's App Check debug token registered in the Firebase console: ${ai.debugToken}` : '');
+  } finally {
+    $('read-note').disabled = false;
+  }
+};
+
+$('add-person').onclick = async () => {
+  try {
+    const result = await capture.addPerson(q, $('person-name').value);
+    $('person-status').textContent = { added: 'Added.', exists: 'Already in the list.', empty: 'Type a name first.' }[result.outcome];
+    if (result.outcome === 'added') $('person-name').value = '';
+    await refresh();
+  } catch (err) {
+    $('person-status').textContent = `Error: ${err.message}`;
   }
 };
 

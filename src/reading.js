@@ -105,7 +105,11 @@ export function validateReading(answer, { shape, candidates, note }) {
     if (reason) {
       problems.push({ reason, entry: e.raw });
       // Keep the words if they really are in the note, so the user sees what to link.
-      manual.push({ quote: !e.problem && inNote(e.quote) ? e.quote.trim() : note, reason: `An entry was refused: ${reason}.` });
+      // A well-formed entry that contradicts itself ("about" a listed commitment,
+      // but "new commitment") is still refused; what it said is kept, so the
+      // user can take its reading with one click instead of typing it again.
+      manual.push({ quote: !e.problem && inNote(e.quote) ? e.quote.trim() : note, reason: `An entry was refused: ${reason}.`,
+        ...(!e.problem && e.change === 'new commitment' && norm(e.what) ? { saidNew: { what: e.what.trim(), owner: e.owner, to: e.to, due: e.due.trim(), quote: e.quote.trim() } } : {}) });
       continue;
     }
     const quote = e.quote.trim();

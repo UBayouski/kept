@@ -23,6 +23,10 @@
       .message { font-size: 13px; margin-top: 8px; }
       .answer { margin: 8px 0 0; }
       mark { background: #fff1a8; }
+      textarea { font: inherit; width: 100%; box-sizing: border-box; padding: 8px; }
+      .card.needs { border-style: dashed; }
+      .card .row { margin-top: 8px; }
+      .card label { margin-right: 10px; }
     </style>
   </head>
   <body>
@@ -33,6 +37,22 @@
       <button id="seed">Load the demo scenario</button>
       <button id="reset">Empty the store</button>
     </p>
+
+    <h2>Capture a note</h2>
+    <textarea id="note" rows="3" placeholder="Type or paste a note here. For example: Dana says Thursday is fine for the proposal."></textarea>
+    <p>
+      <label>It is a <select id="note-kind"><option value="note">note</option><option value="meeting">meeting</option><option value="message">message</option></select></label>
+      <label>from <input type="datetime-local" id="note-when" /></label>
+      <button id="read-note">Read this note</button>
+    </p>
+    <p class="muted" id="capture-notice">Demo workspace: the note and your open commitments are sent to the cloud model (<span id="cloud-model"></span>). What it reads waits below for you.</p>
+    <p id="capture-status"></p>
+    <p>
+      <label>Someone not in the list yet: <input id="person-name" placeholder="Name" size="14" /></label>
+      <button id="add-person">Add person</button>
+      <span id="person-status" class="muted"></span>
+    </p>
+    <div id="pending"></div>
 
     <h2>To review <span id="review-count" class="muted"></span></h2>
     <div id="review"></div>

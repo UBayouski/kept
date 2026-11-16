@@ -14,8 +14,8 @@ As of 2026-11-15 this repository holds the groundwork, not the finished app.
 | Commitment model (`src/model.js`) | Rules written and tested on Relate's Node binding. Not run in the browser build, not used by the page yet |
 | Answer validation (`src/reading.js`) | Written and tested. Not used by the page yet |
 | Linking experiment (`linking.html`) | A development tool. Results in `docs/linking-experiment.md` |
-| Review screen (`review.html`) | First increment, **not yet opened in a browser**: the demo scenario loaded through the model's rules, the review queue with accept, reject and "it is about another commitment", and the four core questions. No model runs on this page yet |
-| Capture, and the model's answers feeding the review screen | Not built |
+| Review screen (`review.html`) | Checked by hand in Chrome 157 on Windows, on the demo scenario: the scenario loaded through the model's rules, the review queue with accept, reject and "it is about another commitment", and the four core questions |
+| Capture (`src/capture.js`, on the review screen) | First increment. One browser run so far (Chrome 157, Windows, 2026-11-15): a deadline change read by the cloud model in 1.4 s and proposed on the right commitment, with "Thursday" resolved to a date. New commitments and questions not yet tried in a browser. A pasted note is read by the cloud model (prompt v2), validated, and recorded as proposals; new commitments, questions and refused entries wait for the user first. Dates such as "Friday" are resolved only when they have one reading. Not covered yet: dependencies ("once Lee confirms pricing"), changes of owner or recipient, and keeping the waiting items across a reload |
 | Store file in the repository (`store/kept.rl`) | **Out of date:** still the slice's first seed model. See "The graph" |
 
 ## Run it
@@ -41,7 +41,7 @@ A hosted build of the slice is at https://relate-hybrid.web.app.
 npm test
 ```
 
-105 tests: the commitment rules and the review screen's data against a real Relate store through the Node binding, the validation of model answers, and the scoring of the linking experiment. No model and no browser are involved.
+125 tests: the commitment rules, the review screen's data and capture against a real Relate store through the Node binding, the validation of model answers, and the scoring of the linking experiment. No model and no browser are involved.
 
 ## The graph
 
