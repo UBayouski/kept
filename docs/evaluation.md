@@ -368,6 +368,30 @@ were asked properly once in seven runs. All 4 new commitments in round 5 passed.
 Of the notes that ran across two attempts, all 6 passed, including "Dana liked
 the venue photos." as nothing; 3 failed on the quota and 3 did not run.
 
+## Device model, round 7 (clean, three runs)
+
+Written and committed (0c647df) after every rule above and the cleanup of
+the "what" (636023d: other fields cut out of it; done/cancelled words looked
+for across a semicolon), before any model saw it. Device, 2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Error |
+|---|---|---|---|---|
+| 1 | 6 | 6 | 0 | 0 |
+| 2 | 6 | 4 | 1 | 1 (45 s timeout) |
+| 3 | 5 | 7 | 0 | 0 |
+
+- **Steady passes:** "I finished it last night" across a semicolon, "called
+  off", a new deadline, both new commitments in most runs, and the ambiguous
+  "Dana got it yesterday." asked about the proposal or the contract (2 of 3).
+- **The unsafe answer:** "Dana mentioned the contract template looks dated."
+  read as done on the contract; "dated" passed as a past tense.
+- **A needless question in 2 of 3 runs:** "Lee would like the proposal by
+  Friday." gave the deadline to both proposals, and rule 2 asked which.
+- **Fix after it (not measured yet):** an "-ed" word after "looks", "seems",
+  "sounds", "feels" or "appears" describes, it does not say anything was done;
+  and when the words name two commitments of the same wording, the person they
+  name decides ("Lee" picks the proposal for Lee).
+
 ## Open
 
 - Finish round 6 on the cloud route once the quota resets.
