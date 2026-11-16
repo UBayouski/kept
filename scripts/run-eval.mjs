@@ -1,7 +1,8 @@
 // Runs the capture evaluation (eval.html) in headless Chromium against the
 // real cloud model and saves the raw report to eval/results/.
 //
-//   npm run eval
+//   npm run eval             round 1
+//   SET=round2 npm run eval  another set from evaluation.js
 //
 // Needs an App Check debug token registered in the Firebase console, in
 // .env.local (never committed) as KEPT_APPCHECK_DEBUG_TOKEN=<uuid>.
@@ -28,7 +29,7 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (err) => console.error('page error:', err.message));
   await page.addInitScript((t) => localStorage.setItem('kept.appCheckDebugToken', t), token);
-  await page.goto('http://localhost:5181/eval.html');
+  await page.goto(`http://localhost:5181/eval.html?set=${process.env.SET ?? 'round1'}`);
   await page.waitForFunction(() => document.getElementById('progress').textContent === 'ready', null, { timeout: 30000 });
   await page.click('#run');
   // Progress as it goes, and a stop when it stalls: no note takes 3 minutes,
@@ -54,9 +55,9 @@ try {
     await page.waitForTimeout(2000);
   }
   const report = await page.locator('#report').inputValue();
-  const { ranAt, summary } = JSON.parse(report);
+  const { ranAt, summary, set } = JSON.parse(report);
   mkdirSync(join(root, 'eval/results'), { recursive: true });
-  const file = join(root, 'eval/results', `capture-${ranAt.replace(/[:.]/g, '-')}.json`);
+  const file = join(root, 'eval/results', `capture-${set}-${ranAt.replace(/[:.]/g, '-')}.json`);
   writeFileSync(file, `${JSON.stringify(JSON.parse(report), null, 1)}\n`);
   console.log(JSON.stringify(summary, null, 2));
   console.log(`Saved ${file}`);

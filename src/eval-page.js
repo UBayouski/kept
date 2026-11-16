@@ -64,12 +64,17 @@ function show(rows) {
   $('rows').replaceChildren(table);
 }
 
+// ?set=round2 runs another set; round 1 is the default.
+const setName = new URLSearchParams(location.search).get('set') ?? 'round1';
+const notes = e.sets[setName] ?? [];
+document.title += ` (${setName})`;
+
 $('run').onclick = async () => {
   $('run').disabled = true;
   const rows = [];
   try {
-    for (const [index, testCase] of e.cases.entries()) {
-      $('progress').textContent = `${index + 1} of ${e.cases.length}`;
+    for (const [index, testCase] of notes.entries()) {
+      $('progress').textContent = `${index + 1} of ${notes.length}`;
       const row = { id: testCase.id, group: testCase.group, note: testCase.note };
       try {
         // A reset that never finishes fails the note too.
@@ -91,7 +96,7 @@ $('run').onclick = async () => {
   const summary = e.summarise(rows);
   $('summary').textContent = JSON.stringify(summary, null, 2);
   $('report').value = JSON.stringify({
-    evaluation: 'capture', ranAt: new Date().toISOString(), cloudModel: ai.CLOUD_MODEL, linkingPrompt: 'v2',
+    evaluation: 'capture', set: setName, ranAt: new Date().toISOString(), cloudModel: ai.CLOUD_MODEL, linkingPrompt: 'v2',
     userAgent: navigator.userAgent, summary, rows,
   });
   $('progress').textContent = 'done';

@@ -44,15 +44,18 @@ For each dependency the note states, give one item:
 
 Rules:
 - Only dependencies the note states, with words such as "once", "after", "until" or "waiting on". Do not infer one from two commitments being related.
-- If what has to happen first is in the list, use its label, not "new".
+- Use a label for what has to happen first only if it is the same action by the same person. Sharing a word is not enough: "Priya checks the numbers" is not "Check the numbers" owned by me. Otherwise use "new".
 - A commitment never waits for itself.
 - A note that states no dependency gives an empty list.
 
-Example. It uses a different list:
+Examples. They use a different list:
 [A1] Ship the report. Owner: me. For: Sam.
 [B2] Sign off the numbers. Owner: Priya. For: me.
-Note: I'll ship the report to Sam once Priya signs off the numbers, and the slides after Omar sends the logo.
+[C3] Check the budget. Owner: me. For: Priya.
+Note: I'll ship the report to Sam once Priya signs off the numbers.
 {"items":[{"quote":"once Priya signs off the numbers","waiting":"A1","waitsFor":"B2","newWhat":"","newOwner":""}]}
+Note: I'll ship the report to Sam after Priya approves the budget.
+{"items":[{"quote":"after Priya approves the budget","waiting":"A1","waitsFor":"new","newWhat":"Approve the budget","newOwner":"Priya"}]}
 
 Note:
 ${note}`;

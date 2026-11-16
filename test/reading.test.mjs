@@ -284,3 +284,50 @@ test('rule 1 keeps the owner and recipient of the commitment it asks about', () 
   assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['R2', 'done']]);
   assert.deepEqual(r.questions[0].options, [{ type: 'new', ...another }, { type: 'same', commitmentId: 'id-contract', label: 'R2' }]);
 });
+
+test('done or cancelled is not proposed when the words say it waits', async () => {
+  const { readNote } = await import('../src/reading.js');
+  const candidates = [{ id: 'v', label: 'B3', what: 'Book the venue' }, { id: 'c', label: 'R2', what: 'Send the contract' }];
+  // Not the evaluation's sentences: those found the problem, these test the rule.
+  const note = "Omar won't book the venue before Lee pays. Sent the contract after lunch.";
+  const r = readNote({ items: [
+    { quote: "Omar won't book the venue before Lee pays", about: 'B3', change: 'cancelled', due: '', what: '' },
+    { quote: 'Sent the contract after lunch', about: 'R2', change: 'done', due: '', what: '' },
+  ] }, { shape: 'v2', candidates, note });
+  assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['R2', 'done']], '"after" alone is not waiting');
+  assert.equal(r.manual.length, 1);
+  assert.match(r.manual[0].reason, /waits for something/);
+});
+
+test('a deadline that is really a dependency: the date part is kept, a bare dependency is left to the dependency reading', async () => {
+  const { readNote } = await import('../src/reading.js');
+  const candidates = [{ id: 'r', label: 'R1', what: 'Send the report' }, { id: 'm', label: 'M2', what: 'Send the memo' }];
+  // New sentences, not the evaluation's.
+  const note = 'The report goes out Monday after the board meets. I send the memo once Sam is back.';
+  const r = readNote({ items: [
+    { quote: 'The report goes out Monday after the board meets', about: 'R1', change: 'new deadline', due: 'Monday after the board meets', what: '' },
+    { quote: 'I send the memo once Sam is back', about: 'M2', change: 'new deadline', due: 'once Sam is back', what: '' },
+  ] }, { shape: 'v2', candidates, note });
+  assert.deepEqual(r.proposals.map((p) => [p.label, p.due]), [['R1', 'Monday']]);
+  assert.deepEqual(r.manual, [], 'the bare dependency is not a card');
+  assert.match(r.problems.map((p) => p.reason).join(), /left to the dependency reading/);
+
+  // Without a dependency word in the note, a deadline with no date is still refused and linked by hand.
+  const plain = readNote({ items: [{ quote: 'The memo moves', about: 'M2', change: 'new deadline', due: '', what: '' }] },
+    { shape: 'v2', candidates, note: 'The memo moves.' });
+  assert.equal(plain.manual.length, 1);
+});
+
+test('the future, or waiting, is not done or cancelled', async () => {
+  const { readNote } = await import('../src/reading.js');
+  const candidates = [{ id: 'x', label: 'X1', what: 'File the expenses' }, { id: 'y', label: 'Y2', what: 'Print the badges' }, { id: 'z', label: 'Z3', what: 'Order the chairs' }];
+  // New sentences, not the evaluation's.
+  const note = "Sam will file the expenses once the receipts arrive. The badges are blocked on the logo. I'll drop the memo. Ordered the chairs.";
+  const r = readNote({ items: [
+    { quote: 'Sam will file the expenses once the receipts arrive', about: 'X1', change: 'done', due: '', what: '' },
+    { quote: 'The badges are blocked on the logo', about: 'Y2', change: 'cancelled', due: '', what: '' },
+    { quote: 'Ordered the chairs', about: 'Z3', change: 'done', due: '', what: '' },
+  ] }, { shape: 'v2', candidates, note });
+  assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['Z3', 'done']]);
+  assert.equal(r.manual.length, 2);
+});

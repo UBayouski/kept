@@ -101,9 +101,51 @@ both questions contain the right answer.
   a listed commitment when one shares a word ("the budget"), and the linking
   prompt can read "can't be booked until" as cancelled.
 
+## Dependencies, rounds 2 and 3
+
+Each round was written after the previous one's results and before the fixes
+it measures were run; `SET=round2 npm run eval` runs one.
+
+**After round 1** the dependency prompt was told that sharing a word is not the
+same action (with an example that is not one of the notes), the app refuses a
+listed commitment as what is waited for when the words name someone else as
+doing it, and "can't ... until" is never proposed as done or cancelled.
+
+**Round 2** (12 new dependency notes, clean): 5 pass, 5 safe, 2 unsafe. The
+dependency reading was right in 9 of 12. Most of what was left came from the
+linking call: four times it also gave the dependency as a "new deadline" with
+no date (a needless card to link by hand), twice it put the dependency into
+the date ("after Dana signs off on it"), and once the waiting commitment was
+mine where the words made Dana wait.
+
+**After round 2:** a date that is a dependency keeps only its date part
+("tomorrow after lunch" is tomorrow), a deadline with no date left in a note
+that states a dependency is left to the dependency reading, and a listed
+commitment is not what waits when the main clause's subject is someone else.
+
+**Round 3** (10 new notes, clean): 6 pass, 2 safe, 2 unsafe. Both unsafe were
+the linking call reading a dependency as done or cancelled ("Lee will confirm
+pricing once ...", "The contract waits for ..."), which the "can't ... until"
+rule was too narrow to catch.
+
+**After round 3, not measured yet:** the rule now covers the future ("will",
+"I'll") and "waits", "waiting", "blocked" as well.
+
+**Variance.** Running round 2 again after its fixes gave 2 pass, 9 safe,
+1 unsafe: the same model and notes give different answers from run to run (in
+that run it often returned nothing for "can't ... until" notes). One run of
+10 or 12 notes is a rough measure; differences of one or two notes between
+runs are noise.
+
+**Re-runs of round 1** after the fixes (not clean, for regressions): 35 pass,
+4 safe, 1 unsafe; the one unsafe is still "Sent Dana the document".
+
 ## Open
 
-- A second, clean set of notes to measure the fixes and any prompt change
-  made because of these results.
+- A clean round to measure the last rule (the future and waiting).
+- Dependencies stay the least reliable part. The remaining errors are mostly
+  the linking call answering about a dependency at all; a linking prompt that
+  is told to leave dependencies alone is the next thing to try, measured on
+  new notes.
 - The private workspace route (device model, prompt v1 with the app rules) has
   not been run through this evaluation.

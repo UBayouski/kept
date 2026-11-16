@@ -200,3 +200,30 @@ test('a rejected new commitment cannot be waited for', async () => {
   const made = await c.proposeDependency(q, out.session, link);
   assert.deepEqual(made.invalid.map((x) => x.reason), ['blocker was rejected']);
 });
+
+test('a listed commitment that is someone else\'s action is not what the words wait for', async () => {
+  const q = await storeWithoutDependency();
+  // The demo store: "Confirm pricing" is Lee's. These words name Dana.
+  const text = 'I can only send the proposal once Dana confirms pricing.';
+  const ready = await c.prepare(q, text);
+  const out = await c.capture(q, { text, answer: { items: [] }, shape: 'v2', ...ready, ...WHEN });
+  const list = c.dependencyList(ready.candidates, out.pending);
+  const [proposal, pricing] = ['Send the proposal', 'Confirm pricing'].map((what) => list.find((x) => x.what === what).label);
+  const deps = await c.addDependencies(q, out.session, { answer: { items: [dep('once Dana confirms pricing', proposal, pricing)] }, list, note: text, people: ready.people });
+  assert.equal(deps.recorded, null);
+  assert.deepEqual(deps.pending, []);
+  assert.match(deps.problems[0].reason, /not the action of the person the words name/);
+});
+
+test('a listed commitment is not what waits when the words make someone else wait', async () => {
+  const q = await storeWithoutDependency();
+  // "Send the proposal" is mine; in these words Dana is the one who waits. New sentence, not the evaluation's.
+  const text = "Dana can't forward the proposal until Lee confirms pricing.";
+  const ready = await c.prepare(q, text);
+  const out = await c.capture(q, { text, answer: { items: [] }, shape: 'v2', ...ready, ...WHEN });
+  const list = c.dependencyList(ready.candidates, out.pending);
+  const [proposal, pricing] = ['Send the proposal', 'Confirm pricing'].map((what) => list.find((x) => x.what === what).label);
+  const deps = await c.addDependencies(q, out.session, { answer: { items: [dep('until Lee confirms pricing', proposal, pricing)] }, list, note: text, people: ready.people });
+  assert.equal(deps.recorded, null);
+  assert.match(deps.problems[0].reason, /not the action of the person who waits/);
+});

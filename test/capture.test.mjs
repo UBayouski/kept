@@ -323,3 +323,8 @@ test('a captured meeting is the baseline for "what changed since"', async () => 
   const baseline = await m.meetingBaseline(q, { personId: dana, now: '2026-11-25T16:00:00Z' });
   assert.ok(baseline.since.startsWith('2026-11-25T15:00'));
 });
+
+test('dates: a meal or "at the latest" around a day does not stop it resolving', () => {
+  assert.equal(c.resolveDate('tomorrow lunch', '2026-11-25'), '2026-11-26');
+  assert.equal(c.resolveDate('Friday at the latest', '2026-11-25'), '2026-11-27');
+});

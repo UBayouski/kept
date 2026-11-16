@@ -22,7 +22,8 @@ const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'frida
 const WEEKDAY_SHORT = { sun: 0, mon: 1, tue: 2, tues: 2, wed: 3, weds: 3, thu: 4, thur: 4, thurs: 4, fri: 5, sat: 6 };
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 // Words around a date that do not change which day it is.
-const FILLER = new Set(['by', 'on', 'until', 'till', 'before', 'due', 'this', 'the', 'of', 'morning', 'afternoon', 'evening', 'night', 'noon', 'eod']);
+const FILLER = new Set(['by', 'on', 'until', 'till', 'before', 'due', 'this', 'the', 'of', 'morning', 'afternoon', 'evening', 'night', 'noon', 'eod',
+  'lunch', 'breakfast', 'dinner', 'latest', 'at']);
 
 const iso = (y, month, d) => {
   const date = new Date(Date.UTC(y, month, d));
@@ -376,9 +377,38 @@ export async function addDependencies(q, session, { answer, list, note, people: 
   const pending = [];
   const direct = [];
   let n = nextRef;
+  const problems = [...read.problems];
+  const meId = persons.find((p) => p.isMe)?.id ?? null;
+  // Who does what waits: the subject of the note's main clause, "I" or a person
+  // named first. "Dana can't sign the contract until ..." is Dana's, so it is
+  // not my own "Send the contract". Only for a note with one dependency.
+  const subject = (() => {
+    const first = norm(beforeCue(note)).split(' ')[0] ?? '';
+    if (first === 'i' || first === 'we') return meId;
+    return persons.find((p) => !p.isMe && norm(p.name).split(' ')[0] === first)?.id ?? null;
+  })();
   for (const dep of read.dependencies) {
     const waiting = byLabel.get(dep.waiting);
     let blocker = byLabel.get(dep.waitsFor);
+    if (read.dependencies.length === 1 && !waiting.isNew && subject) {
+      const ownerId = matchPerson(waiting.owner, persons);
+      if (ownerId && ownerId !== subject) {
+        problems.push({ reason: `"${waiting.what}" is not the action of the person who waits`, entry: dep });
+        continue;
+      }
+    }
+    // The words name who has to act first. A listed commitment owed by someone
+    // else is not that: "after Priya approves the budget" is not my own
+    // "Review the budget". The link is refused, not guessed again.
+    if (dep.waitsFor !== 'new' && !blocker.isNew) {
+      const named = peopleNamed(dep.quote, persons);
+      const acting = named.length === 1 ? named[0] : /\b(i|we)\b/i.test(dep.quote) && !named.length ? meId : null;
+      const ownerId = matchPerson(blocker.owner, persons);
+      if (acting && ownerId && acting !== ownerId) {
+        problems.push({ reason: `"${blocker.what}" is not the action of the person the words name`, entry: dep });
+        continue;
+      }
+    }
     if (dep.waitsFor === 'new') {
       // The thing waited for is owed to whoever waits.
       const waiterId = waiting.ownerId ?? matchPerson(waiting.owner, persons);
@@ -397,7 +427,7 @@ export async function addDependencies(q, session, { answer, list, note, people: 
     }
   }
   const recorded = direct.length ? await record(q, session, direct) : null;
-  return { ok: read.ok, recorded, pending, problems: read.problems };
+  return { ok: read.ok, recorded, pending, problems };
 }
 
 // The user confirms a dependency that involves a commitment new in this note.

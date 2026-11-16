@@ -10,6 +10,11 @@
 // See docs/linking-experiment.md for why each check exists: every one
 // answers something a model actually returned.
 
+// Words that make a clause a dependency, not a date: "after Dana signs off",
+// "once Lee confirms". Not "until" or "before", which also give deadlines
+// ("can wait until next month").
+export const DEPENDS = /\b(once|after|when|as soon as|waiting (on|for)|waits? (on|for)|depends? on|dependent on|blocked)\b/i;
+
 export const norm = (text) => String(text ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 export const wellFormed = (parsed) => Boolean(parsed) && Array.isArray(parsed.updates) && Array.isArray(parsed.newCommitments);
 
@@ -101,6 +106,19 @@ export function validateReading(answer, { shape, candidates, note }) {
   const updates = [];
   const newCommitments = [];
   for (const e of entries) {
+    // A new deadline whose date is a dependency ("after Dana signs off on it")
+    // keeps only the part before it ("tomorrow after lunch" -> "tomorrow"). If
+    // nothing is left and the note states a dependency, it was the dependency
+    // read as a deadline: the dependency reading has it, so it is not proposed
+    // and not left for the user to link.
+    if (!e.problem && e.change === 'new deadline' && e.target !== 'new') {
+      const at = e.due.search(DEPENDS);
+      if (at >= 0) e.due = e.due.slice(0, at).replace(/[\s,;]+$/, '');
+      if (!norm(e.due) && DEPENDS.test(note)) {
+        problems.push({ reason: 'a dependency read as a deadline was left to the dependency reading', entry: e.raw });
+        continue;
+      }
+    }
     const reason = check(e);
     if (reason) {
       problems.push({ reason, entry: e.raw });
@@ -263,7 +281,14 @@ export function readNote(answer, { shape, candidates, note }) {
 
   const proposals = [];
   const questions = [];
+  const manual = [...checked.manual];
   for (const u of ruled.updates) {
+    // "The venue can't be booked until Dana confirms" says it waits, not that it
+    // is done or cancelled. Such a reading is not proposed; the user links it.
+    if ((u.change === 'done' || u.change === 'cancelled') && WAITS.test(u.quote)) {
+      manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but the words say it waits for something. Link it by hand if it is either.` });
+      continue;
+    }
     if (u.commitment !== 'unclear') {
       proposals.push({
         commitmentId: byLabel.get(u.commitment).id, label: u.commitment, change: u.change, due: u.due, quote: u.quote,
@@ -274,8 +299,12 @@ export function readNote(answer, { shape, candidates, note }) {
       questions.push({ quote: u.quote, options: optionsOf(u, among), from: u.among ? 'app rule' : 'model' });
     }
   }
-  return { ok: true, proposals, created: ruled.newCommitments, questions, manual: checked.manual, problems: checked.problems, notes: ruled.notes };
+  return { ok: true, proposals, created: ruled.newCommitments, questions, manual, problems: checked.problems, notes: ruled.notes };
 }
+
+// Words that say the thing has not happened yet: a negation followed by
+// "until", "unless" or "before"; the future ("will", "I'll"); or waiting.
+const WAITS = /\b(can'?t|cannot|can not|won'?t|will not|not|no|never)\b[^.;]*\b(until|till|unless|before)\b|\bwill\b|\w'll\b|\b(waits?|waiting|blocked)\b/i;
 
 // What goes to model.js recordExtraction for one reading: the proposals as
 // assertions, and whether they are everything the note says.

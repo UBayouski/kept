@@ -119,6 +119,63 @@ export const cases = [
     expect: { created: [n('Sign off on the proposal', 'Dana', 'Me')], deps: [{ waiting: 'proposalLee', on: 'new:sign off' }] } },
 ];
 
+// Round 2: dependencies only, written on 2026-11-15 after round 1 and after the
+// dependency prompt and checks were changed because of it, before any model
+// saw them. They measure that change; they must not be used to tune it.
+export const round2 = [
+  { id: 'r2-1', group: 'dependency', note: "I'll send Priya the budget review once Lee confirms pricing.",
+    expect: { deps: [{ waiting: 'budget', on: 'pricing' }] } },
+  { id: 'r2-2', group: 'dependency', note: "The contract can't go to Dana until Lee confirms pricing.",
+    expect: { deps: [{ waiting: 'contract', on: 'pricing' }] } },
+  { id: 'r2-3', group: 'dependency', note: "I won't send Lee the proposal until Dana reviews it.",
+    expect: { created: [n('Review the proposal', 'Dana', 'Me')], deps: [{ waiting: 'proposalLee', on: 'new:review proposal' }] } },
+  { id: 'r2-4', group: 'dependency', note: "After Priya reviews the budget, I'll send Dana the contract.",
+    expect: { created: [n('Review the budget', 'Priya', 'Me')], deps: [{ waiting: 'contract', on: 'new:review budget' }] } },
+  { id: 'r2-5', group: 'dependency', note: 'Omar can only book the venue once I send him the deposit.',
+    expect: { created: [n('Send the deposit', 'Me', 'Omar')], deps: [{ waiting: 'venue', on: 'new:deposit' }] } },
+  { id: 'r2-6', group: 'dependency', note: "Once the contract is out, I'll send Dana the proposal.",
+    expect: { deps: [{ waiting: 'proposal', on: 'contract' }] } },
+  { id: 'r2-7', group: 'dependency', note: "I'll send Dana the proposal tomorrow, before lunch.",
+    expect: { changes: [c('proposal', 'deadline', '2026-11-26')] } },
+  { id: 'r2-8', group: 'dependency', note: 'The budget review is blocked until Priya sends the numbers.',
+    expect: { created: [n('Send the numbers', 'Priya', 'Me')], deps: [{ waiting: 'budget', on: 'new:numbers' }] } },
+  { id: 'r2-9', group: 'dependency', note: "I can't book flights until Omar books the venue.",
+    expect: { created: [n('Book flights', 'Me')], deps: [{ waiting: 'new:flights', on: 'venue' }] } },
+  { id: 'r2-10', group: 'dependency', note: 'Sam will send me the mockups once Priya signs off the copy.',
+    expect: { created: [n('Send the mockups', 'Sam', 'Me'), n('Sign off the copy', 'Priya', 'Sam')], deps: [{ waiting: 'new:mockups', on: 'new:sign off copy' }] } },
+  { id: 'r2-11', group: 'dependency', note: "Dana can't sign the contract until Lee confirms pricing.",
+    expect: { created: [n('Sign the contract', 'Dana', null)], deps: [{ waiting: 'new:sign contract', on: 'pricing' }] } },
+  { id: 'r2-12', group: 'dependency', note: "The proposal for Lee waits until Omar has booked the venue.",
+    expect: { deps: [{ waiting: 'proposalLee', on: 'venue' }] } },
+];
+
+// Round 3: written on 2026-11-15 after round 2, before the fixes made because
+// of it were run, and before any model saw them. They measure those fixes.
+export const round3 = [
+  { id: 'r3-1', group: 'dependency', note: "Dana can't approve the proposal until Lee confirms pricing.",
+    expect: { created: [n('Approve the proposal', 'Dana', null)], deps: [{ waiting: 'new:approve proposal', on: 'pricing' }] } },
+  { id: 'r3-2', group: 'dependency', note: "I'll send Priya the budget review by Friday, once Lee confirms pricing.",
+    expect: { changes: [c('budget', 'deadline', '2026-11-27')], deps: [{ waiting: 'budget', on: 'pricing' }] } },
+  { id: 'r3-3', group: 'dependency', note: "After Omar books the venue, I'll send Dana the contract on Monday.",
+    expect: { changes: [c('contract', 'deadline', '2026-11-30')], deps: [{ waiting: 'contract', on: 'venue' }] } },
+  { id: 'r3-4', group: 'dependency', note: 'Lee will confirm pricing once I send him the volumes.',
+    expect: { created: [n('Send the volumes', 'Me', 'Lee')], deps: [{ waiting: 'pricing', on: 'new:volumes' }] } },
+  { id: 'r3-5', group: 'dependency', note: "I'll send the proposal to Lee when Dana has seen it.",
+    expect: { created: [n('See the proposal', 'Dana', 'Me')], deps: [{ waiting: 'proposalLee', on: 'new:see proposal' }] } },
+  { id: 'r3-6', group: 'dependency', note: "Sam can't start the design until Priya sends the brief.",
+    expect: { created: [n('Start the design', 'Sam', null), n('Send the brief', 'Priya', 'Sam')], deps: [{ waiting: 'new:design', on: 'new:brief' }] } },
+  { id: 'r3-7', group: 'dependency', note: "The contract waits for Lee's pricing.",
+    expect: { deps: [{ waiting: 'contract', on: 'pricing' }] } },
+  { id: 'r3-8', group: 'dependency', note: 'Dana will get the proposal tomorrow after lunch.',
+    expect: { changes: [c('proposal', 'deadline', '2026-11-26')] } },
+  { id: 'r3-9', group: 'dependency', note: 'Priya says the budget review can wait until next month.',
+    expect: { changes: [c('budget', 'deadline', 'words')] } },
+  { id: 'r3-10', group: 'dependency', note: 'Omar will book the venue as soon as Dana confirms the date, by Friday at the latest.',
+    expect: { changes: [c('venue', 'deadline', '2026-11-27')], created: [n('Confirm the date', 'Dana', 'Omar')], deps: [{ waiting: 'venue', on: 'new:confirm date' }] } },
+];
+
+export const sets = { round1: cases, round2, round3 };
+
 // --- What came out of one note ---
 
 // Everything the note produced, by the workspace's keys and names.

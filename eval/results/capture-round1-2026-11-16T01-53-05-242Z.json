@@ -1,0 +1,2282 @@
+{
+ "evaluation": "capture",
+ "set": "round1",
+ "ranAt": "2026-11-16T01:53:05.242Z",
+ "cloudModel": "gemini-3.5-flash-lite",
+ "linkingPrompt": "v2",
+ "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+ "summary": {
+  "notes": 40,
+  "errors": 0,
+  "pass": 35,
+  "safe": 3,
+  "unsafe": 2,
+  "wrongChange": 1,
+  "guessed": 1,
+  "missedChange": 0,
+  "missedNew": 0,
+  "extraNew": 0,
+  "cardErrors": 0,
+  "wrongDependency": 0,
+  "missedDependency": 0,
+  "needlessQuestions": 2,
+  "linkedByHand": 1,
+  "byGroup": {
+   "deadline": {
+    "notes": 8,
+    "pass": 8,
+    "safe": 0,
+    "unsafe": 0,
+    "error": 0
+   },
+   "status": {
+    "notes": 6,
+    "pass": 6,
+    "safe": 0,
+    "unsafe": 0,
+    "error": 0
+   },
+   "new": {
+    "notes": 8,
+    "pass": 8,
+    "safe": 0,
+    "unsafe": 0,
+    "error": 0
+   },
+   "nothing": {
+    "notes": 4,
+    "pass": 4,
+    "safe": 0,
+    "unsafe": 0,
+    "error": 0
+   },
+   "ambiguous": {
+    "notes": 4,
+    "pass": 3,
+    "safe": 0,
+    "unsafe": 1,
+    "error": 0
+   },
+   "several": {
+    "notes": 4,
+    "pass": 2,
+    "safe": 2,
+    "unsafe": 0,
+    "error": 0
+   },
+   "dependency": {
+    "notes": 6,
+    "pass": 4,
+    "safe": 1,
+    "unsafe": 1,
+    "error": 0
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "a1",
+   "group": "deadline",
+   "note": "Dana is fine getting the contract on Monday instead.",
+   "observed": {
+    "changes": [
+     {
+      "on": "contract",
+      "kind": "deadline",
+      "due": "2026-11-30",
+      "dueText": "Monday"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana is fine getting the contract on Monday instead",
+       "about": "A1",
+       "change": "new deadline",
+       "due": "Monday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1071,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "a2",
+   "group": "deadline",
+   "note": "Priya pushed the budget review to Friday.",
+   "observed": {
+    "changes": [
+     {
+      "on": "budget",
+      "kind": "deadline",
+      "due": "2026-11-27",
+      "dueText": "Friday"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Priya pushed the budget review to Friday",
+       "about": "A2",
+       "change": "new deadline",
+       "due": "Friday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 950,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "a3",
+   "group": "deadline",
+   "note": "Lee can wait until Tuesday for the proposal.",
+   "observed": {
+    "changes": [
+     {
+      "on": "proposalLee",
+      "kind": "deadline",
+      "due": "2026-12-01",
+      "dueText": "Tuesday"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Lee can wait until Tuesday for the proposal",
+       "about": "E8",
+       "change": "new deadline",
+       "due": "Tuesday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 831,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 1045,
+     "parsed": {
+      "items": []
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "a4",
+   "group": "deadline",
+   "note": "Dana needs the proposal a day earlier, so tomorrow.",
+   "observed": {
+    "changes": [
+     {
+      "on": "proposal",
+      "kind": "deadline",
+      "due": "2026-11-26",
+      "dueText": "tomorrow"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana needs the proposal a day earlier, so tomorrow",
+       "about": "X3",
+       "change": "new deadline",
+       "due": "tomorrow",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 713,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "a5",
+   "group": "deadline",
+   "note": "Omar will have the venue booked by Monday.",
+   "observed": {
+    "changes": [
+     {
+      "on": "venue",
+      "kind": "deadline",
+      "due": "2026-11-30",
+      "dueText": "Monday"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Omar will have the venue booked by Monday",
+       "about": "F2",
+       "change": "new deadline",
+       "due": "Monday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1015,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "a6",
+   "group": "deadline",
+   "note": "Lee expects to confirm pricing on Friday.",
+   "observed": {
+    "changes": [
+     {
+      "on": "pricing",
+      "kind": "deadline",
+      "due": "2026-11-27",
+      "dueText": "Friday"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Lee expects to confirm pricing on Friday",
+       "about": "X4",
+       "change": "new deadline",
+       "due": "Friday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 781,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "a7",
+   "group": "deadline",
+   "note": "Dana asked for the contract by December 4.",
+   "observed": {
+    "changes": [
+     {
+      "on": "contract",
+      "kind": "deadline",
+      "due": "2026-12-04",
+      "dueText": "December 4"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana asked for the contract by December 4",
+       "about": "T9",
+       "change": "new deadline",
+       "due": "December 4",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1016,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "a8",
+   "group": "deadline",
+   "note": "Priya needs my budget comments by Thursday, not next week.",
+   "observed": {
+    "changes": [
+     {
+      "on": "budget",
+      "kind": "deadline",
+      "due": "2026-11-26",
+      "dueText": "Thursday"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Priya needs my budget comments by Thursday, not next week",
+       "about": "A2",
+       "change": "new deadline",
+       "due": "Thursday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 778,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "b1",
+   "group": "status",
+   "note": "Sent Dana the proposal this morning.",
+   "observed": {
+    "changes": [
+     {
+      "on": "proposal",
+      "kind": "completed"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Sent Dana the proposal this morning",
+       "about": "V0",
+       "change": "done",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1184,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "b2",
+   "group": "status",
+   "note": "Lee confirmed pricing on the call.",
+   "observed": {
+    "changes": [
+     {
+      "on": "pricing",
+      "kind": "completed"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Lee confirmed pricing on the call",
+       "about": "C6",
+       "change": "done",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 834,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "b3",
+   "group": "status",
+   "note": "Omar booked the venue.",
+   "observed": {
+    "changes": [
+     {
+      "on": "venue",
+      "kind": "completed"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Omar booked the venue",
+       "about": "T6",
+       "change": "done",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 907,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "b4",
+   "group": "status",
+   "note": "Dana no longer needs the contract; legal handles it now.",
+   "observed": {
+    "changes": [
+     {
+      "on": "contract",
+      "kind": "cancelled"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana no longer needs the contract; legal handles it now",
+       "about": "G6",
+       "change": "cancelled",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 848,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "b5",
+   "group": "status",
+   "note": "Priya called off the budget review.",
+   "observed": {
+    "changes": [
+     {
+      "on": "budget",
+      "kind": "cancelled"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Priya called off the budget review",
+       "about": "M6",
+       "change": "cancelled",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1475,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "b6",
+   "group": "status",
+   "note": "Sent Lee the proposal.",
+   "observed": {
+    "changes": [
+     {
+      "on": "proposalLee",
+      "kind": "completed"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Sent Lee the proposal",
+       "about": "H2",
+       "change": "done",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 915,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c1",
+   "group": "new",
+   "note": "I'll send Sam the slides by Friday.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the slides",
+      "owner": "Me",
+      "to": "Sam",
+      "due": "2026-11-27",
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Sam the slides by Friday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Friday",
+       "what": "Send Sam the slides"
+      }
+     ]
+    },
+    "linkingMs": 913,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c2",
+   "group": "new",
+   "note": "Priya will email me the forecast on Monday.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Email the forecast",
+      "owner": "Priya",
+      "to": "Me",
+      "due": "2026-11-30",
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Priya will email me the forecast on Monday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Monday",
+       "what": "Email the forecast"
+      }
+     ]
+    },
+    "linkingMs": 1008,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c3",
+   "group": "new",
+   "note": "I promised Omar I'd call the caterer tomorrow.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Call the caterer",
+      "owner": "Me",
+      "to": "Omar",
+      "due": "2026-11-26",
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I promised Omar I'd call the caterer tomorrow",
+       "about": "new",
+       "change": "new commitment",
+       "due": "tomorrow",
+       "what": "Call the caterer"
+      }
+     ]
+    },
+    "linkingMs": 867,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c4",
+   "group": "new",
+   "note": "Dana asked me to draft the press release by Tuesday.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Draft the press release",
+      "owner": "Me",
+      "to": "Dana",
+      "due": "2026-12-01",
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana asked me to draft the press release by Tuesday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Tuesday",
+       "what": "Draft the press release"
+      }
+     ]
+    },
+    "linkingMs": 1050,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c5",
+   "group": "new",
+   "note": "Lee will send me the signed NDA.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the signed NDA",
+      "owner": "Lee",
+      "to": "Me",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Lee will send me the signed NDA",
+       "about": "new",
+       "change": "new commitment",
+       "due": "",
+       "what": "Send the signed NDA"
+      }
+     ]
+    },
+    "linkingMs": 843,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c6",
+   "group": "new",
+   "note": "I'll book flights for the offsite.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Book flights for the offsite",
+      "owner": "Me",
+      "to": null,
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll book flights for the offsite",
+       "about": "new",
+       "change": "new commitment",
+       "due": "",
+       "what": "Book flights for the offsite"
+      }
+     ]
+    },
+    "linkingMs": 825,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c7",
+   "group": "new",
+   "note": "Sam will review my draft by Thursday.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Review my draft",
+      "owner": "Sam",
+      "to": "Me",
+      "due": "2026-11-26",
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Sam will review my draft by Thursday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Thursday",
+       "what": "Review my draft"
+      }
+     ]
+    },
+    "linkingMs": 978,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "c8",
+   "group": "new",
+   "note": "I owe Priya a summary of the meeting.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Summary of the meeting",
+      "owner": "Me",
+      "to": "Priya",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I owe Priya a summary of the meeting",
+       "about": "new",
+       "change": "new commitment",
+       "due": "",
+       "what": "Summary of the meeting"
+      }
+     ]
+    },
+    "linkingMs": 1146,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "d1",
+   "group": "nothing",
+   "note": "Long day. Dana seemed tired.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 785,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "d2",
+   "group": "nothing",
+   "note": "Lunch with Lee and Omar, mostly about football.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 689,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "d3",
+   "group": "nothing",
+   "note": "Priya's team is growing; she hired two people.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 674,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "d4",
+   "group": "nothing",
+   "note": "Remember that Dana prefers email to calls.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 1415,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "e1",
+   "group": "ambiguous",
+   "note": "Dana moved it to Monday.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [
+     {
+      "options": [
+       {
+        "on": "proposalLee",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "contract",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "proposal",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "budget",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "venue",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "pricing",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       }
+      ],
+      "offersAll": true,
+      "offersNew": true
+     }
+    ],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": true,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana moved it to Monday",
+       "about": "unclear",
+       "change": "new deadline",
+       "due": "Monday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 833,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "e2",
+   "group": "ambiguous",
+   "note": "Sent Dana the document.",
+   "observed": {
+    "changes": [
+     {
+      "on": "contract",
+      "kind": "completed"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [
+     "contract: completed"
+    ],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "unsafe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Sent Dana the document",
+       "about": "J2",
+       "change": "done",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 858,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "e3",
+   "group": "ambiguous",
+   "note": "The proposal slipped to next week.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [
+     {
+      "options": [
+       {
+        "on": "proposalLee",
+        "kind": "deadline",
+        "due": "words"
+       },
+       {
+        "on": "contract",
+        "kind": "deadline",
+        "due": "words"
+       },
+       {
+        "on": "proposal",
+        "kind": "deadline",
+        "due": "words"
+       },
+       {
+        "on": "budget",
+        "kind": "deadline",
+        "due": "words"
+       },
+       {
+        "on": "venue",
+        "kind": "deadline",
+        "due": "words"
+       },
+       {
+        "on": "pricing",
+        "kind": "deadline",
+        "due": "words"
+       }
+      ],
+      "offersAll": true,
+      "offersNew": true
+     }
+    ],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": true,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "The proposal slipped to next week",
+       "about": "unclear",
+       "change": "new deadline",
+       "due": "next week",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 709,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "e4",
+   "group": "ambiguous",
+   "note": "Sent the proposal.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [
+     {
+      "options": [
+       {
+        "on": "proposalLee",
+        "kind": "completed"
+       },
+       {
+        "on": "contract",
+        "kind": "completed"
+       },
+       {
+        "on": "proposal",
+        "kind": "completed"
+       },
+       {
+        "on": "budget",
+        "kind": "completed"
+       },
+       {
+        "on": "venue",
+        "kind": "completed"
+       },
+       {
+        "on": "pricing",
+        "kind": "completed"
+       }
+      ],
+      "offersAll": true,
+      "offersNew": true
+     }
+    ],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": true,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Sent the proposal",
+       "about": "unclear",
+       "change": "done",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 762,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "f1",
+   "group": "several",
+   "note": "Dana wants both the proposal and the contract by Tuesday.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [
+     {
+      "options": [
+       {
+        "on": "proposalLee",
+        "kind": "deadline",
+        "due": "2026-12-01"
+       },
+       {
+        "on": "contract",
+        "kind": "deadline",
+        "due": "2026-12-01"
+       },
+       {
+        "on": "proposal",
+        "kind": "deadline",
+        "due": "2026-12-01"
+       },
+       {
+        "on": "budget",
+        "kind": "deadline",
+        "due": "2026-12-01"
+       },
+       {
+        "on": "venue",
+        "kind": "deadline",
+        "due": "2026-12-01"
+       },
+       {
+        "on": "pricing",
+        "kind": "deadline",
+        "due": "2026-12-01"
+       }
+      ],
+      "offersAll": true,
+      "offersNew": true
+     }
+    ],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 1,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana wants both the proposal and the contract by Tuesday",
+       "about": "unclear",
+       "change": "new deadline",
+       "due": "Tuesday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1015,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "f2",
+   "group": "several",
+   "note": "Sent Dana the contract; the proposal now goes out Monday.",
+   "observed": {
+    "changes": [
+     {
+      "on": "contract",
+      "kind": "completed"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [
+     {
+      "options": [
+       {
+        "on": "proposalLee",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "contract",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "proposal",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "budget",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "venue",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       },
+       {
+        "on": "pricing",
+        "kind": "deadline",
+        "due": "2026-11-30"
+       }
+      ],
+      "offersAll": true,
+      "offersNew": true
+     }
+    ],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 1,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Sent Dana the contract",
+       "about": "N8",
+       "change": "done",
+       "due": "",
+       "what": ""
+      },
+      {
+       "quote": "the proposal now goes out Monday",
+       "about": "unclear",
+       "change": "new deadline",
+       "due": "Monday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1050,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "f3",
+   "group": "several",
+   "note": "Lee confirmed pricing, and I'll send Dana the invoice Friday.",
+   "observed": {
+    "changes": [
+     {
+      "on": "pricing",
+      "kind": "completed"
+     }
+    ],
+    "created": [
+     {
+      "what": "Send the invoice",
+      "owner": "Me",
+      "to": "Dana",
+      "due": "2026-11-27",
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Lee confirmed pricing",
+       "about": "G3",
+       "change": "done",
+       "due": "",
+       "what": ""
+      },
+      {
+       "quote": "I'll send Dana the invoice Friday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Friday",
+       "what": "Send Dana the invoice"
+      }
+     ]
+    },
+    "linkingMs": 835,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "f4",
+   "group": "several",
+   "note": "Omar booked the venue, so I'll send Priya the agenda by Thursday.",
+   "observed": {
+    "changes": [
+     {
+      "on": "venue",
+      "kind": "completed"
+     }
+    ],
+    "created": [
+     {
+      "what": "Send the agenda",
+      "owner": "Me",
+      "to": "Priya",
+      "due": "2026-11-26",
+      "how": "card"
+     }
+    ],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Omar booked the venue",
+       "about": "G9",
+       "change": "done",
+       "due": "",
+       "what": ""
+      },
+      {
+       "quote": "I'll send Priya the agenda by Thursday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Thursday",
+       "what": "Send Priya the agenda"
+      }
+     ]
+    },
+    "linkingMs": 884,
+    "source": "in_cloud",
+    "deps": null
+   }
+  },
+  {
+   "id": "g1",
+   "group": "dependency",
+   "note": "I can only send Dana the contract once Lee confirms pricing.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "contract",
+      "on": "pricing"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 771,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 765,
+     "parsed": {
+      "items": [
+       {
+        "quote": "once Lee confirms pricing",
+        "waiting": "C1",
+        "waitsFor": "V4",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "g2",
+   "group": "dependency",
+   "note": "Waiting on Lee for pricing before the proposal goes to Dana.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "proposal",
+      "on": "pricing"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 872,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 975,
+     "parsed": {
+      "items": [
+       {
+        "quote": "Waiting on Lee for pricing before the proposal goes to Dana",
+        "waiting": "T5",
+        "waitsFor": "M7",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "g3",
+   "group": "dependency",
+   "note": "I'll send Sam the slides Friday, after Priya approves the budget.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the slides",
+      "owner": "Me",
+      "to": "Sam",
+      "due": "2026-11-27",
+      "how": "card"
+     },
+     {
+      "what": "Approve the budget",
+      "owner": "Priya",
+      "to": "Me",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "new:Send the slides",
+      "on": "new:Approve the budget"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Sam the slides Friday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Friday",
+       "what": "Send the slides"
+      }
+     ]
+    },
+    "linkingMs": 968,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 712,
+     "parsed": {
+      "items": [
+       {
+        "quote": "after Priya approves the budget",
+        "waiting": "N1",
+        "waitsFor": "new",
+        "newWhat": "Approve the budget",
+        "newOwner": "Priya"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "g4",
+   "group": "dependency",
+   "note": "The venue can't be booked until Dana confirms the date.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Confirm the date",
+      "owner": "Dana",
+      "to": "Omar",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "venue",
+      "on": "new:Confirm the date"
+     }
+    ],
+    "questions": [],
+    "manual": [
+     "It was read as \"cancelled\", but the words say it waits for something. Link it by hand if it is either."
+    ],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "The venue can't be booked until Dana confirms the date",
+       "about": "R4",
+       "change": "cancelled",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 886,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 949,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Dana confirms the date",
+        "waiting": "R4",
+        "waitsFor": "new",
+        "newWhat": "Confirm the date",
+        "newOwner": "Dana"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "g5",
+   "group": "dependency",
+   "note": "Once Omar books the venue, I'll send out the invitations by Monday.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send out the invitations",
+      "owner": "Me",
+      "to": null,
+      "due": "2026-11-30",
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "new:Send out the invitations",
+      "on": "venue"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send out the invitations by Monday",
+       "about": "new",
+       "change": "new commitment",
+       "due": "Monday",
+       "what": "Send out the invitations"
+      }
+     ]
+    },
+    "linkingMs": 1046,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 738,
+     "parsed": {
+      "items": [
+       {
+        "quote": "Once Omar books the venue",
+        "waiting": "N1",
+        "waitsFor": "A8",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "g6",
+   "group": "dependency",
+   "note": "I'll send Lee the proposal after Dana signs off on it.",
+   "observed": {
+    "changes": [
+     {
+      "on": "proposalLee",
+      "kind": "deadline",
+      "due": "words",
+      "dueText": "after Dana signs off on it"
+     }
+    ],
+    "created": [
+     {
+      "what": "Sign off on the proposal",
+      "owner": "Dana",
+      "to": "Me",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "proposalLee",
+      "on": "new:Sign off on the proposal"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [
+     "proposalLee: deadline words"
+    ],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "unsafe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Lee the proposal after Dana signs off on it",
+       "about": "C5",
+       "change": "new deadline",
+       "due": "after Dana signs off on it",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 861,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 896,
+     "parsed": {
+      "items": [
+       {
+        "quote": "after Dana signs off on it",
+        "waiting": "C5",
+        "waitsFor": "new",
+        "newWhat": "Sign off on the proposal",
+        "newOwner": "Dana"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  }
+ ]
+}
