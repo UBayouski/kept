@@ -43,7 +43,12 @@ export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, g
       // is on the listed one.
       for (let i = pending.length - 1; i >= 0; i -= 1) {
         const item = pending[i];
-        const copy = item.type === 'new' && added.copies?.includes(item.ref);
+        const low = (x) => String(x ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+        // Also a new card in the words of a listed commitment a dependency is
+        // on, for the same person: "Send the proposal" beside "the proposal
+        // waits for pricing".
+        const copy = item.type === 'new' && (added.copies?.includes(item.ref)
+          || (added.involvedWhat ?? []).some((c) => low(c.what) === low(item.what) && (!low(item.toName) || low(item.toName) === low(c.to))));
         // "I'll send Dana's contract once ..." with a new "Send the contract"
         // asked about as new or the same: the dependency is on the listed one.
         const same = item.type === 'question' && item.options.some((o) => o.type === 'same' && added.involved?.includes(o.commitmentId));

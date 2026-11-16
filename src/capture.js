@@ -466,8 +466,12 @@ export async function addDependencies(q, session, { answer, list, note, people: 
   const recorded = direct.length ? await record(q, session, direct) : null;
   // The listed commitments the dependencies kept are between: a question
   // "new, or the same as this one?" about one of them is answered by it.
-  const involved = read.dependencies.flatMap((d) => [d.waiting, d.waitsFor]).map((label) => byLabel.get(label)?.commitmentId).filter(Boolean);
-  return { ok: read.ok, recorded, pending, problems, involved, copies: (read.copies ?? []).map((label) => byLabel.get(label)?.ref).filter(Boolean) };
+  // With the listed ones of the same wording: a copy without a person may be
+  // asked about as the other "Send the proposal".
+  const usedWhat = new Set(read.dependencies.flatMap((d) => [d.waiting, d.waitsFor]).map((label) => byLabel.get(label)).filter((c) => c && !c.isNew).map((c) => norm(c.what)));
+  const involved = list.filter((c) => !c.isNew && c.commitmentId && usedWhat.has(norm(c.what))).map((c) => c.commitmentId);
+  const involvedWhat = read.dependencies.flatMap((d) => [d.waiting, d.waitsFor]).map((label) => byLabel.get(label)).filter((c) => c && !c.isNew).map((c) => ({ what: c.what, to: c.to }));
+  return { ok: read.ok, recorded, pending, problems, involved, involvedWhat, copies: (read.copies ?? []).map((label) => byLabel.get(label)?.ref).filter(Boolean) };
 }
 
 // The user confirms a dependency that involves a commitment new in this note.

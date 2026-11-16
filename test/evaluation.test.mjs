@@ -152,3 +152,13 @@ test('"after lunch" is not a dependency on something new the words do not mentio
   assert.deepEqual([r.observed.deps, r.observed.created], [[], []]);
   assert.equal(r.score.verdict, 'pass');
 });
+
+test('a new card in the words of a listed commitment a dependency is on goes', async () => {
+  const testCase = e.round18.find((x) => x.id === 'r18-10');
+  const model = fake({
+    linking: { items: [{ quote: "I'll send Dana the proposal", about: 'new', change: 'new commitment', due: '', what: 'Send the proposal' }] },
+    deps: (label) => ({ items: [{ quote: 'after Lee confirms pricing', waiting: label('Send the proposal', 'Dana'), waitsFor: label('Confirm pricing', 'me'), newWhat: '', newOwner: '' }] }),
+  });
+  const r = await run(testCase, model);
+  assert.deepEqual([r.observed.deps, r.observed.created, r.observed.questions], [[{ waiting: 'proposal', on: 'pricing' }], [], []]);
+});
