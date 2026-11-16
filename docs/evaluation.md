@@ -687,6 +687,23 @@ the first round with no unsafe answer in any run.
   for a listed commitment's wording when a dependency is on it.
 - "About" notes ("I'll call Omar about the venue") still become questions.
 
+## Device model, round 19 (clean, three runs)
+
+Written and committed (f68b35f) after 4f0ea51, before any model saw it;
+everyday notes. Device, 2026-11-16: **8/4/0, 8/4/0, 9/3/0**, no dependency
+missed or wrong. With round 18, two rounds in a row with no unsafe answer.
+
+- Passed in all three: the deadlines ("fine with the contract on Thursday",
+  "Priya's budget review moved to Friday"), done, "no longer needs" as
+  cancelled, the dependency on the venue, the ambiguous "Dana wants it a day
+  later, on Saturday."
+- **Left over (safe):** small talk read as a new commitment once ("Had lunch
+  with Sam"); a card's "to" filled in as the writer.
+
+**The device route over the day, clean rounds only** (pass / unsafe of 12,
+per run): round 5 6/2, 3/2, 2/0 (before the word rules); round 11 6/0 x3;
+round 14 9/1, 9/0, 8/0; round 18 6/0, 7/0, 9/0; round 19 8/0, 8/0, 9/0.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
