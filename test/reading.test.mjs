@@ -563,3 +563,13 @@ test('a commitment named only as what something is about is asked about, not cha
   const review = "I'll review the budget tomorrow, and talk to Priya about it.";
   assert.equal(readNote({ updates: [up('B1', 'new deadline', 'tomorrow', review)], newCommitments: [] }, { shape: 'v1', candidates: list, note: review }).proposals.length, 1);
 });
+
+test('a vague new commitment for "it" becomes the question among that person\'s commitments', () => {
+  const text = 'Dana asked for it on Tuesday.';
+  const r = readNote({ updates: [], newCommitments: [{ quote: text, what: 'Send something', owner: 'me', to: 'Dana', due: 'Tuesday' }] }, { shape: 'v1', candidates, note: text });
+  assert.deepEqual(r.created, []);
+  assert.deepEqual(r.questions[0].options.map((o) => [o.label ?? o.type, o.change, o.due]), [['K7', 'new deadline', 'Tuesday'], ['R2', 'new deadline', 'Tuesday'], ['new', undefined, 'Tuesday']]);
+  // A new commitment that says what it is stays.
+  const named = 'Dana asked for the invoice on Tuesday.';
+  assert.equal(readNote({ updates: [], newCommitments: [{ quote: named, what: 'Send the invoice', owner: 'me', to: 'Dana', due: 'Tuesday' }] }, { shape: 'v1', candidates, note: named }).created.length, 1);
+});

@@ -364,6 +364,23 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
   // the venue, and the new one from the same sentence is Sam's. That is the
   // answer; the change is dropped.
   const known = PEOPLE(candidates, people);
+  // "Dana asked for it on Tuesday" read as a new "Send something" for Dana:
+  // "it" is one of Dana's listed commitments, and which is not said. A vague
+  // new commitment from words that say "it", naming someone with listed
+  // commitments, becomes the question among those (or something new), with
+  // the change the words give: a date is a new deadline, a past tense done.
+  newCommitments = newCommitments.filter((n) => {
+    const sentence = sentenceOf(note, n.quote);
+    if (!VAGUE.test(n.what) || !/\b(it|them)\b/i.test(sentence)) return true;
+    const said = ` ${norm(sentence)} `;
+    const theirs = candidates.filter((c) => [c.to, c.owner].map(norm).some((p) => p && p !== 'me' && said.includes(` ${p} `)));
+    if (!theirs.length) return true;
+    const change = norm(n.due) ? 'new deadline' : HAPPENED.test(sentence) ? 'done' : null;
+    if (!change) return true;
+    updates = [...updates.filter((u) => sentenceOf(note, u.quote) !== sentence),
+      { quote: n.quote, commitment: 'unclear', change, due: change === 'new deadline' ? n.due : '', among: [...theirs.map((c) => c.label), 'new'] }];
+    return false;
+  });
   updates = updates.filter((u) => {
     const c = candidates.find((x) => x.label === u.commitment);
     if (!c) return true;
@@ -548,6 +565,8 @@ function onlyAsTopic(text, what) {
     return j >= 0 && (words[j] === 'about' || words[j] === 'regarding');
   });
 }
+// A new commitment that says nothing about what: "Send something", "Send item".
+const VAGUE = /^\s*\w+\s+(the\s+|an?\s+)?(something|anything|item|items|it|thing|things|stuff|one)\b|^\s*\w+\s*$/i;
 // The people the listed commitments are about, other than the writer.
 const PEOPLE = (candidates, names = []) => [...new Set([...candidates.flatMap((c) => [c.to, c.owner]), ...names, ...names.map((n) => String(n).split(" ")[0])].map(norm).filter((p) => p && p !== 'me'))];
 // An "-ed" word that describes, after "looks", "seems" and the like: "the
