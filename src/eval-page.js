@@ -94,7 +94,7 @@ $('run').onclick = async () => {
           shape: DEVICE ? 'v1' : 'v2', extractedBy: DEVICE ? 'device' : `cloud:${ai.CLOUD_MODEL}` });
         row.observed = await e.observe(q, result, ws);
         row.score = e.score(row.observed, testCase.expect);
-        row.raw = { linking: result.linking.parsed, linkingMs: result.linking.ms, source: result.linking.source, deps: result.deps };
+        row.raw = { linking: result.linking.parsed, linkingMs: result.linking.ms, source: result.linking.source, deps: result.deps, check: result.check };
       } catch (err) {
         row.error = err.message;
       }

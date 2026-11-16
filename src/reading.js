@@ -348,7 +348,7 @@ export function applyRules(parsed, list) {
 //   alternatives  for each proposal, the other listed commitments. They are
 //              always given: a clean answer does not show that the link is
 //              unambiguous, and the review screen has to keep them one click away.
-export function readNote(answer, { shape, candidates, note, people = [] }) {
+export function readNote(answer, { shape, candidates, note, people = [], happened = null }) {
   const checked = validateReading(answer, { shape, candidates, note });
   if (!checked.ok) return { ok: false, proposals: [], created: [], questions: [], manual: checked.manual, problems: checked.problems, notes: [] };
   // The device model (v1) nearly always adds a change to some listed
@@ -448,6 +448,20 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
       manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but the words say it waits for something. Link it by hand if it is either.` });
       continue;
     }
+    // The second look (happened.js), when it was made. It never proposes by
+    // itself: "neither" holds a reading back; a reading the words do not
+    // support but the second look does becomes a question.
+    const verdict = happened?.get(`${read.commitment}|${norm(read.quote)}`);
+    if ((u.change === 'done' || u.change === 'cancelled') && verdict === 'neither') {
+      manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but asked again, the model says the words only mention it. Link it by hand if it is ${u.change}.` });
+      continue;
+    }
+    const wordsSay = u.change === 'done' ? HAPPENED.test(wholeSentence(note, u.quote).replace(DESCRIBED, '')) : u.change === 'cancelled' ? STOPPED.test(wholeSentence(note, u.quote)) : true;
+    const second = verdict === 'happened' ? 'done' : verdict === 'off' ? 'cancelled' : null;
+    if (second && u.commitment !== 'unclear' && (!wordsSay || second !== u.change)) {
+      questions.push({ quote: u.quote, options: optionsOf({ ...u, change: second }, [u.commitment, 'new']), from: 'app rule' });
+      continue;
+    }
     // "Omar thinks the venue is too small" names the venue but says nothing
     // happened; the device model read it as done, and in another run as
     // cancelled. "Done" needs words that say something happened ("sent",
@@ -473,7 +487,10 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
     // is about, not what is done. A commitment named only after "about" or
     // "regarding" becomes a question: that one, or new.
     if (u.commitment !== 'unclear' && onlyAsTopic(sentenceOf(note, u.quote), byLabel.get(u.commitment).what)) {
-      questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
+      // The words are most likely the new commitment itself: "something new"
+      // comes filled in from them, so it is one click.
+      const own = u.newCommitments?.length ? u : { ...u, newCommitments: [fromWords(sentenceOf(note, u.quote), u.due, PEOPLE(candidates, people))].filter(Boolean) };
+      questions.push({ quote: u.quote, options: optionsOf(own, [u.commitment, 'new']), from: 'app rule' });
       continue;
     }
     // Words that name someone, but none of the people of the commitment, are
@@ -573,6 +590,23 @@ function isCondition(note, quote) {
 // Not a past tense, or one of feeling, speaking or thinking, which says nothing
 // was done: "Dana liked the venue photos", "Priya asked how the review is going".
 const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|(?:is|was|are|were|all|it.s)\s+over|(?:is|was|are|were|went|gone|it.s)\s+out|sorted|handled|delivered|received|got)\b/i;
+// A new commitment read from the words themselves: "I'll call Omar about the
+// venue on Friday" is "Call Omar about the venue", mine, for Omar, due Friday.
+// Only for a sentence that says who will do it; otherwise nothing.
+export function fromWords(sentence, due, known = []) {
+  const text = String(sentence ?? '').trim().replace(/[.!?;]+$/, '');
+  const m = /^(?:(I)'ll|(I) will|([A-Z][\p{L}]+) will)\s+(.+)$/u.exec(text);
+  if (!m) return null;
+  const owner = m[1] || m[2] ? 'me' : m[3];
+  let what = m[4].replace(/\s+(on|by|before|until|next)\s+\w+$/i, '').replace(/\s+(today|tomorrow|tonight|this week|next week)$/i, '').trim();
+  if (!what) return null;
+  what = what.charAt(0).toUpperCase() + what.slice(1);
+  const said = ` ${norm(what)} `;
+  const named = known.filter((p) => p !== norm(owner) && said.includes(` ${p} `));
+  const to = owner === 'me' ? (named[0] ? named[0].charAt(0).toUpperCase() + named[0].slice(1) : '') : (/\bme\b/i.test(what) ? 'me' : '');
+  return { quote: text, what, owner, to, due: due ?? '' };
+}
+
 // True when every word of the commitment the text names comes right after
 // "about" or "regarding" (with "the", "my" and the like between).
 function onlyAsTopic(text, what) {

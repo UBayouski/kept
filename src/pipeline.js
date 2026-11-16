@@ -8,6 +8,8 @@
 import * as capture from './capture.js';
 import { findSimilarNotes } from './model.js';
 import * as dependencies from './dependencies.js';
+import * as happenedCheck from './happened.js';
+import { validateReading } from './reading.js';
 import { variants } from './linking-cases.js';
 
 // Returns
@@ -26,9 +28,27 @@ export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, g
   const variant = variants[shape];
   // Nothing is stored until the model has answered.
   const linking = await generate(variant.buildPrompt(text, ready.candidates), variant.buildSchema(ready.candidates));
+  // A second look at each "done" or "cancelled" reading, when there is one.
+  let happened = null;
+  let check = null;
+  const pre = validateReading(linking.parsed, { shape, candidates: ready.candidates, note: text });
+  if (pre.ok) {
+    const byLabel = new Map(ready.candidates.map((c) => [c.label, c]));
+    const items = pre.updates.filter((u) => (u.change === 'done' || u.change === 'cancelled') && byLabel.has(u.commitment))
+      .map((u, i) => ({ id: `S${i + 1}`, what: byLabel.get(u.commitment).what, quote: u.quote, key: happenedCheck.keyOf(u.commitment, u.quote) }));
+    if (items.length) {
+      try {
+        const answer = await generate(happenedCheck.buildPrompt(text, items), happenedCheck.buildSchema(items));
+        happened = happenedCheck.readAnswer(answer.parsed, items);
+        check = { ms: answer.ms, parsed: answer.parsed };
+      } catch (err) {
+        check = { error: err.message };
+      }
+    }
+  }
   const out = await capture.capture(q, {
     text, kind, occurredAt, baseDate, answer: linking.parsed, shape,
-    candidates: ready.candidates, people: ready.people, extractedBy, ...(now ? { now } : {}),
+    candidates: ready.candidates, people: ready.people, extractedBy, ...(now ? { now } : {}), happened,
   });
   const pending = [...out.pending];
   let proposed = out.recorded.added.length;
@@ -63,5 +83,5 @@ export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, g
     }
   }
   await capture.savePending(q, out.session, pending);
-  return { out, pending, proposed, linking, deps, leftOut: ready.leftOut, offered: ready.candidates.length, similarBefore };
+  return { out, pending, proposed, linking, deps, check, leftOut: ready.leftOut, offered: ready.candidates.length, similarBefore };
 }

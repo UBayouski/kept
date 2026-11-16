@@ -261,8 +261,8 @@ async function record(q, session, more) {
 //               manual    an entry that failed validation, to link by hand
 //   problems, notes  what validation refused and which app rules fired, for the log
 export async function capture(q, { text, kind = 'note', occurredAt, baseDate, answer, shape, candidates, people: persons,
-  extractedBy = 'model', now }) {
-  const reading = readNote(answer, { shape, candidates, note: text, people: (persons ?? []).filter((p) => !p.isMe).map((p) => p.name) });
+  extractedBy = 'model', now, happened = null }) {
+  const reading = readNote(answer, { shape, candidates, note: text, people: (persons ?? []).filter((p) => !p.isMe).map((p) => p.name), happened });
   const noteId = await m.createNote(q, {
     kind, text, occurredAt, involves: peopleNamed(text, persons), extractedBy, ...(now ? { now } : {}),
   });

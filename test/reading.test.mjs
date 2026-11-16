@@ -612,3 +612,16 @@ test('a listed commitment\'s wording from words that do not mention it is not ne
   const r = readNote({ updates: [], newCommitments: [{ quote: text, what: 'Send the proposal', owner: 'me', to: 'Dana', due: '' }, { quote: text, what: 'Book the venue', owner: 'Omar', to: 'me', due: '' }] }, { shape: 'v1', candidates, note: text });
   assert.deepEqual([r.created, r.questions], [[], []]);
 });
+
+test('an "about" question comes with "something new" filled in from the words', async () => {
+  const { fromWords } = await import('../src/reading.js');
+  assert.deepEqual(fromWords("I'll call Omar about the venue on Friday.", 'Friday', ['omar', 'dana']),
+    { quote: "I'll call Omar about the venue on Friday", what: 'Call Omar about the venue', owner: 'me', to: 'Omar', due: 'Friday' });
+  assert.deepEqual(fromWords('Omar will ring me about the venue tomorrow.', 'tomorrow', ['omar']),
+    { quote: 'Omar will ring me about the venue tomorrow', what: 'Ring me about the venue', owner: 'Omar', to: 'me', due: 'tomorrow' });
+  assert.equal(fromWords('Had a chat with Omar about the venue.', '', ['omar']), null);
+  const text = "I'll call Omar about the venue on Friday.";
+  const r = readNote({ updates: [up('Q4', 'new deadline', 'Friday', text)], newCommitments: [] }, { shape: 'v1', candidates, note: text, people: ['Omar'] });
+  const fresh = r.questions[0].options.find((o) => o.type === 'new');
+  assert.deepEqual([fresh.what, fresh.owner, fresh.to, fresh.due, fresh.incomplete], ['Call Omar about the venue', 'me', 'Omar', 'Friday', undefined]);
+});
