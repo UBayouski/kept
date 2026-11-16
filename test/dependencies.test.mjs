@@ -308,3 +308,19 @@ test('device copies: a dependency on a listed commitment read again as new is on
     { list, note: 'The proposal for Lee waits until Omar has booked the venue.' });
   assert.deepEqual(nobody.dependencies, []);
 });
+
+test('"Priya\'s budget review has to wait": a possessive is not who does what waits', async () => {
+  const { seedWorkspace } = await import('../src/evaluation.js');
+  const q = open();
+  await seedWorkspace(q);
+  const text = "Priya's budget review has to wait until Omar books the venue.";
+  const ready = await c.prepare(q, text);
+  const out = await c.capture(q, { text, answer: { items: [] }, shape: 'v2', ...ready, ...WHEN });
+  const list = c.dependencyList(ready.candidates, out.pending);
+  const budget = list.find((x) => x.what === 'Review the budget');
+  const venue = list.find((x) => x.what === 'Book the venue');
+  assert.ok(budget && venue);
+  const deps = await c.addDependencies(q, out.session, { answer: { items: [dep('until Omar books the venue', budget.label, venue.label)] }, list, note: text, people: ready.people });
+  assert.deepEqual(deps.problems.map((p) => p.reason), []);
+  assert.equal(deps.recorded.added.length, 1);
+});

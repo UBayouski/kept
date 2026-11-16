@@ -262,7 +262,7 @@ async function record(q, session, more) {
 //   problems, notes  what validation refused and which app rules fired, for the log
 export async function capture(q, { text, kind = 'note', occurredAt, baseDate, answer, shape, candidates, people: persons,
   extractedBy = 'model', now }) {
-  const reading = readNote(answer, { shape, candidates, note: text });
+  const reading = readNote(answer, { shape, candidates, note: text, people: (persons ?? []).filter((p) => !p.isMe).map((p) => p.name) });
   const noteId = await m.createNote(q, {
     kind, text, occurredAt, involves: peopleNamed(text, persons), extractedBy, ...(now ? { now } : {}),
   });
@@ -383,6 +383,8 @@ export async function addDependencies(q, session, { answer, list, note, people: 
   // named first. "Dana can't sign the contract until ..." is Dana's, so it is
   // not my own "Send the contract". Only for a note with one dependency.
   const subject = (() => {
+    // "Priya's budget review has to wait": Priya is whose it is for, not who does it.
+    if (/^\s*[\p{L}]+['’]s\b/u.test(beforeCue(note))) return null;
     const first = norm(beforeCue(note)).split(' ')[0] ?? '';
     if (first === 'i' || first === 'we') return meId;
     return persons.find((p) => !p.isMe && norm(p.name).split(' ')[0] === first)?.id ?? null;

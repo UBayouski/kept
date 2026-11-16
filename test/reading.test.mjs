@@ -533,3 +533,11 @@ test('round 8 repeats: another person named asks; a twin of an updated one is dr
   assert.deepEqual([c.proposals, c.manual.length], [[], 1]);
   assert.equal(readNote({ updates: [up('R2', 'cancelled', '', dropped)], newCommitments: [] }, { shape: 'v1', candidates, note: dropped }).proposals.length, 1);
 });
+
+test('a person the store knows, on no listed commitment, still counts as someone else', () => {
+  const text = 'Sam will send me the contract template on Friday.';
+  const answer = { updates: [up('R2', 'new deadline', 'Friday', text)], newCommitments: [] };
+  assert.equal(readNote(answer, { shape: 'v1', candidates, note: text }).proposals.length, 1);
+  const r = readNote(answer, { shape: 'v1', candidates, note: text, people: ['Sam Lee', 'Dana'] });
+  assert.deepEqual([r.proposals, r.questions[0].options.map((o) => o.label ?? o.type)], [[], ['R2', 'new']]);
+});

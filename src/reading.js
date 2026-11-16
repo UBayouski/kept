@@ -348,7 +348,7 @@ export function applyRules(parsed, list) {
 //   alternatives  for each proposal, the other listed commitments. They are
 //              always given: a clean answer does not show that the link is
 //              unambiguous, and the review screen has to keep them one click away.
-export function readNote(answer, { shape, candidates, note }) {
+export function readNote(answer, { shape, candidates, note, people = [] }) {
   const checked = validateReading(answer, { shape, candidates, note });
   if (!checked.ok) return { ok: false, proposals: [], created: [], questions: [], manual: checked.manual, problems: checked.problems, notes: [] };
   // The device model (v1) nearly always adds a change to some listed
@@ -434,7 +434,7 @@ export function readNote(answer, { shape, candidates, note }) {
       const chosen = byLabel.get(u.commitment);
       const said = ` ${norm(clauseWithReferent(note, u.quote))} `;
       const ownPeople = [chosen.to, chosen.owner].map(norm);
-      const named = PEOPLE(candidates).filter((p) => said.includes(` ${p} `));
+      const named = PEOPLE(candidates, people).filter((p) => said.includes(` ${p} `));
       if (named.length && !named.some((p) => ownPeople.includes(p))) {
         questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
         continue;
@@ -514,7 +514,7 @@ function isCondition(note, quote) {
 // was done: "Dana liked the venue photos", "Priya asked how the review is going".
 const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
 // The people the listed commitments are about, other than the writer.
-const PEOPLE = (candidates) => [...new Set(candidates.flatMap((c) => [c.to, c.owner]).map(norm).filter((p) => p && p !== 'me'))];
+const PEOPLE = (candidates, names = []) => [...new Set([...candidates.flatMap((c) => [c.to, c.owner]), ...names, ...names.map((n) => String(n).split(" ")[0])].map(norm).filter((p) => p && p !== 'me'))];
 // An "-ed" word that describes, after "looks", "seems" and the like: "the
 // template looks dated" says nothing was done.
 const DESCRIBED = /\b(looks?|looked|seems?|seemed|sounds?|sounded|feels?|felt|appears?|appeared)\s+(\w+\s+)?\w+ed\b/gi;
