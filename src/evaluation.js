@@ -217,7 +217,27 @@ export const round5 = [
     expect: { created: [n('Send the guest list', 'Me', 'Omar'), n('Sign the contract', 'Dana', null)], deps: [{ waiting: 'new:guest list', on: 'new:sign contract' }] } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5 };
+// Round 6: every kind of note, weighted to done, cancelled and nothing to do,
+// written on 2026-11-16 after the "done"/"cancelled" word rules (d4b1523,
+// c23dcf8), before any model saw them. Run three times: one run of the device
+// model varies too much to measure a small change.
+export const round6 = [
+  { id: 'r6-1', group: 'status', note: 'Priya has my budget comments now; I emailed them an hour ago.', expect: { changes: [c('budget', 'completed')] } },
+  { id: 'r6-2', group: 'status', note: 'Omar sorted out the venue yesterday.', expect: { changes: [c('venue', 'completed')] } },
+  { id: 'r6-3', group: 'status', note: 'The contract for Dana is off; she went with another supplier.', expect: { changes: [c('contract', 'cancelled')] } },
+  { id: 'r6-4', group: 'status', note: 'Lee says pricing is not needed any more.', expect: { changes: [c('pricing', 'cancelled')] } },
+  { id: 'r6-5', group: 'nothing', note: 'Dana liked the venue photos.', expect: {} },
+  { id: 'r6-6', group: 'nothing', note: "Lee is worried the pricing will be high.", expect: {} },
+  { id: 'r6-7', group: 'nothing', note: 'Priya asked how the budget review is going.', expect: {} },
+  { id: 'r6-8', group: 'new', note: "I'll send Lee the case study by Monday.", expect: { created: [n('Send the case study', 'Me', 'Lee', '2026-11-30')] } },
+  { id: 'r6-9', group: 'new', note: 'Sam promised me the logo files.', expect: { created: [n('Send the logo files', 'Sam', 'Me')] } },
+  { id: 'r6-10', group: 'deadline', note: 'Omar now needs to book the venue by Friday.', expect: { changes: [c('venue', 'deadline', '2026-11-27')] } },
+  { id: 'r6-11', group: 'ambiguous', note: 'Sent Dana the file this morning.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'completed' } } },
+  { id: 'r6-12', group: 'several', note: 'Omar booked the venue, and Priya moved the budget review to Monday.',
+    expect: { changes: [c('venue', 'completed'), c('budget', 'deadline', '2026-11-30')] } },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6 };
 
 // --- What came out of one note ---
 
