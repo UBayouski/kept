@@ -104,7 +104,7 @@ export function validateReading(answer, { shape, candidates, note }) {
     if (e.target !== 'new' && e.target !== 'unclear' && !labels.has(e.target)) return `"${e.target}" is not a commitment the model was given`;
     if (e.target === 'new') {
       if (e.change !== 'new commitment') return `something new cannot be "${e.change}"`;
-      if (!norm(e.what)) return 'a new commitment does not say what it is';
+      if (!norm(e.what) || /^(none|nothing|n\/?a|null|unknown|-)$/i.test(String(e.what).trim())) return 'a new commitment does not say what it is';
     } else if (!CHANGES.includes(e.change)) {
       return `an existing commitment cannot be "${e.change}"`;
     }

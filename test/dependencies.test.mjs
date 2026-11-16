@@ -344,3 +344,11 @@ test('a copy whose dependency moved to the listed one is reported, so its card c
   const r = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] }, { list, note: "I'll send Dana's contract once Lee confirms pricing." });
   assert.deepEqual([r.dependencies.map((x) => [x.waiting, x.waitsFor]), r.copies], [[['C1', 'P1']], ['N1']]);
 });
+
+test('"can wait until Monday" is a deadline, not a dependency on a new "Wait until Monday"', () => {
+  const list = [{ label: 'L7', what: 'Send the proposal', owner: 'me', to: 'Lee' }];
+  const r = d.readDependencies({ items: [dep("Lee's proposal can wait until Monday", 'L7', 'new', 'wait until Monday', 'me')] }, { list, note: "Lee's proposal can wait until Monday." });
+  assert.deepEqual([r.dependencies, r.problems.map((p) => p.reason)], [[], ['what it waits for is only a time, not something to be done']]);
+  const real = d.readDependencies({ items: [dep('after Priya approves the budget', 'L7', 'new', 'Approve the budget', 'Priya')] }, { list, note: "I'll send Lee the proposal after Priya approves the budget." });
+  assert.equal(real.dependencies.length, 1);
+});

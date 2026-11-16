@@ -591,3 +591,9 @@ test('round 15: "went over" is not done; the quoted words pick the proposal for 
     { shape: 'v1', candidates: list, note: two });
   assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['R2', 'done'], ['L5', 'new deadline']]);
 });
+
+test('a new commitment whose "what" is "None" says nothing', () => {
+  const text = "Lee's proposal can wait until Monday.";
+  const r = readNote({ updates: [], newCommitments: [{ quote: text, what: 'None', owner: 'me', to: 'Lee', due: '' }] }, { shape: 'v1', candidates, note: text });
+  assert.deepEqual(r.created, []);
+});

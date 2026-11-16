@@ -87,6 +87,15 @@ export function buildSchema(list) {
 
 const FIELDS = ['quote', 'waiting', 'waitsFor', 'newWhat', 'newOwner'];
 
+// Words of time and waiting: "wait until Monday", "lunch", "next week".
+const TIME = new Set(['wait', 'waits', 'waiting', 'until', 'till', 'after', 'before', 'by', 'on', 'at', 'in', 'the', 'a', 'next', 'this', 'end', 'of',
+  'today', 'tonight', 'tomorrow', 'morning', 'afternoon', 'evening', 'noon', 'lunch', 'week', 'weekend', 'month', 'day', 'days',
+  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']);
+const onlyTime = (what) => {
+  const words = norm(what).split(' ').filter(Boolean);
+  return words.length > 0 && (words[0] === 'wait' || words.every((w) => TIME.has(w) || /^\d+(st|nd|rd|th)?$/.test(w)));
+};
+
 // The same words in any order, small words aside: "budget review" and
 // "Review the budget".
 const SMALL = new Set(['the', 'a', 'an', 'to', 'for', 'of', 'my', 'his', 'her', 'their', 'our']);
@@ -165,6 +174,9 @@ export function readDependencies(answer, { list, note }) {
     const newWhat = entry.newWhat.trim();
     if (waitsFor === 'new') {
       if (!norm(newWhat)) { refuse('a new commitment to wait for does not say what it is'); continue; }
+      // "Lee's proposal can wait until Monday" read as waiting for a new "Wait
+      // until Monday": a date is a deadline, not something to wait for.
+      if (onlyTime(newWhat)) { refuse('what it waits for is only a time, not something to be done'); continue; }
       if (!norm(entry.newOwner)) { refuse('a new commitment to wait for does not say who does it'); continue; }
       // Something the note also reads as new, said with the same words, is that one.
       const same = list.find((c) => c.isNew && norm(c.what) === norm(newWhat));
