@@ -323,8 +323,27 @@ any model saw it; weighted to done, cancelled and nothing to do. Device,
   hand, not proposed as cancelled. The ambiguous "Sent Dana the file" was asked
   properly once in four runs.
 
+## Device model: an empty deadline beside a new commitment
+
+**The rule (15ab92c, both routes):** the device model often adds a "new
+deadline" with no date beside a right new commitment ("I promised Priya the
+slides."). That entry was refused and sent to "link by hand", so the note could
+not pass. When the same reading has a valid new commitment, the empty deadline
+is now dropped and only recorded in the log.
+
+**Runs after it** (device, 2026-11-16; not clean, the notes it came from):
+
+- Round 6: 4 pass, 8 safe, 0 unsafe. "Sam promised me the logo files." passes.
+- Round 5: 3 pass, 9 safe, 0 unsafe. "I promised Priya the slides." passes.
+- An empty deadline with no new commitment beside it ("Dana liked the venue
+  photos.") is still refused and linked by hand, as before.
+- Most of what still does not pass is a needless question beside the right
+  answer (6 in round 5 this run), and it varies from run to run.
+
 ## Open
 
+- Needless questions on the device route: the model adds an "unclear" or a
+  change on an unrelated commitment beside the right answer.
 - The word rules are a list of words: a "done" said in words not on it is
   held back (safe), and a feeling verb not on it can still pass as done.
 
