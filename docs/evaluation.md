@@ -294,10 +294,39 @@ thinks the venue is too small." read as done, and in another run as cancelled.
   commitments the rule does not touch. The device model varies more than any
   rule changes; one run of a set is not a measurement of a small change.
 
+## Device model, round 6 (clean, three runs)
+
+Written and committed (fcb4551) after the "done"/"cancelled" rules, before
+any model saw it; weighted to done, cancelled and nothing to do. Device,
+2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Error |
+|---|---|---|---|---|
+| 1 | 5 | 5 | 2 | 0 |
+| 2 | 5 | 4 | 2 | 1 (45 s timeout) |
+| 3 | 4 | 8 | 0 | 0 |
+| After the fix below (not clean) | 5 | 7 | 0 | 0 |
+
+- **Unsafe, the same two notes each time:** "Dana liked the venue photos."
+  and "Priya asked how the budget review is going." read as done, in 2 of 3
+  runs. The "done" rule took any word ending in "ed" for something that
+  happened; "liked" and "asked" passed it.
+- **Fix (363d98d):** verbs of feeling, speaking and thinking ("liked",
+  "asked", "mentioned", "worried" ...) do not say something was done. The run
+  after it held both notes back.
+- **Held back right:** "The contract for Dana is off" and "pricing is not
+  needed any more" were read as done in two runs; the rule held them back
+  (missed, safe) where before they would have been the wrong kind, unsafe.
+- **Steady:** "done" with a real verb ("sorted out the venue"), the new
+  deadline, the new commitment with a date: pass in every run.
+- **Still missed:** a cancelled note the model reads as done is now linked by
+  hand, not proposed as cancelled. The ambiguous "Sent Dana the file" was asked
+  properly once in four runs.
+
 ## Open
 
-- A clean round 6 for the device route, run two or three times, since one run
-  varies this much.
+- The word rules are a list of words: a "done" said in words not on it is
+  held back (safe), and a feeling verb not on it can still pass as done.
 
 - A clean round to measure the last rule (the future and waiting).
 - Dependencies stay the least reliable part. The remaining errors are mostly

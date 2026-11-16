@@ -1,0 +1,10 @@
+{
+  "set": "round6", "route": "device", "notesCommit": "fcb4551",
+  "note": "Summaries and per-row verdicts only; the full reports were too long to copy out of the tab.",
+  "runs": [
+    {"commit":"fcb4551","pass":5,"safe":5,"unsafe":2,"error":0,"verdicts":["pass","pass","safe","pass","unsafe venue: completed","safe","unsafe budget: completed","pass","safe","pass","safe","safe"]},
+    {"commit":"fcb4551","pass":5,"safe":4,"unsafe":2,"error":1,"verdicts":["error 45 s","pass","safe","pass","unsafe venue: completed","safe","unsafe budget: completed","pass","pass","pass","safe","safe"]},
+    {"commit":"fcb4551","pass":4,"safe":8,"unsafe":0,"error":0,"verdicts":["pass","pass","safe","safe","safe","safe","safe","pass","safe","safe","safe","pass"]},
+    {"commit":"363d98d","clean":false,"pass":5,"safe":7,"unsafe":0,"error":0,"verdicts":["safe","pass","safe","safe","safe","safe","safe","pass","pass","pass","pass","safe"]}
+  ]
+}
