@@ -712,6 +712,37 @@ a rule at work: the cloud model read "Lee thinks the pricing is fair." as
 done, and the "done" word rule held it back. Every rule added today for the
 device route also runs here, and none cost a pass.
 
+## A second look at done and cancelled (bb03a8c, df248ea), round 20
+
+**First version (bb03a8c):** after the linking call, one short call asked,
+for every done or cancelled reading, whether the note says it happened, that
+it is off, or neither; "neither" held the reading back, and "happened" for a
+reading the words did not support made it a question.
+
+**Round 20** (committed 2d4cb54 before any model saw it; weighted to done,
+cancelled and nothing to do). Device, 2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Error |
+|---|---|---|---|---|
+| 1 (bb03a8c) | 4 | 7 | 0 | 1 (45 s timeout) |
+| 2 (bb03a8c) | 3 | 9 | 0 | 0 |
+| 3 (df248ea, not clean) | 3 | 7 | 2 | 0 |
+
+- **The second look on the device answers "neither" for real ones:** "Lee's
+  numbers on pricing arrived today.", "Priya signed off my budget review."
+  and, in run 2, "Dana got the proposal from me this morning." It held back
+  three right answers and caught nothing the word rules had not.
+- **Where it helps:** "The venue booking fell through; Omar is not doing it."
+  (no word on the list) came back "off", and became a question.
+- **Changed (df248ea):** it is asked only about a reading the words do not
+  support, and it can only turn that into a question; it never holds back.
+  Most notes now make no extra call.
+- **Run 3's two unsafe answers were word-rule gaps, fixed after it:** "signed
+  off" read as off (cancelled), and "Lee reviewed the pricing slide with me,
+  but nothing is settled." read as done. "Signed off", "ticked off" and the
+  like are not off; "nothing is settled", "not yet", "isn't final" are not
+  done.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
