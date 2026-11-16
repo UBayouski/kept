@@ -402,9 +402,58 @@ on-device model is stuck ... Restart Chrome", and every later device read
 fails at once with the same message instead of waiting 45 s. Seen live on
 round 8: the first note took 60 s, the other 11 failed at once.
 
+## Device model, round 8 (clean, three runs)
+
+Written and committed (345d659) after b90c010, before any model saw it.
+Device, 2026-11-16, after a Chrome restart:
+
+| Run | Pass | Safe | Unsafe |
+|---|---|---|---|
+| 1 | 6 | 5 | 1 |
+| 2 | 3 | 9 | 0 |
+| 3 | 6 | 5 | 1 |
+
+- **b90c010 held:** "seems overpriced" and "sounded stressed" were held back
+  in every run; the ambiguous "Dana pushed it back to Monday." was asked
+  properly in all three.
+- **Unsafe 1:** "Priya dropped the budget review." read as done ("dropped" is
+  a past tense).
+- **Unsafe 2:** "Lee will share the contract draft with me tomorrow." read as
+  a deadline on "Send the contract" (to Dana).
+- **Needless question, 2 of 3 runs:** "Dana would like her proposal on
+  Monday." gave the deadline and also a new "Send the proposal for Dana".
+- **Fixes after it (d335cea, not measured):** a "done" whose words say it is
+  off is not proposed; a change whose words name people, none of them the
+  commitment's, is asked about (this also turns the old "twin" test case from
+  unsafe to a question); on the device, a new commitment with the wording and
+  person of a commitment the same words update is dropped.
+
+## Device dependencies: diagnosis and fix
+
+Round 2 (12 dependency notes) on the device, with every raw answer read:
+0 pass, 9 safe, 3 unsafe, 9 dependencies missed, 3 wrong.
+
+- The dependency call ran for every note: the trigger is not the problem.
+- **All 3 wrong ones came from the linking call:** the device model gives a
+  listed commitment again as new ("budget review" for "Review the budget";
+  "Book the venue"; "Send the proposal"), and the dependency was put on the
+  copy. Once it also chose Dana's proposal for "The proposal for Lee waits".
+- **Most misses:** the dependency answer used wrong labels and the existing
+  checks refused it, which is safe.
+
+**Fix (80bf35c and the next commit):** a dependency on a new commitment that is a
+listed one in the same words (any order; one word more only when it names the
+same person) is on the listed one; and when the words about what waits name
+people, none of them the waiting commitment's, the one of the same wording
+that has that person waits instead, or the dependency is refused.
+
+**Round 2 again** (not clean): 4 pass, 5 safe, 2 unsafe, 1 timeout; 7 of 12
+dependencies right, 1 wrong (was 0/9/3, about 2 right). The remaining wrong
+one ("Send the budget review", one word more) is what the next commit covers.
+
 ## Open
 
-- Round 8 (345d659, clean) has not run: the device model was stuck.
+- Round 9, clean, to measure d335cea and the dependency fixes together.
 - Round 7 on the cloud route: one note ran (pass) before the daily quota,
   which counts over a rolling window, ran out again.
 - Finish round 6 on the cloud route once the quota resets.
