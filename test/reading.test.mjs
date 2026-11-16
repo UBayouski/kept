@@ -573,3 +573,11 @@ test('a vague new commitment for "it" becomes the question among that person\'s 
   const named = 'Dana asked for the invoice on Tuesday.';
   assert.equal(readNote({ updates: [], newCommitments: [{ quote: named, what: 'Send the invoice', owner: 'me', to: 'Dana', due: 'Tuesday' }] }, { shape: 'v1', candidates, note: named }).created.length, 1);
 });
+
+test('"over coffee" is not done; "it went out" and "is over" are', () => {
+  const coffee = 'Dana and I discussed the proposal over coffee.';
+  assert.deepEqual(readNote({ updates: [up('K7', 'done', '', coffee)], newCommitments: [] }, { shape: 'v1', candidates, note: coffee }).proposals, []);
+  for (const said of ['The proposal went out this morning.', 'The proposal is over and done with.']) {
+    assert.equal(readNote({ updates: [up('K7', 'done', '', said)], newCommitments: [] }, { shape: 'v1', candidates, note: said }).proposals.length, 1, said);
+  }
+});

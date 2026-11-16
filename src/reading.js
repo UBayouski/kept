@@ -550,7 +550,7 @@ function isCondition(note, quote) {
 // "confirmed") or a finished state ("done", "out", "sorted").
 // Not a past tense, or one of feeling, speaking or thinking, which says nothing
 // was done: "Dana liked the venue photos", "Priya asked how the review is going".
-const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
+const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|(?:is|was|are|were|went|gone|all|it.s)\s+(?:out|over)|sorted|handled|delivered|received|got)\b/i;
 // True when every word of the commitment the text names comes right after
 // "about" or "regarding" (with "the", "my" and the like between).
 function onlyAsTopic(text, what) {
