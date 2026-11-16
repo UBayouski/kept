@@ -366,11 +366,17 @@ export function readNote(answer, { shape, candidates, note }) {
       continue;
     }
     // "Omar thinks the venue is too small" names the venue but says nothing
-    // happened; the device model read it as done. "Done" needs words that
-    // say something happened ("sent", "booked", "is done"); without them it is
-    // not proposed or asked about, and the user links it if it was.
+    // happened; the device model read it as done, and in another run as
+    // cancelled. "Done" needs words that say something happened ("sent",
+    // "booked", "is done"), "cancelled" words that say it is off ("called
+    // off", "no longer"); without them it is not proposed or asked about, and
+    // the user links it if it was.
     if (u.change === 'done' && !HAPPENED.test(sentenceOf(note, u.quote))) {
       manual.push({ quote: u.quote, reason: 'It was read as "done", but the words do not say that anything happened. Link it by hand if it was done.' });
+      continue;
+    }
+    if (u.change === 'cancelled' && !STOPPED.test(sentenceOf(note, u.quote))) {
+      manual.push({ quote: u.quote, reason: 'It was read as "cancelled", but the words do not say it is off. Link it by hand if it was cancelled.' });
       continue;
     }
     // Words that do not mention the commitment ("I'll send Dana the contract"
@@ -420,7 +426,10 @@ function isCondition(note, quote) {
 }
 // Words that say something happened: a past tense ("sent", "booked",
 // "confirmed") or a finished state ("done", "out", "sorted").
-const HAPPENED = /\b(\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
+const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
+// Words that say it will not happen: "called off", "no longer needs",
+// "doesn't need ... anymore", "after all".
+const STOPPED = /\bcancel\w*|\bcall(ed)? off\b|\boff\b|\bno longer\b|\bany ?more\b|\bafter all\b|n'?t need|\bnot needed\b|\bno need\b|\bdrop(ped)?\b|\bscrap(ped)?\b|\bstop(ped)?\b|\babandon(ed)?\b|\bshelved\b|\bnot happening\b/i;
 const WAITS = /\b(can'?t|cannot|can not|won'?t|will not|not|no|never)\b[^.;]*\b(until|till|unless|before)\b|\bwill\b|\w'll\b|\b(waits?|waiting|blocked)\b/i;
 
 // What goes to model.js recordExtraction for one reading: the proposals as
