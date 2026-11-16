@@ -239,11 +239,37 @@ ending, and it answers one call at a time, so every later call waits. That was t
 "hang" seen all day. A device call is now aborted after 45 s, which frees the
 model (r4-5 timed out and the run went on).
 
+## Device model, round 5 (clean)
+
+Written and committed (2087f5f) after the fixes above, before any model saw
+it. Device, 2026-11-16: **6 pass, 4 safe, 2 unsafe**, no errors, 4 needless
+questions. Results: `eval/results/capture-round5-device-2026-11-16.json`.
+
+- **New commitments:** 4 of 4 pass, cards filled in right, no question. In
+  round 1 before the drop rule, none of 8 passed.
+- **Deadline, cancelled:** pass.
+- **Unsafe 1, a "nothing to do" note:** "Omar thinks the venue is too small."
+  became "done" on Book the venue. The quote names the venue, so no rule holds
+  it back. "Coffee with Sam" also got a "done" on the venue, asked about.
+- **Unsafe 2, two things in one sentence:** "Lee confirmed pricing, so I'll
+  send Sam the quote tomorrow." became a deadline on Confirm pricing; the new
+  commitment and the "done" were missed.
+- **Ambiguous:** "Dana wants it on Thursday instead." asked about the
+  proposal only, not the contract. Safe, but not the question it needs.
+- **Dependency:** the new "Send the guest list" was found, Dana's "Sign the
+  contract" and the dependency were not.
+
+**Timeouts.** The first attempt was stopped: its first two notes timed out
+at 45 s each, and a bare "Say OK." then still waited 30 s. A minute later the
+model loaded in 15 s and answered, and the second attempt ran with no timeout.
+Whether the abort frees the model at once, or it was still loading cold, is
+not settled.
+
 ## Open
 
-- A clean round 5 for the device route, to measure these fixes together.
-- "Nothing to do" notes still become questions on the device route: the model
-  reports "done" on some commitment for "Long day. Dana seemed tired."
+- "Nothing to do" notes on the device route: the model says "done" on a
+  commitment the note only mentions ("the venue is too small"). The one
+  remaining kind of unsafe answer that repeats.
 
 - A clean round to measure the last rule (the future and waiting).
 - Dependencies stay the least reliable part. The remaining errors are mostly
@@ -254,4 +280,4 @@ model (r4-5 timed out and the run went on).
   needs fewer questions, and dependencies are still mostly missed. Since round 2, a commitment can no longer
   wait for one with its own wording (refused live on "I'll send Dana the
   proposal tomorrow, before lunch"), and a device read waits until its tab is
-  shown and reports a call that takes over 90 s.
+  shown and stops a call that takes over 45 s.

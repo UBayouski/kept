@@ -1,0 +1,20 @@
+{
+  "set": "round5", "route": "device", "commit": "2087f5f",
+  "note": "Summary and per-row verdicts only; the full report was too long to copy out of the tab. A first attempt was stopped after two 45 s timeouts on a cold model; this is the second, complete run.",
+  "summary": {"notes":12,"errors":0,"pass":6,"safe":4,"unsafe":2,"wrongChange":2,"guessed":0,"missedChange":2,"missedNew":2,"extraNew":0,"cardErrors":0,"wrongDependency":0,"missedDependency":1,"needlessQuestions":4,"linkedByHand":0,
+    "byGroup":{"new":{"notes":4,"pass":4,"safe":0,"unsafe":0,"error":0},"deadline":{"notes":1,"pass":1,"safe":0,"unsafe":0,"error":0},"status":{"notes":2,"pass":1,"safe":1,"unsafe":0,"error":0},"nothing":{"notes":2,"pass":0,"safe":1,"unsafe":1,"error":0},"ambiguous":{"notes":1,"pass":0,"safe":1,"unsafe":0,"error":0},"several":{"notes":1,"pass":0,"safe":0,"unsafe":1,"error":0},"dependency":{"notes":1,"pass":0,"safe":1,"unsafe":0,"error":0}}},
+  "rows": [
+    {"id":"r5-1","verdict":"pass","came":"new \"Call about the launch\" Me to Sam 2026-11-26"},
+    {"id":"r5-2","verdict":"pass","came":"new \"slides\" Me to Priya"},
+    {"id":"r5-3","verdict":"pass","came":"new \"send the catering quote\" Omar to Me 2026-11-27"},
+    {"id":"r5-4","verdict":"pass","came":"new \"Get the signed NDA\" Me to Dana 2026-12-01"},
+    {"id":"r5-5","verdict":"pass","came":"budget: deadline 2026-11-30"},
+    {"id":"r5-6","verdict":"safe","came":"asks: contract completed (one option; the model picked the contract, the app asked because the quote 'I sent it this morning' names no commitment)"},
+    {"id":"r5-7","verdict":"pass","came":"proposalLee: cancelled"},
+    {"id":"r5-8","verdict":"safe","came":"asks: venue completed (model said 'done' on the venue for a note about coffee)"},
+    {"id":"r5-9","verdict":"unsafe","came":"venue: completed (model said 'done' for 'Omar thinks the venue is too small.')"},
+    {"id":"r5-10","verdict":"safe","came":"asks: proposal deadline 2026-11-26 only; the contract was not offered"},
+    {"id":"r5-11","verdict":"unsafe","came":"pricing: deadline 2026-11-26, plus a question over all; missed pricing completed and the new 'Send the quote'"},
+    {"id":"r5-12","verdict":"safe","came":"new \"Send the guest list\" Me to Omar; missed Dana's 'Sign the contract' and the dependency"}
+  ]
+}
