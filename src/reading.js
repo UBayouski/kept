@@ -465,7 +465,7 @@ export function readNote(answer, { shape, candidates, note, people = [], happene
     // "booked", "is done"), "cancelled" words that say it is off ("called
     // off", "no longer"); without them it is not proposed or asked about, and
     // the user links it if it was.
-    if (u.change === 'done' && !HAPPENED.test(wholeSentence(note, u.quote).replace(DESCRIBED, ''))) {
+    if (u.change === 'done' && (NOT_DONE.test(wholeSentence(note, u.quote)) || !HAPPENED.test(wholeSentence(note, u.quote).replace(DESCRIBED, '')))) {
       manual.push({ quote: u.quote, reason: 'It was read as "done", but the words do not say that anything happened. Link it by hand if it was done.' });
       continue;
     }
@@ -623,11 +623,14 @@ function onlyAsTopic(text, what) {
 // second look (happened.js) is asked about.
 export function wordsSupport(note, u) {
   if (u.change === 'done') {
+    if (NOT_DONE.test(wholeSentence(note, u.quote))) return false;
     return HAPPENED.test(wholeSentence(note, u.quote).replace(DESCRIBED, '')) || STOPPED.test(sentenceOf(note, u.quote));
   }
   if (u.change === 'cancelled') return STOPPED.test(wholeSentence(note, u.quote));
   return true;
 }
+// Words that say it is not done: "nothing is settled", "not yet", "isn't final".
+const NOT_DONE = /\b(nothing|not|isn'?t|wasn'?t|hasn'?t|haven'?t|aren'?t)\s+(\w+\s+){0,2}(settled|decided|done|final|finished|ready|agreed|sorted)\b|\bnot yet\b/i;
 // When something happened, not when it is due; and words that look ahead.
 const PAST_TIME = /^(today|yesterday|this (morning|afternoon|evening)|earlier( today)?|just now)$/i;
 const AHEAD = /\b(will|\w+'ll|shall|needs?|wants?|by|due|until|till|before|can|could|should|must|has to|have to|asks?|asked for|expects?|deadline)\b/i;
@@ -640,7 +643,7 @@ const PEOPLE = (candidates, names = []) => [...new Set([...candidates.flatMap((c
 const DESCRIBED = /\b(looks?|looked|seems?|seemed|sounds?|sounded|feels?|felt|appears?|appeared)\s+(\w+\s+)?\w+ed\b/gi;
 // Words that say it will not happen: "called off", "no longer needs",
 // "doesn't need ... anymore", "after all".
-const STOPPED = /\bcancel\w*|\bcall(ed)? off\b|\boff\b|\bno longer\b|\bany ?more\b|\bafter all\b|n'?t need|\bnot needed\b|\bno need\b|\bdrop(ped)?\b|\bscrap(ped)?\b|\bstop(ped)?\b|\babandon(ed)?\b|\bshelved\b|\bnot happening\b/i;
+const STOPPED = /\bcancel\w*|\bcall(ed)? off\b|(?<!\b(?:sign|signs|signed|signing|tick|ticked|check|checked|knock|knocked|log|logged|pay|paid)\s)\boff\b|\bno longer\b|\bany ?more\b|\bafter all\b|n'?t need|\bnot needed\b|\bno need\b|\bdrop(ped)?\b|\bscrap(ped)?\b|\bstop(ped)?\b|\babandon(ed)?\b|\bshelved\b|\bnot happening\b/i;
 const WAITS = /\b(can'?t|cannot|can not|won'?t|will not|not|no|never)\b[^.;]*\b(until|till|unless|before)\b|\bwill\b|\w'll\b|\b(waits?|waiting|blocked)\b/i;
 
 // What goes to model.js recordExtraction for one reading: the proposals as

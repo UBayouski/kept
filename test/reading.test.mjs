@@ -625,3 +625,14 @@ test('an "about" question comes with "something new" filled in from the words', 
   const fresh = r.questions[0].options.find((o) => o.type === 'new');
   assert.deepEqual([fresh.what, fresh.owner, fresh.to, fresh.due, fresh.incomplete], ['Call Omar about the venue', 'me', 'Omar', 'Friday', undefined]);
 });
+
+test('"signed off" is done, not off; "nothing is settled" is not done', () => {
+  const list = [...candidates, { label: 'B1', id: 'id-budget', what: 'Review the budget', owner: 'me', to: 'Priya' }, { label: 'P9', id: 'id-pricing', what: 'Confirm pricing', owner: 'Lee', to: 'me' }];
+  const signed = 'Priya signed off my budget review.';
+  assert.deepEqual(readNote({ updates: [up('B1', 'done', '', signed)], newCommitments: [] }, { shape: 'v1', candidates: list, note: signed }).proposals.map((p) => p.change), ['done']);
+  const open = 'Lee reviewed the pricing slide with me, but nothing is settled.';
+  const r = readNote({ updates: [up('P9', 'done', '', open)], newCommitments: [] }, { shape: 'v1', candidates: list, note: open });
+  assert.deepEqual([r.proposals, r.manual.length], [[], 1]);
+  const off = 'Omar called off the venue.';
+  assert.deepEqual(readNote({ updates: [up('Q4', 'cancelled', '', off)], newCommitments: [] }, { shape: 'v1', candidates, note: off }).proposals.map((p) => p.change), ['cancelled']);
+});
