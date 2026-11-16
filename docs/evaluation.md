@@ -550,11 +550,32 @@ extra card, dependencies 0 missed and 0 wrong. "Lee no longer needs to
 confirm pricing." and "I'll send Lee's proposal after Omar books the venue."
 now pass.
 
+## Device model, round 12 (clean, three runs)
+
+Written and committed (a612baf) after c9f6f4c and 04e02f8, before any model
+saw it; weighted to cancelled notes and dependencies on listed commitments.
+Device, 2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Dependencies missed / wrong |
+|---|---|---|---|---|
+| 1 | 5 | 7 | 0 | 1 / 0 |
+| 2 | 8 | 3 | 1 | 0 / 0 |
+| 3 | 8 | 3 | 1 | 0 / 0 |
+
+- **c9f6f4c held:** "no longer has to", "dropped", "called off" passed as
+  cancelled in 8 of 9 readings (the other was asked about).
+- **Dependencies:** both passed in runs 2 and 3, none wrong in any run; no
+  copy card left beside them.
+- **The unsafe answer, twice:** "I'll call Priya about the budget tomorrow."
+  as a deadline on "Review the budget". A note written to test exactly this.
+- **Fix after it (not measured):** a commitment the words name only after
+  "about" or "regarding" is asked about (that one, or new), not changed.
+
 ## Open
 
 - "Sam will call me about the venue tomorrow." is still asked about in most
   runs: a deadline on the venue beside Sam's new commitment.
-- A clean round 12 to measure c9f6f4c and 04e02f8.
+- A clean round 13 to measure the "about" rule.
 - "Omar scrapped the venue booking." read as done is now held back (safe),
   but not offered as cancelled.
 - Round 6 on the cloud route: 6 of 12 ran (all pass) before the quota ran out.
