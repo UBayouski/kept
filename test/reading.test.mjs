@@ -597,3 +597,18 @@ test('a new commitment whose "what" is "None" says nothing', () => {
   const r = readNote({ updates: [], newCommitments: [{ quote: text, what: 'None', owner: 'me', to: 'Lee', due: '' }] }, { shape: 'v1', candidates, note: text });
   assert.deepEqual(r.created, []);
 });
+
+test('"came back with the pricing today" is not a deadline; "needs it today" is', () => {
+  const list = [...candidates, { label: 'P9', id: 'id-pricing', what: 'Confirm pricing', owner: 'Lee', to: 'me' }];
+  const past = 'Lee came back with the pricing today.';
+  const r = readNote({ updates: [up('P9', 'new deadline', 'today', past)], newCommitments: [] }, { shape: 'v1', candidates: list, note: past });
+  assert.deepEqual([r.proposals, r.manual.length], [[], 1]);
+  const ahead = 'Lee needs the pricing confirmed today.';
+  assert.equal(readNote({ updates: [up('P9', 'new deadline', 'today', ahead)], newCommitments: [] }, { shape: 'v1', candidates: list, note: ahead }).proposals.length, 1);
+});
+
+test('a listed commitment\'s wording from words that do not mention it is not new (device)', () => {
+  const text = 'Dana is on holiday until Monday.';
+  const r = readNote({ updates: [], newCommitments: [{ quote: text, what: 'Send the proposal', owner: 'me', to: 'Dana', due: '' }, { quote: text, what: 'Book the venue', owner: 'Omar', to: 'me', due: '' }] }, { shape: 'v1', candidates, note: text });
+  assert.deepEqual([r.created, r.questions], [[], []]);
+});

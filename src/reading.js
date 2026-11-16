@@ -397,6 +397,10 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
     // A new commitment with a listed one's wording and person, from words that
     // also update that one, is that one said twice; it is dropped.
     const bare = (what, to) => norm(what).replace(new RegExp(`\\s(for|to)\\s${norm(to)}$`), '');
+    // "Dana is on holiday until Monday" read as a new "Send the proposal", and
+    // every other listed commitment again: a listed one's wording from words
+    // that do not mention it is not something new. It is dropped.
+    newCommitments = newCommitments.filter((n) => !candidates.some((c) => norm(c.what) === norm(n.what) && !mentions(sentenceOf(note, n.quote), c.what)));
     newCommitments = newCommitments.filter((n) => !updates.some((u) => {
       const c = candidates.find((x) => x.label === u.commitment);
       return c && norm(u.quote) === norm(n.quote) && bare(n.what, n.to || c.to) === norm(c.what)
@@ -456,6 +460,13 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
     }
     if (u.change === 'cancelled' && !STOPPED.test(wholeSentence(note, u.quote))) {
       manual.push({ quote: u.quote, reason: 'It was read as "cancelled", but the words do not say it is off. Link it by hand if it was cancelled.' });
+      continue;
+    }
+    // "Lee came back with the pricing today": "today" is when it happened, not
+    // a deadline. A new deadline of today, this morning or yesterday, from
+    // words with nothing ahead ("will", "needs", "by" ...), is not proposed.
+    if (u.change === 'new deadline' && PAST_TIME.test(String(u.due).trim()) && !AHEAD.test(sentenceOf(note, u.quote))) {
+      manual.push({ quote: u.quote, reason: `It was read as a new deadline of "${u.due}", but the words say when something happened. Link it by hand if it is a deadline.` });
       continue;
     }
     // "I'll call Priya about the budget tomorrow": the budget is what the call
@@ -576,6 +587,9 @@ function onlyAsTopic(text, what) {
     return j >= 0 && (words[j] === 'about' || words[j] === 'regarding');
   });
 }
+// When something happened, not when it is due; and words that look ahead.
+const PAST_TIME = /^(today|yesterday|this (morning|afternoon|evening)|earlier( today)?|just now)$/i;
+const AHEAD = /\b(will|\w+'ll|shall|needs?|wants?|by|due|until|till|before|can|could|should|must|has to|have to|asks?|asked for|expects?|deadline)\b/i;
 // A new commitment that says nothing about what: "Send something", "Send item".
 const VAGUE = /^\s*\w+\s+(the\s+|an?\s+)?(something|anything|item|items|it|thing|things|stuff|one)\b|^\s*\w+\s*$/i;
 // The people the listed commitments are about, other than the writer.
