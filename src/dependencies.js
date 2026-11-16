@@ -86,6 +86,12 @@ export function buildSchema(list) {
 }
 
 const FIELDS = ['quote', 'waiting', 'waitsFor', 'newWhat', 'newOwner'];
+
+// The same words in any order, small words aside: "budget review" and
+// "Review the budget".
+const SMALL = new Set(['the', 'a', 'an', 'to', 'for', 'of', 'my', 'his', 'her', 'their', 'our']);
+const bag = (text) => norm(text).split(' ').filter((w) => w && !SMALL.has(w)).sort().join(' ');
+const sameWords = (a, b) => bag(a).length > 0 && bag(a) === bag(b);
 const MAX_ITEMS = 10;
 
 // Checks the answer. Returns
@@ -105,6 +111,19 @@ export function readDependencies(answer, { list, note }) {
   const labels = new Map(list.map((c) => [c.label, c]));
   const noteText = norm(note);
   const found = new Map();
+  // The device model also reads a listed commitment as new ("budget review"
+  // for "Review the budget"). A dependency on that copy is one on the listed
+  // commitment: same words in any order, and the same person if it names one.
+  const copyOf = new Map();
+  for (const n of list.filter((c) => c.isNew)) {
+    const same = list.filter((c) => !c.isNew && sameWords(c.what, n.what) && (!norm(n.to) || norm(n.to) === norm(c.to)));
+    if (same.length === 1) copyOf.set(n.label, same[0].label);
+  }
+  const people = [...new Set(list.flatMap((c) => [c.owner, c.to]).map(norm).filter((p) => p && p !== 'me'))];
+  // Only the words about what waits: "I can only send the proposal" out of
+  // "... once Lee confirms pricing", where Lee is the one it waits for.
+  const waitingWords = ` ${norm(beforeCue(note))} `;
+  const named = people.filter((p) => waitingWords.includes(` ${p} `));
   for (const entry of answer.items) {
     const refuse = (reason) => problems.push({ reason, entry });
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) { refuse('not an object'); continue; }
@@ -112,6 +131,18 @@ export function readDependencies(answer, { list, note }) {
     if (unknown) { refuse(`unknown field "${unknown}"`); continue; }
     const missing = FIELDS.find((key) => typeof entry[key] !== 'string');
     if (missing) { refuse(`"${missing}" is missing or not text`); continue; }
+    if (copyOf.has(entry.waiting)) entry.waiting = copyOf.get(entry.waiting);
+    if (copyOf.has(entry.waitsFor)) entry.waitsFor = copyOf.get(entry.waitsFor);
+    // "The proposal for Lee waits ..." given as the proposal for Dana: the
+    // words name people, none of them the waiting one's. The one of the same
+    // wording that has a person named is what waits; with none, it is refused.
+    const waitingOne = labels.get(entry.waiting);
+    if (waitingOne && !waitingOne.isNew && named.length && !named.some((p) => [waitingOne.owner, waitingOne.to].map(norm).includes(p))) {
+      const twins = list.filter((c) => c.label !== entry.waiting && !c.isNew && norm(c.what) === norm(waitingOne.what)
+        && named.some((p) => [c.owner, c.to].map(norm).includes(p)));
+      if (twins.length !== 1) { refuse(`the words name nobody "${waitingOne.what}" is for`); continue; }
+      entry.waiting = twins[0].label;
+    }
     if (!labels.has(entry.waiting)) { refuse(`"${entry.waiting}" is not a commitment the model was given`); continue; }
     let { waitsFor } = entry;
     const newWhat = entry.newWhat.trim();

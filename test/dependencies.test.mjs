@@ -85,7 +85,8 @@ test('a commitment cannot wait for a copy of itself, listed or new', () => {
     dep('before lunch', 'K7', 'new', 'Send the proposal', 'Me'),
   ] }, { list, note });
   assert.deepEqual(dependencies, []);
-  assert.deepEqual(problems.map((p) => p.reason), ['a commitment cannot wait for a copy of itself', 'a commitment cannot wait for a copy of itself']);
+  // N1 is a copy of K7, so waiting for it is waiting for itself.
+  assert.deepEqual(problems.map((p) => p.reason), ['a commitment cannot wait for itself', 'a commitment cannot wait for a copy of itself']);
   const listed = d.readDependencies({ items: [dep('before lunch', 'K7', 'new', 'Send the proposal', 'Me')] }, { list: [list[0]], note });
   assert.deepEqual(listed.problems.map((p) => p.reason), ['a commitment cannot wait for a copy of itself']);
 });
@@ -277,4 +278,26 @@ test('when the model picks a listed commitment the words do not mention, the one
   const [card] = deps.pending;
   assert.deepEqual([card.type, card.waiting.what, card.waitsFor.what], ['dependency', 'Send the invoice', 'Confirm pricing']);
   assert.match(deps.problems[0].reason, /replaced by "Send the invoice"/);
+});
+
+test('device copies: a dependency on a listed commitment read again as new is on the listed one; the person named picks the twin', () => {
+  const list = [
+    { label: 'B1', what: 'Review the budget', owner: 'me', to: 'Priya' },
+    { label: 'P1', what: 'Confirm pricing', owner: 'Lee', to: 'me' },
+    { label: 'K7', what: 'Send the proposal', owner: 'me', to: 'Dana' },
+    { label: 'L7', what: 'Send the proposal', owner: 'me', to: 'Lee' },
+    { label: 'V1', what: 'Book the venue', owner: 'Omar', to: 'me' },
+    { label: 'N1', what: 'budget review', owner: 'me', to: 'Priya', isNew: true },
+  ];
+  const copy = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] },
+    { list, note: "I'll send Priya the budget review once Lee confirms pricing." });
+  assert.deepEqual(copy.dependencies.map((x) => [x.waiting, x.waitsFor]), [['B1', 'P1']]);
+
+  const twin = d.readDependencies({ items: [dep('until Omar has booked the venue', 'K7', 'V1')] },
+    { list, note: 'The proposal for Lee waits until Omar has booked the venue.' });
+  assert.deepEqual(twin.dependencies.map((x) => [x.waiting, x.waitsFor]), [['L7', 'V1']]);
+
+  const nobody = d.readDependencies({ items: [dep('until Omar has booked the venue', 'B1', 'V1')] },
+    { list, note: 'The proposal for Lee waits until Omar has booked the venue.' });
+  assert.deepEqual(nobody.dependencies, []);
 });
