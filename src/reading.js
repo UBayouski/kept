@@ -21,6 +21,14 @@ export const norm = (text) => String(text ?? '').toLowerCase().replace(/[^\p{L}\
 export const wellFormed = (parsed) => Boolean(parsed) && Array.isArray(parsed.updates) && Array.isArray(parsed.newCommitments);
 
 const CHANGES = ['new deadline', 'done', 'cancelled'];
+
+// The device model sometimes writes the other fields into "what": "Send the
+// case study. owner: me. to: Lee". Everything from the first such label is cut.
+export function cleanWhat(what) {
+  if (typeof what !== 'string') return what;
+  const cut = what.replace(/[\s.;,]*\b(owner|to|due|quote|waiting|blockedBy)\s*:.*$/is, '').trim();
+  return cut || what;
+}
 const MAX_ITEMS = 12;
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 
@@ -81,10 +89,10 @@ export function validateReading(answer, { shape, candidates, note }) {
     entries.push(problem ? { raw, problem } : { raw, ...read(raw) });
   };
   if (shape === 'v2') {
-    for (const raw of answer.items) take(raw, FIELDS.v2item, (e) => ({ target: e.about, change: e.change, due: e.due, quote: e.quote, what: e.what, owner: '', to: '' }));
+    for (const raw of answer.items) take(raw, FIELDS.v2item, (e) => ({ target: e.about, change: e.change, due: e.due, quote: e.quote, what: cleanWhat(e.what), owner: '', to: '' }));
   } else {
     for (const raw of answer.updates) take(raw, FIELDS.v1update, (e) => ({ target: e.commitment, change: e.change, due: e.due, quote: e.quote, what: '', owner: '', to: '' }));
-    for (const raw of answer.newCommitments) take(raw, FIELDS.v1new, (e) => ({ target: 'new', change: 'new commitment', due: e.due, quote: e.quote, what: e.what, owner: e.owner, to: e.to }));
+    for (const raw of answer.newCommitments) take(raw, FIELDS.v1new, (e) => ({ target: 'new', change: 'new commitment', due: e.due, quote: e.quote, what: cleanWhat(e.what), owner: e.owner, to: e.to }));
   }
   if (entries.length > MAX_ITEMS) return unusable(`it has ${entries.length} entries for one note`);
 
@@ -387,11 +395,11 @@ export function readNote(answer, { shape, candidates, note }) {
     // "booked", "is done"), "cancelled" words that say it is off ("called
     // off", "no longer"); without them it is not proposed or asked about, and
     // the user links it if it was.
-    if (u.change === 'done' && !HAPPENED.test(sentenceOf(note, u.quote))) {
+    if (u.change === 'done' && !HAPPENED.test(wholeSentence(note, u.quote))) {
       manual.push({ quote: u.quote, reason: 'It was read as "done", but the words do not say that anything happened. Link it by hand if it was done.' });
       continue;
     }
-    if (u.change === 'cancelled' && !STOPPED.test(sentenceOf(note, u.quote))) {
+    if (u.change === 'cancelled' && !STOPPED.test(wholeSentence(note, u.quote))) {
       manual.push({ quote: u.quote, reason: 'It was read as "cancelled", but the words do not say it is off. Link it by hand if it was cancelled.' });
       continue;
     }
@@ -438,6 +446,13 @@ export function mentions(text, what) {
 function sentenceOf(note, quote) {
   const q = String(quote ?? '').trim().toLowerCase();
   return note.split(/(?<=[.!?;])\s+/).find((s) => s.toLowerCase().includes(q)) ?? quote;
+}
+
+// The whole sentence of the quote, across ";": "Dana has the contract; I sent
+// it this morning" says it was done, though the model quoted only the first half.
+function wholeSentence(note, quote) {
+  const q = String(quote ?? '').trim().toLowerCase();
+  return note.split(/(?<=[.!?])\s+/).find((s) => s.toLowerCase().includes(q)) ?? quote;
 }
 
 // The sentence of the quote, with the one before it when it says "it" or

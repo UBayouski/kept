@@ -490,3 +490,17 @@ test('needless questions: one named commitment wins rule 2, a guess asks among t
   const back = readNote({ updates: [up('R2', 'done', '', 'I sent it this morning.')], newCommitments: [] }, { shape: 'v1', candidates, note: it });
   assert.deepEqual([back.proposals.map((p) => p.label), back.questions], [['R2'], []]);
 });
+
+test('a "what" with the other fields written into it is cut back to the thing itself', async () => {
+  const { cleanWhat } = await import('../src/reading.js');
+  assert.equal(cleanWhat('Send the case study. owner: me. to: Lee'), 'Send the case study');
+  assert.equal(cleanWhat('Send the deck, due: Friday'), 'Send the deck');
+  assert.equal(cleanWhat('Send the slides to Sam'), 'Send the slides to Sam');
+  assert.equal(cleanWhat('owner: me'), 'owner: me');
+});
+
+test('"done" and "cancelled" look at the whole sentence, across a semicolon', () => {
+  const text = 'Dana has the contract; I sent it this morning.';
+  const r = readNote({ updates: [up('R2', 'done', '', 'Dana has the contract')], newCommitments: [] }, { shape: 'v1', candidates, note: text });
+  assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['R2', 'done']]);
+});
