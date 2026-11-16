@@ -142,3 +142,14 @@ test('a listed commitment said again as new, beside a dependency on it: no quest
   assert.deepEqual([r.observed.questions, r.observed.created], [[], []]);
   assert.equal(r.score.verdict, 'pass');
 });
+
+test('"after lunch" is not a dependency on something new the words do not mention', async () => {
+  const testCase = e.round13.find((x) => x.id === 'r13-4');
+  const model = fake({
+    linking: (label) => ({ items: [{ quote: 'Sent Dana the contract after lunch', about: label('Send the contract', 'Dana'), change: 'done', due: '', what: '' }] }),
+    deps: (label) => ({ items: [{ quote: 'after lunch', waiting: label('Send the contract', 'Dana'), waitsFor: 'new', newWhat: 'Send the proposal', newOwner: 'me' }] }),
+  });
+  const r = await run(testCase, model);
+  assert.deepEqual([r.observed.deps, r.observed.created], [[], []]);
+  assert.equal(r.score.verdict, 'pass');
+});

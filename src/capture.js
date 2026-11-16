@@ -419,6 +419,14 @@ export async function addDependencies(q, session, { answer, list, note, people: 
       problems.push({ reason: `the words of the dependency do not mention "${blocker.what}"`, entry: dep });
       continue;
     }
+    // The same for something new to wait for: "Sent Dana the contract after
+    // lunch" read as waiting for a new "Send the proposal". "Until Dana reviews
+    // it" still counts: "it" is named elsewhere in the note.
+    const blockerWhat = dep.waitsFor === 'new' ? dep.newWhat : blocker.what;
+    if ((dep.waitsFor === 'new' || blocker.isNew) && !mentions(dep.quote, blockerWhat) && !/\b(it|them)\b/i.test(dep.quote)) {
+      problems.push({ reason: `the words of the dependency do not mention "${blockerWhat}"`, entry: dep });
+      continue;
+    }
     if (read.dependencies.length === 1 && !waiting.isNew && subject) {
       const ownerId = matchPerson(waiting.owner, persons);
       if (ownerId && ownerId !== subject) {
