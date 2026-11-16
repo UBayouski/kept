@@ -344,3 +344,17 @@ test('words that follow "until" or "once" are a condition, not news', async () =
   assert.deepEqual(r.proposals.map((p) => p.label), ['P2']);
   assert.equal(r.manual.length, 1);
 });
+
+test('a change whose words do not mention the commitment becomes a question: that one, or new', async () => {
+  const { readNote } = await import('../src/reading.js');
+  const candidates = [{ id: 'p', label: 'P1', what: 'Send the proposal' }, { id: 'b', label: 'B2', what: 'Review the budget' }];
+  // New sentences: the live test on 2026-11-15 had this shape with a contract.
+  const note = "I'll send Dana the invoice on Monday. Priya moved the budget review to Friday.";
+  const r = readNote({ items: [
+    { quote: "I'll send Dana the invoice on Monday", about: 'P1', change: 'new deadline', due: 'Monday', what: '' },
+    { quote: 'Priya moved the budget review to Friday', about: 'B2', change: 'new deadline', due: 'Friday', what: '' },
+  ] }, { shape: 'v2', candidates, note });
+  assert.deepEqual(r.proposals.map((p) => p.label), ['B2']);
+  assert.equal(r.questions.length, 1);
+  assert.deepEqual(r.questions[0].options.map((o) => [o.type, o.label ?? '', o.due ?? '']), [['commitment', 'P1', 'Monday'], ['new', '', 'Monday']]);
+});

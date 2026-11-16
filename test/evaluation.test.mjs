@@ -61,13 +61,14 @@ test('a wrong date is unsafe; a note that says nothing passes only with nothing'
   assert.equal((await run(byId('d1'), fake({ linking: { items: [] } }))).score.verdict, 'pass');
 });
 
-test('an ambiguous note: a question passes, a guess is unsafe, silence is safe but missed', async () => {
+test('an ambiguous note: a question passes, a guess is held back, silence is safe but missed', async () => {
   const asked = await run(byId('e1'), fake({ linking: { items: [{ quote: 'Dana moved it to Monday', about: 'unclear', change: 'new deadline', due: 'Monday', what: '' }] } }));
   assert.equal(asked.score.verdict, 'pass');
   const guess = await run(byId('e1'), fake({ linking: (label) => ({ items: [
     { quote: 'Dana moved it to Monday', about: label('Send the proposal', 'Dana'), change: 'new deadline', due: 'Monday', what: '' }] }) }));
-  assert.equal(guess.score.verdict, 'unsafe');
-  assert.deepEqual(guess.score.guessed, ['proposal: deadline']);
+  // The words do not mention the proposal, so the app turns the guess into a question.
+  assert.equal(guess.score.verdict, 'safe');
+  assert.deepEqual(guess.score.guessed, []);
   const silent = await run(byId('e1'), fake({ linking: { items: [] } }));
   assert.equal(silent.score.verdict, 'safe');
 });

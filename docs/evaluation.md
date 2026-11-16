@@ -147,6 +147,15 @@ Rounds 2 and 3 run again after the mention check (not clean): round 2 had 6 pass
 condition rule now holds back); round 3 had 8 pass, 2 safe, 0 unsafe. The check
 refused one wrong link and no right one.
 
+**A second live finding:** with only "Send the proposal" and "Confirm pricing"
+listed, "I'll send Dana the contract on Monday" was proposed as the proposal's
+new deadline: when the right commitment is not in the list, the model picks
+the nearest one. Now a change whose sentence does not mention the commitment
+(a word of it other than the verb) is not proposed; it becomes a question:
+that commitment, or something new. Round 1 run again after this (not clean):
+36 pass, 4 safe, **0 unsafe**. "Sent Dana the document", unsafe in every
+earlier run, is now asked about instead of guessed.
+
 **Re-runs of round 1** after the fixes (not clean, for regressions): 35 pass,
 4 safe, 1 unsafe; the one unsafe is still "Sent Dana the document".
 

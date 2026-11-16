@@ -289,6 +289,13 @@ export function readNote(answer, { shape, candidates, note }) {
       manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but the words say it waits for something. Link it by hand if it is either.` });
       continue;
     }
+    // Words that do not mention the commitment ("I'll send Dana the contract"
+    // for "Send the proposal") may be about something not in the list: the
+    // model picks the nearest one. It becomes a question: that one, or new.
+    if (u.commitment !== 'unclear' && !mentions(sentenceOf(note, u.quote), byLabel.get(u.commitment).what)) {
+      questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
+      continue;
+    }
     if (u.commitment !== 'unclear') {
       proposals.push({
         commitmentId: byLabel.get(u.commitment).id, label: u.commitment, change: u.change, due: u.due, quote: u.quote,
@@ -304,6 +311,23 @@ export function readNote(answer, { shape, candidates, note }) {
 
 // Words that say the thing has not happened yet: a negation followed by
 // "until", "unless" or "before"; the future ("will", "I'll"); or waiting.
+// True when the words mention what a commitment is about: a word of it other
+// than its verb ("Send the proposal" -> "proposal"), plurals aside.
+const SMALL_WORDS = new Set(['the', 'and', 'for', 'with', 'from', 'that', 'this', 'out', 'off']);
+export function mentions(text, what) {
+  const stem = (w) => w.replace(/(es|s)$/, '');
+  const said = new Set(norm(text).split(' ').filter(Boolean).map(stem));
+  const named = norm(what).split(' ').filter(Boolean).slice(1).filter((w) => w.length > 2 && !SMALL_WORDS.has(w));
+  return !named.length || named.some((w) => said.has(stem(w)));
+}
+
+// The sentence of the note the quoted words are in, or the words themselves.
+// A model may quote only part of it ("delayed until Monday").
+function sentenceOf(note, quote) {
+  const q = String(quote ?? '').trim().toLowerCase();
+  return note.split(/(?<=[.!?;])\s+/).find((s) => s.toLowerCase().includes(q)) ?? quote;
+}
+
 // The quoted words come right after "until", "once", "after" and the like:
 // "until Lee confirms pricing" is a condition, not news that Lee did.
 function isCondition(note, quote) {
