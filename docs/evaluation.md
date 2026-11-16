@@ -483,9 +483,36 @@ Cloud route (gemini-3.5-flash-lite), 2026-11-16, at 8dd2ae8: **12 pass, 0 safe,
 for the device route applies on this route too, and none of them cost a pass.
 Not fully clean: two rules (b90c010) came from the device runs of these notes.
 
+## Device model, round 10 (clean, three runs)
+
+Written and committed (21c1f53) after 8dd2ae8, before any model saw it;
+weighted to people on no listed commitment and to possessives. Device,
+2026-11-16, after a Chrome restart:
+
+| Run | Pass | Safe | Unsafe | Dependencies missed / wrong |
+|---|---|---|---|---|
+| 1 | 3 | 8 | 1 | 1 / 1 |
+| 2 | 4 | 8 | 0 | 1 / 0 |
+| 3 | 5 | 7 | 0 | 0 / 0 |
+
+- **8dd2ae8 held:** "Dana's contract has to wait until Lee confirms pricing."
+  and "Omar's venue booking waits until I send the deposit." found their
+  dependency in all three runs; the Sam notes were never proposed on a listed
+  commitment.
+- **Needless question in all three:** "Sam will email me the venue options
+  on Monday." (and "the pricing sheet"): the model gave a deadline on the
+  venue and Sam's new commitment; the app asked between them.
+- **The unsafe answer:** "I'll review Priya's budget once Lee confirms
+  pricing." with a new "Review Priya's budget": the copy was not matched to
+  "Review the budget" because of the name, and the dependency went on it.
+- **Fixes after it (not measured):** a change whose words name only someone
+  not on that commitment gives way to that person's new commitment from the
+  same sentence; and a person's name and "'s" are left out when a new
+  commitment is compared with the listed ones for a dependency.
+
 ## Open
 
-- A clean round 10 to measure the last two fixes.
+- A clean round 11 to measure the last two fixes.
 - "Omar scrapped the venue booking." read as done is now held back (safe),
   but not offered as cancelled.
 - Round 6 on the cloud route: 6 of 12 ran (all pass) before the quota ran out.
