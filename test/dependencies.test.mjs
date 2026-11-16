@@ -248,3 +248,20 @@ test('a listed commitment the words do not mention is not what waits, nor what i
   const right = await run("I'll send Dana the proposals once Lee confirms the pricing.", 'Send the proposal', 'Confirm pricing');
   assert.equal(right.recorded.added.length, 1, 'plural and "the" do not matter');
 });
+
+test('when the model picks a listed commitment the words do not mention, the one new commitment they do mention waits instead', async () => {
+  const q = await storeWithoutDependency();
+  // New sentence; the live test on 2026-11-15 had the same shape.
+  const text = "I'll send Dana the invoice on Monday, once Lee confirms pricing.";
+  const ready = await c.prepare(q, text);
+  const out = await c.capture(q, { text, shape: 'v2', ...ready, ...WHEN,
+    answer: { items: [{ quote: "I'll send Dana the invoice on Monday", about: 'new', change: 'new commitment', due: 'Monday', what: 'Send the invoice' }] } });
+  const list = c.dependencyList(ready.candidates, out.pending);
+  const label = (what) => list.find((x) => x.what === what).label;
+  const deps = await c.addDependencies(q, out.session, { list, note: text, people: ready.people,
+    answer: { items: [dep('once Lee confirms pricing', label('Send the proposal'), label('Confirm pricing'))] } });
+  assert.equal(deps.recorded, null, 'nothing proposed at once: one side is new');
+  const [card] = deps.pending;
+  assert.deepEqual([card.type, card.waiting.what, card.waitsFor.what], ['dependency', 'Send the invoice', 'Confirm pricing']);
+  assert.match(deps.problems[0].reason, /replaced by "Send the invoice"/);
+});

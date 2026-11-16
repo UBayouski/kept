@@ -423,7 +423,7 @@ $('read-note').onclick = async () => {
     const { out, deps } = r;
     const dependencyLine = !deps ? ''
       : deps.error ? `Dependencies were not read: ${deps.error}`
-        : `${deps.proposed + deps.waiting ? `Dependencies: ${deps.proposed} proposed, ${deps.waiting} waiting for you` : 'No dependency found'} (${deps.ms} ms).${deps.problems.length ? ` ${deps.problems.length} refused.` : ''}`;
+        : `${deps.proposed + deps.waiting ? `Dependencies: ${deps.proposed} proposed, ${deps.waiting} waiting for you` : 'No dependency found'} (${deps.ms} ms).${deps.problems.filter((p) => !p.repaired).length ? ` ${deps.problems.filter((p) => !p.repaired).length} refused.` : ''}`;
     status(out.usable ? 'ok' : 'bad', [
       `Read by ${r.linking.source === 'in_cloud' ? 'the cloud model' : r.linking.source} in ${r.linking.ms} ms.`,
       out.usable ? '' : 'Its answer could not be used.',

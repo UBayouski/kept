@@ -399,11 +399,19 @@ export async function addDependencies(q, session, { answer, list, note, people: 
   };
   const mainClause = beforeCue(note);
   for (const dep of read.dependencies) {
-    const waiting = byLabel.get(dep.waiting);
+    let waiting = byLabel.get(dep.waiting);
     let blocker = byLabel.get(dep.waitsFor);
     if (read.dependencies.length === 1 && !waiting.isNew && !mentions(mainClause, waiting.what)) {
-      problems.push({ reason: `the words do not mention "${waiting.what}" as what waits`, entry: dep });
-      continue;
+      // The model chose a listed commitment the words do not mention. If exactly
+      // one commitment new in this note is what they mention, that is what waits;
+      // it is a card the user confirms. Otherwise nothing is linked.
+      const fresh = list.filter((x) => x.isNew && x.label !== dep.waitsFor && mentions(mainClause, x.what));
+      if (fresh.length !== 1) {
+        problems.push({ reason: `the words do not mention "${waiting.what}" as what waits`, entry: dep });
+        continue;
+      }
+      problems.push({ reason: `"${waiting.what}" replaced by "${fresh[0].what}", which the words mention, as what waits`, entry: dep, repaired: true });
+      waiting = fresh[0];
     }
     if (dep.waitsFor !== 'new' && !blocker.isNew && !mentions(dep.quote, blocker.what)) {
       problems.push({ reason: `the words of the dependency do not mention "${blocker.what}"`, entry: dep });
