@@ -450,7 +450,25 @@ export const round17 = [
     expect: { changes: [c('venue', 'completed')], created: [n('Send the invitations', 'Me', 'Sam', '2026-11-27')] } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17 };
+// Round 18: everyday notes of every kind, fewer traps, written on 2026-11-16
+// after de9b26f's fixes, before any model saw them.
+export const round18 = [
+  { id: 'r18-1', group: 'status', note: 'Priya got the budget review from me yesterday.', expect: { changes: [c('budget', 'completed')] } },
+  { id: 'r18-2', group: 'deadline', note: 'Omar will have the venue booked by Friday.', expect: { changes: [c('venue', 'deadline', '2026-11-27')] } },
+  { id: 'r18-3', group: 'deadline', note: 'Lee says pricing can wait until next month.', expect: { changes: [c('pricing', 'deadline', 'words')] } },
+  { id: 'r18-4', group: 'status', note: 'I emailed the contract to Dana this morning.', expect: { changes: [c('contract', 'completed')] } },
+  { id: 'r18-5', group: 'status', note: "Dana doesn't want the proposal any more.", expect: { changes: [c('proposal', 'cancelled')] } },
+  { id: 'r18-6', group: 'nothing', note: 'Sam brought cake for the team today.', expect: {} },
+  { id: 'r18-7', group: 'nothing', note: "Omar's flight was delayed again.", expect: {} },
+  { id: 'r18-8', group: 'new', note: "I'll send Lee the revised slides on Monday.", expect: { created: [n('Send the revised slides', 'Me', 'Lee', '2026-11-30')] } },
+  { id: 'r18-9', group: 'new', note: 'Priya will check the room booking tomorrow.', expect: { created: [n('Check the room booking', 'Priya', null, '2026-11-26')] } },
+  { id: 'r18-10', group: 'dependency', note: "I'll send Dana the proposal after Lee confirms pricing.", expect: { deps: [{ waiting: 'proposal', on: 'pricing' }] } },
+  { id: 'r18-11', group: 'ambiguous', note: 'Sent it to Dana just now.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'completed' } } },
+  { id: 'r18-12', group: 'several', note: "Lee confirmed pricing and I'll call Omar about the venue on Friday.",
+    expect: { changes: [c('pricing', 'completed')], created: [n('Call Omar about the venue', 'Me', 'Omar', '2026-11-27')] } },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17, round18 };
 
 // --- What came out of one note ---
 
