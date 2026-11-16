@@ -5,6 +5,7 @@ import { initializeApp } from 'firebase/app';
 import { getAI, getGenerativeModel, GoogleAIBackend, InferenceMode } from 'firebase/ai';
 import { initializeAppCheck, CustomProvider, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { firebaseConfig, recaptchaSiteKey } from './firebase-config.js';
+import { makeDeviceGuard, STUCK_MESSAGE } from './device-guard.js';
 
 export { InferenceMode };
 
@@ -121,6 +122,13 @@ export async function deviceModelState() {
 // A device answer takes 2 to 6 s; one still going after 45 s is not ending.
 const DEVICE_TIMEOUT_MS = 45000;
 
+const guard = makeDeviceGuard({
+  probe: async (signal) => {
+    const session = await LanguageModel.create({ ...deviceOptions, signal });
+    try { await session.prompt('Say OK.', { signal }); } finally { session.destroy(); }
+  },
+});
+
 function whenVisible() {
   if (typeof document === 'undefined' || document.visibilityState === 'visible') return Promise.resolve();
   return new Promise((resolve) => {
@@ -151,7 +159,10 @@ export async function generateStructured(prompt, schema, mode) {
   // wait with no error. It starts when the tab is shown. A call that still does
   // not answer is stopped, not only given up on: the model answers one call at
   // a time, and an answer that never ends would hold up every later one.
-  if (mode === InferenceMode.ONLY_ON_DEVICE) await whenVisible();
+  if (mode === InferenceMode.ONLY_ON_DEVICE) {
+    guard.check();
+    await whenVisible();
+  }
   const started = performance.now();
   let result;
   if (mode === InferenceMode.ONLY_ON_DEVICE) {
@@ -161,6 +172,7 @@ export async function generateStructured(prompt, schema, mode) {
       result = await modelFor(mode, schema, stop.signal).generateContent(prompt);
     } catch (err) {
       if (!stop.signal.aborted) throw err;
+      if (!(await guard.afterTimeout())) throw new Error(STUCK_MESSAGE);
       throw new Error(`The device model did not answer within ${DEVICE_TIMEOUT_MS / 1000} s, so it was stopped. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`);
     } finally {
       clearTimeout(timer);
