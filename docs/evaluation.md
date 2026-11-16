@@ -763,8 +763,18 @@ cancelled and nothing to do). Device, 2026-11-16:
 
 The demo store keeps these test notes; "Load the demo scenario" resets it.
 
+## Checked when the private workspace opens (7974d6a)
+
+The device model got stuck five times on 2026-11-16, mostly as a session
+started, and the user learnt it only from a 45 s wait on the first note. The
+private workspace now sends one short prompt when it opens (20 s at most) and,
+if it gets no answer, says so at once: "Chrome's on-device model is not
+answering. Restart Chrome ..., then reload this page. You can still use the
+cloud model below." Seen live on localhost with the model stuck.
+
 ## Open
 
+- Round 21 (153d377, clean) has not run: the device model was stuck.
 - "About" notes: the right answer is a new commitment, which the device
   model rarely gives; the question then has an empty "new".
 - A vague new commitment ("Send something") for a note that says "it": fixed
