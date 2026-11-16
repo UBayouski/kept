@@ -257,7 +257,26 @@ export const round7 = [
     expect: { changes: [c('proposalLee', 'completed')], created: [n('Call Sam', 'Me', 'Sam', '2026-11-27')] } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5, round6, round7 };
+// Round 8: every kind of note, written on 2026-11-16 after b90c010 (the person
+// named decides between two of the same wording; "looks dated" is not done),
+// before any model saw them.
+export const round8 = [
+  { id: 'r8-1', group: 'deadline', note: 'Dana would like her proposal on Monday.', expect: { changes: [c('proposal', 'deadline', '2026-11-30')] } },
+  { id: 'r8-2', group: 'nothing', note: 'Omar says the venue seems overpriced.', expect: {} },
+  { id: 'r8-3', group: 'nothing', note: 'Priya sounded stressed about the budget.', expect: {} },
+  { id: 'r8-4', group: 'status', note: 'Omar finally booked the venue for the offsite.', expect: { changes: [c('venue', 'completed')] } },
+  { id: 'r8-5', group: 'status', note: 'Lee had questions about the proposal; I answered them and sent it.', expect: { changes: [c('proposalLee', 'completed')] } },
+  { id: 'r8-6', group: 'status', note: 'Priya dropped the budget review.', expect: { changes: [c('budget', 'cancelled')] } },
+  { id: 'r8-7', group: 'new', note: "I'll send Priya the agenda on Monday.", expect: { created: [n('Send the agenda', 'Me', 'Priya', '2026-11-30')] } },
+  { id: 'r8-8', group: 'new', note: 'Lee will share the contract draft with me tomorrow.', expect: { created: [n('Share the contract draft', 'Lee', 'Me', '2026-11-26')] } },
+  { id: 'r8-9', group: 'ambiguous', note: 'Dana pushed it back to Monday.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'deadline', due: '2026-11-30' } } },
+  { id: 'r8-10', group: 'nothing', note: "Sam's daughter started school this week.", expect: {} },
+  { id: 'r8-11', group: 'several', note: 'Lee confirmed pricing and Dana wants the contract on Thursday.',
+    expect: { changes: [c('pricing', 'completed'), c('contract', 'deadline', '2026-11-26')] } },
+  { id: 'r8-12', group: 'dependency', note: "I'll send Dana the contract after Omar books the venue.", expect: { deps: [{ waiting: 'contract', on: 'venue' }] } },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8 };
 
 // --- What came out of one note ---
 
