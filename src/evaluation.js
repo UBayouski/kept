@@ -468,7 +468,25 @@ export const round18 = [
     expect: { changes: [c('pricing', 'completed')], created: [n('Call Omar about the venue', 'Me', 'Omar', '2026-11-27')] } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17, round18 };
+// Round 19: everyday notes of every kind, written on 2026-11-16 after 4f0ea51,
+// before any model saw them.
+export const round19 = [
+  { id: 'r19-1', group: 'deadline', note: 'Dana is fine with the contract on Thursday.', expect: { changes: [c('contract', 'deadline', '2026-11-26')] } },
+  { id: 'r19-2', group: 'status', note: 'Omar confirmed the venue booking.', expect: { changes: [c('venue', 'completed')] } },
+  { id: 'r19-3', group: 'status', note: 'Lee no longer needs the proposal.', expect: { changes: [c('proposalLee', 'cancelled')] } },
+  { id: 'r19-4', group: 'deadline', note: "Priya's budget review moved to Friday.", expect: { changes: [c('budget', 'deadline', '2026-11-27')] } },
+  { id: 'r19-5', group: 'status', note: 'Sent the proposal to Lee an hour ago.', expect: { changes: [c('proposalLee', 'completed')] } },
+  { id: 'r19-6', group: 'nothing', note: 'Had lunch with Sam; nothing urgent.', expect: {} },
+  { id: 'r19-7', group: 'nothing', note: 'Lee thinks the pricing is fair.', expect: {} },
+  { id: 'r19-8', group: 'new', note: "I'll order the name badges by Monday.", expect: { created: [n('Order the name badges', 'Me', null, '2026-11-30')] } },
+  { id: 'r19-9', group: 'new', note: 'Sam will send me the photos tomorrow.', expect: { created: [n('Send the photos', 'Sam', 'Me', '2026-11-26')] } },
+  { id: 'r19-10', group: 'dependency', note: "I'll send Dana the contract once Omar books the venue.", expect: { deps: [{ waiting: 'contract', on: 'venue' }] } },
+  { id: 'r19-11', group: 'ambiguous', note: 'Dana wants it a day later, on Saturday.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'deadline', due: '2026-11-28' } } },
+  { id: 'r19-12', group: 'several', note: 'Lee confirmed pricing; Priya wants the budget review by Monday.',
+    expect: { changes: [c('pricing', 'completed'), c('budget', 'deadline', '2026-11-30')] } },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17, round18, round19 };
 
 // --- What came out of one note ---
 
