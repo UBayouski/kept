@@ -118,9 +118,14 @@ export function guessPeople(fullQuote, people) {
   const me = people.find((p) => p.isMe)?.id ?? null;
   const words = new Set(tokens(quote));
   const named = peopleNamed(quote, people);
+  // "Dana asked me to draft it": a request to the user, who then owes it to Dana.
+  if (named.length === 1 && /\b(asked|asks|wants|wanted|needs|needed|told|tells|reminded|expects|expected) (me|us) to\b/i.test(quote)) {
+    return { ownerId: me, toId: named[0] };
+  }
   if (words.has('i') || words.has('we')) return { ownerId: me, toId: named.length === 1 ? named[0] : null };
   if (!named.length) return { ownerId: null, toId: null };
-  const toMe = words.has('me') || words.has('us');
+  // "Sam will review my draft": with one other person, "my" means it comes back to the user.
+  const toMe = words.has('me') || words.has('us') || (named.length === 1 && (words.has('my') || words.has('our')));
   return { ownerId: named[0], toId: toMe ? me : named.length === 2 ? named[1] : null };
 }
 

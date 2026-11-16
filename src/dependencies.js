@@ -8,12 +8,19 @@ import { norm } from './reading.js';
 // Words a stated dependency comes with. Without one, no call is made.
 const CUES = /\b(once|after|until|till|unless|before|as soon as|when|waiting (on|for)|wait(s)? (on|for)|depends? on|dependent on|blocked|first)\b/i;
 export const hasCue = (text) => CUES.test(String(text ?? ''));
-// The words before the first dependency word: "I'll send Dana the proposal"
-// out of "I'll send Dana the proposal, once Lee confirms pricing".
+// The main clause without the dependency: "I'll send Dana the proposal" out of
+// "I'll send Dana the proposal, once Lee confirms pricing", and "I'll send out
+// the invitations" out of "Once Omar books the venue, I'll send out the
+// invitations".
 export const beforeCue = (text) => {
   const s = String(text ?? '');
   const at = s.search(CUES);
-  return at > 0 ? s.slice(0, at) : s;
+  if (at > 0) return s.slice(0, at);
+  if (at === 0) {
+    const comma = s.indexOf(',');
+    return comma > 0 ? s.slice(comma + 1) : s;
+  }
+  return s;
 };
 
 const text = { type: 'string' };

@@ -78,6 +78,13 @@ test('people: who owes a new commitment to whom is guessed from the words', () =
   assert.deepEqual(c.guessPeople('Lee will send Dana the figures', people), { ownerId: 'lee', toId: 'dana' });
   assert.deepEqual(c.guessPeople("I'll tell Dana and Lee", people), { ownerId: 'me', toId: null }, 'two people named: no guess');
   assert.deepEqual(c.guessPeople('The room gets booked', people), { ownerId: null, toId: null });
+  // Fixed after the first evaluation run (docs/evaluation.md); these sentences are new, not the evaluation's.
+  assert.deepEqual(c.guessPeople('Lee wants me to check the figures by Monday', people), { ownerId: 'me', toId: 'lee' });
+  assert.deepEqual(c.guessPeople('Dana reminded us to file the expenses', people), { ownerId: 'me', toId: 'dana' });
+  assert.deepEqual(c.guessPeople('Lee will proofread my report', people), { ownerId: 'lee', toId: 'me' });
+  assert.deepEqual(c.guessPeople('Lee will send Dana my notes', people), { ownerId: 'lee', toId: 'dana' }, '"my" with two people named says nothing');
+  assert.deepEqual(c.guessPeople("After Lee signs, I'll file the paperwork", people), { ownerId: 'me', toId: null });
+  assert.deepEqual(c.guessPeople("Once Lee approves, I'll send Dana the brief", people), { ownerId: 'me', toId: 'dana' });
   // The quote the cloud model returned on 2026-11-15: Lee is who it waits for, not who it is for.
   assert.deepEqual(c.guessPeople("I'll send Dana the proposal Friday, once Lee confirms pricing", people), { ownerId: 'me', toId: 'dana' });
 });

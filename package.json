@@ -11,7 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "seed-store": "node scripts/seed-store.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "eval": "node scripts/run-eval.mjs"
   },
   "dependencies": {
     "@relate/relate-wasm": "1.0.1",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@relate/relate": "^1.0.1",
+    "playwright": "^1.65.1",
     "vite": "^5.4.21"
   }
 }

@@ -9,8 +9,7 @@ import * as m from './model.js';
 import * as data from './review-data.js';
 import * as capture from './capture.js';
 import * as ai from './ai.js';
-import { variants } from './linking-cases.js';
-import * as dependencies from './dependencies.js';
+import * as pipeline from './pipeline.js';
 
 const STORE = 'opfs://kept-demo';
 const $ = (id) => document.getElementById(id);
@@ -411,53 +410,30 @@ $('read-note').onclick = async () => {
   $('read-note').disabled = true;
   status('muted', 'Reading the note…');
   try {
-    const ready = await capture.prepare(q, text);
-    const before = await m.findSimilarNotes(q, text);
-    // Nothing is stored until the model has answered: a failed call leaves the note in the box.
-    const variant = variants.v2;
-    const result = await ai.generateStructured(variant.buildPrompt(text, ready.candidates), variant.buildSchema(ready.candidates), ai.InferenceMode.ONLY_IN_CLOUD);
-    const out = await capture.capture(q, {
+    const r = await pipeline.readNote(q, {
       text, kind: $('note-kind').value, occurredAt: new Date(when).toISOString(), baseDate: when.slice(0, 10),
-      answer: result.parsed, shape: 'v2', candidates: ready.candidates, people: ready.people, extractedBy: `cloud:${ai.CLOUD_MODEL}`,
+      extractedBy: `cloud:${ai.CLOUD_MODEL}`,
+      generate: (prompt, schema) => ai.generateStructured(prompt, schema, ai.InferenceMode.ONLY_IN_CLOUD),
     });
-    for (const item of out.pending) pendingItems.push({ session: out.session, noteText: text, item });
+    for (const item of r.pending) pendingItems.push({ session: r.out.session, noteText: text, item });
     $('note').value = '';
     // The next note is from now, not from when the page was opened.
     $('note-when').value = localNow();
-
-    // A second call for dependencies, only when the note has a word that states one.
-    // The note is stored already: a failure here loses only the dependencies.
-    let dependencyLine = '';
-    let dependencyProposals = 0;
-    const list = out.usable && dependencies.hasCue(text) ? capture.dependencyList(ready.candidates, out.pending) : [];
-    if (list.length) {
-      try {
-        const read = await ai.generateStructured(dependencies.buildPrompt(text, list), dependencies.buildSchema(list), ai.InferenceMode.ONLY_IN_CLOUD);
-        const deps = await capture.addDependencies(q, out.session, { answer: read.parsed, list, note: text, people: ready.people });
-        for (const item of deps.pending) pendingItems.push({ session: out.session, noteText: text, item });
-        dependencyProposals = deps.recorded?.added.length ?? 0;
-        const waiting = deps.pending.filter((p) => p.type === 'dependency').length;
-        dependencyLine = dependencyProposals + waiting
-          ? `Dependencies: ${dependencyProposals} proposed, ${waiting} waiting for you (${read.ms} ms).`
-          : `No dependency found (${read.ms} ms).`;
-        if (deps.problems.length) dependencyLine += ` ${deps.problems.length} refused.`;
-      } catch (err) {
-        dependencyLine = `Dependencies were not read: ${err.message}`;
-      }
-    }
-    await persist(out.session);
     await refresh();
-    const proposed = out.recorded.added.length + dependencyProposals;
+    const { out, deps } = r;
+    const dependencyLine = !deps ? ''
+      : deps.error ? `Dependencies were not read: ${deps.error}`
+        : `${deps.proposed + deps.waiting ? `Dependencies: ${deps.proposed} proposed, ${deps.waiting} waiting for you` : 'No dependency found'} (${deps.ms} ms).${deps.problems.length ? ` ${deps.problems.length} refused.` : ''}`;
     status(out.usable ? 'ok' : 'bad', [
-      `Read by ${result.source === 'in_cloud' ? 'the cloud model' : result.source} in ${result.ms} ms.`,
+      `Read by ${r.linking.source === 'in_cloud' ? 'the cloud model' : r.linking.source} in ${r.linking.ms} ms.`,
       out.usable ? '' : 'Its answer could not be used.',
-      proposed || pendingItems.length
-        ? `${proposed} proposal(s) to review, ${pendingItems.length} thing(s) that need you first.`
+      r.proposed || pendingItems.length
+        ? `${r.proposed} proposal(s) to review, ${pendingItems.length} thing(s) that need you first.`
         : 'It found nothing that promises or changes anything. The note is stored.',
       dependencyLine,
       out.recorded.invalid.length ? `${out.recorded.invalid.length} proposal(s) were refused by the store rules.` : '',
-      ready.leftOut ? `${ready.leftOut} open commitment(s) were not offered to the model: only the ${ready.candidates.length} closest to the note are.` : '',
-      before.length ? 'The same text was captured before; this is stored as a new note.' : '',
+      r.leftOut ? `${r.leftOut} open commitment(s) were not offered to the model: only the ${r.offered} closest to the note are.` : '',
+      r.similarBefore ? 'The same text was captured before; this is stored as a new note.' : '',
     ].filter(Boolean).join(' '));
   } catch (err) {
     status('bad', `Not read, and nothing was stored: ${err.message}`,
