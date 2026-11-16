@@ -804,6 +804,13 @@ user's private workspace (one commitment, "Send the proposal" to Dana):
 
 The commitment is as it was; the three notes stay in the workspace.
 
+**After the next deploy** (7974d6a and 4ac82cf; the first try shipped a stale
+`dist/`, so the build is now made before every deploy): the workspace showed
+"checking that it answers..." then "The device model is ready."; and "Dana
+says forget the proposal, we'll talk on the phone instead." became the
+question **"Send the proposal": cancelled** instead of being held back.
+Dismissed.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
