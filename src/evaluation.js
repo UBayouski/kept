@@ -504,7 +504,27 @@ export const round20 = [
   { id: 'r20-12', group: 'ambiguous', note: 'Dana has it; I sent it over earlier.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'completed' } } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17, round18, round19, round20 };
+// Round 21: every kind of note, with done and cancelled in words not on the
+// lists (the second look's rescue), "signed off", "isn't final", "it" and an
+// "about" note; written on 2026-11-16 after 7974d6a, before any model saw them.
+export const round21 = [
+  { id: 'r21-1', group: 'status', note: 'Lee signed off the pricing yesterday.', expect: { changes: [c('pricing', 'completed')] } },
+  { id: 'r21-2', group: 'nothing', note: "Priya looked at my budget review, but it isn't final yet.", expect: {} },
+  { id: 'r21-3', group: 'status', note: 'Dana has had the contract since Monday.', expect: { changes: [c('contract', 'completed')] } },
+  { id: 'r21-4', group: 'status', note: "Omar says forget the venue, we'll meet online.", expect: { changes: [c('venue', 'cancelled')] } },
+  { id: 'r21-5', group: 'ambiguous', note: 'Handed it to Dana after the meeting.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'completed' } } },
+  { id: 'r21-6', group: 'new', note: "I'll ping Lee about the proposal tomorrow.", expect: { created: [n('Ping Lee about the proposal', 'Me', 'Lee', '2026-11-26')] } },
+  { id: 'r21-7', group: 'nothing', note: "Priya's daughter starts school next week.", expect: {} },
+  { id: 'r21-8', group: 'deadline', note: 'Lee needs the proposal by Monday now.', expect: { changes: [c('proposalLee', 'deadline', '2026-11-30')] } },
+  { id: 'r21-9', group: 'new', note: 'Sam will send me the venue photos on Monday.', expect: { created: [n('Send the venue photos', 'Sam', 'Me', '2026-11-30')] } },
+  { id: 'r21-10', group: 'dependency', note: "The contract can't go out until Priya reviews the terms.",
+    expect: { created: [n('Review the terms', 'Priya', 'Me')], deps: [{ waiting: 'contract', on: 'new:review terms' }] } },
+  { id: 'r21-11', group: 'several', note: 'Omar booked the venue and Dana wants the proposal on Tuesday.',
+    expect: { changes: [c('venue', 'completed'), c('proposal', 'deadline', '2026-12-01')] } },
+  { id: 'r21-12', group: 'nothing', note: 'Dana and I went through the contract line by line.', expect: {} },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17, round18, round19, round20, round21 };
 
 // --- What came out of one note ---
 
