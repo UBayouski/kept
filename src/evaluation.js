@@ -392,7 +392,27 @@ export const round14 = [
     expect: { changes: [c('pricing', 'completed'), c('proposal', 'deadline', '2026-11-30')] } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14 };
+// Round 15: every kind of note, with "over" and "out" both ways and something
+// new that waits, written on 2026-11-16 after aae467e's fix, before any model
+// saw them.
+export const round15 = [
+  { id: 'r15-1', group: 'nothing', note: 'Lee and I went over the pricing on the phone.', expect: {} },
+  { id: 'r15-2', group: 'status', note: 'The contract went out to Dana yesterday.', expect: { changes: [c('contract', 'completed')] } },
+  { id: 'r15-3', group: 'dependency', note: 'I can only print the badges after Omar books the venue.',
+    expect: { created: [n('Print the badges', 'Me')], deps: [{ waiting: 'new:badges', on: 'venue' }] } },
+  { id: 'r15-4', group: 'dependency', note: 'Sending Lee the proposal has to wait until pricing is confirmed.', expect: { deps: [{ waiting: 'proposalLee', on: 'pricing' }] } },
+  { id: 'r15-5', group: 'deadline', note: 'Omar has until Thursday to book the venue.', expect: { changes: [c('venue', 'deadline', '2026-11-26')] } },
+  { id: 'r15-6', group: 'status', note: "Priya won't need the budget review after all.", expect: { changes: [c('budget', 'cancelled')] } },
+  { id: 'r15-7', group: 'nothing', note: 'Sam seemed excited about the offsite.', expect: {} },
+  { id: 'r15-8', group: 'new', note: "I'll text Omar the address on Friday.", expect: { created: [n('Text the address', 'Me', 'Omar', '2026-11-27')] } },
+  { id: 'r15-9', group: 'new', note: 'Dana will send me her feedback by Monday.', expect: { created: [n('Send her feedback', 'Dana', 'Me', '2026-11-30')] } },
+  { id: 'r15-10', group: 'ambiguous', note: 'Sent it to Dana before the meeting.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'completed' } } },
+  { id: 'r15-11', group: 'several', note: 'I sent the contract to Dana, and Lee wants his proposal by Friday.',
+    expect: { changes: [c('contract', 'completed'), c('proposalLee', 'deadline', '2026-11-27')] } },
+  { id: 'r15-12', group: 'status', note: 'Priya received my budget review.', expect: { changes: [c('budget', 'completed')] } },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15 };
 
 // --- What came out of one note ---
 
