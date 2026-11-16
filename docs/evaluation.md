@@ -657,6 +657,22 @@ Device, 2026-11-16: **6/5/1, 6/5/1, 7/4/1.**
   ("wait until Monday", "lunch") is refused; a new commitment whose "what" is
   "None" says nothing.
 
+## Device model, round 17 (clean, three runs)
+
+Written and committed (ab7649a) after 252724d, before any model saw it.
+Device, 2026-11-16: **6/5/1, 5/7/0, 5/7/0.**
+
+- **252724d held:** "Dana's contract can wait until Tuesday." passed as a
+  deadline in 2 of 3, with no made-up dependency in any run.
+- **The unsafe answer (run 1):** "Lee came back with the pricing today." as a
+  deadline of today on pricing.
+- **Noise:** "Dana is on holiday until Monday." once came back with every
+  listed commitment again as new.
+- **Fixes (not measured):** a deadline of today, this morning or yesterday,
+  from words with nothing ahead in them, is not proposed; on the device, a
+  new commitment with a listed one's wording, from words that do not mention
+  it, is dropped.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
