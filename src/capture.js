@@ -456,7 +456,10 @@ export async function addDependencies(q, session, { answer, list, note, people: 
     }
   }
   const recorded = direct.length ? await record(q, session, direct) : null;
-  return { ok: read.ok, recorded, pending, problems, copies: (read.copies ?? []).map((label) => byLabel.get(label)?.ref).filter(Boolean) };
+  // The listed commitments the dependencies kept are between: a question
+  // "new, or the same as this one?" about one of them is answered by it.
+  const involved = read.dependencies.flatMap((d) => [d.waiting, d.waitsFor]).map((label) => byLabel.get(label)?.commitmentId).filter(Boolean);
+  return { ok: read.ok, recorded, pending, problems, involved, copies: (read.copies ?? []).map((label) => byLabel.get(label)?.ref).filter(Boolean) };
 }
 
 // The user confirms a dependency that involves a commitment new in this note.

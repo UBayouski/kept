@@ -42,7 +42,12 @@ export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, g
       // A new card that is a listed commitment said again goes: the dependency
       // is on the listed one.
       for (let i = pending.length - 1; i >= 0; i -= 1) {
-        if (pending[i].type === 'new' && added.copies?.includes(pending[i].ref)) pending.splice(i, 1);
+        const item = pending[i];
+        const copy = item.type === 'new' && added.copies?.includes(item.ref);
+        // "I'll send Dana's contract once ..." with a new "Send the contract"
+        // asked about as new or the same: the dependency is on the listed one.
+        const same = item.type === 'question' && item.options.some((o) => o.type === 'same' && added.involved?.includes(o.commitmentId));
+        if (copy || same) pending.splice(i, 1);
       }
       pending.push(...added.pending);
       const direct = added.recorded?.added.length ?? 0;

@@ -130,3 +130,15 @@ test('the device route: prompt v1 answers go through the same path', async () =>
   const [note] = await q('MATCH (n:Note) RETURN n.extractedBy AS by');
   assert.equal(note.by, 'device');
 });
+
+test('a listed commitment said again as new, beside a dependency on it: no question about the copy', async () => {
+  const testCase = e.round11.find((x) => x.id === 'r11-3');
+  const model = fake({
+    linking: { items: [{ quote: "I'll send Dana's contract", about: 'new', change: 'new commitment', due: '', what: 'Send the contract' }] },
+    deps: (label) => ({ items: [{ quote: 'once Lee confirms pricing', waiting: label('Send the contract', 'Dana'), waitsFor: label('Confirm pricing', 'me'), newWhat: '', newOwner: '' }] }),
+  });
+  const r = await run(testCase, model);
+  assert.deepEqual(r.observed.deps, [{ waiting: 'contract', on: 'pricing' }]);
+  assert.deepEqual([r.observed.questions, r.observed.created], [[], []]);
+  assert.equal(r.score.verdict, 'pass');
+});
