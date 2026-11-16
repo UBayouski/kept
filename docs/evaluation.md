@@ -673,6 +673,20 @@ Device, 2026-11-16: **6/5/1, 5/7/0, 5/7/0.**
   new commitment with a listed one's wording, from words that do not mention
   it, is dropped.
 
+## Device model, round 18 (clean, three runs)
+
+Written and committed (14430ab) after de9b26f, before any model saw it;
+everyday notes with fewer traps. Device, 2026-11-16: **6/6/0, 7/5/0, 9/3/0**,
+the first round with no unsafe answer in any run.
+
+- Deadlines (including "can wait until next month"), done, cancelled and the
+  ambiguous "Sent it to Dana just now." passed in most runs; no dependency
+  was wrong.
+- **Left over:** a copy of the listed proposal shown beside the right
+  dependency when the model gave both. Fixed after it: no card or question
+  for a listed commitment's wording when a dependency is on it.
+- "About" notes ("I'll call Omar about the venue") still become questions.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
