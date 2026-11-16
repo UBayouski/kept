@@ -209,7 +209,41 @@ The first two attempts at this run failed on the evaluation's own store
 commit timestamp 1 must advance past 1"). Deleting the store fixed it. The
 reset the evaluation does before each note does not recover from that state.
 
+## Device model: fewer needless questions
+
+**Diagnosis on round 1** (device, 2026-11-16): 12 pass, 27 safe, 1 unsafe,
+23 needless questions. None of the 8 "something new" notes and none of the
+4 "nothing to do" notes passed. The device model nearly always adds a change to some
+listed commitment beside the right new commitment ("I'll send Sam the slides":
+"unclear", or a deadline on "Review the budget"), and the rules turned each
+pair into a question.
+
+**Fix (device route only):** a change whose sentence mentions none of the
+commitments it could be about, over the same words as a new commitment of the
+same reading, is that new commitment said twice. The change is dropped.
+
+**Round 1 again** (not clean, it was the diagnosis set): 20 pass, 16 safe,
+4 unsafe, 9 needless questions. The rule only drops changes, so it cannot make
+a wrong proposal. The 4 unsafe are the model's own errors ("called off" as
+done; the deadline on the other proposal; a guessed "which proposal"; a wrong
+dependency) and vary from run to run.
+
+**Round 4 again** (not clean any more: the r4-1 fix came from it, but this
+rule did not): 5 pass, 5 safe, 1 unsafe, 1 error (was 3, 9, 0). Needless
+questions fell from 5 to 3. The unsafe answer: the model put the deadline "not
+set" on "Book the venue". Placeholders like "not set" or "none" are now no
+date, so the dependency rule holds that answer back. Not measured yet.
+
+**Runaway answers.** The device model sometimes generates for minutes without
+ending, and it answers one call at a time, so every later call waits. That was the
+"hang" seen all day. A device call is now aborted after 45 s, which frees the
+model (r4-5 timed out and the run went on).
+
 ## Open
+
+- A clean round 5 for the device route, to measure these fixes together.
+- "Nothing to do" notes still become questions on the device route: the model
+  reports "done" on some commitment for "Long day. Dana seemed tired."
 
 - A clean round to measure the last rule (the future and waiting).
 - Dependencies stay the least reliable part. The remaining errors are mostly

@@ -13,6 +13,8 @@
 // Words that make a clause a dependency, not a date: "after Dana signs off",
 // "once Lee confirms". Not "until" or "before", which also give deadlines
 // ("can wait until next month").
+// Words a model writes for "no date".
+const NO_DATE = /^(not set|none|no date|n\/?a|unknown|unspecified|tbd|null|-)$/i;
 export const DEPENDS = /\b(once|after|when|as soon as|waiting (on|for)|waits? (on|for)|depends? on|dependent on|blocked)\b/i;
 
 export const norm = (text) => String(text ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
@@ -111,6 +113,8 @@ export function validateReading(answer, { shape, candidates, note }) {
     // nothing is left and the note states a dependency, it was the dependency
     // read as a deadline: the dependency reading has it, so it is not proposed
     // and not left for the user to link.
+    // A model may fill an empty date with a placeholder ("not set", "none").
+    if (!e.problem && typeof e.due === 'string' && NO_DATE.test(e.due.trim())) e.due = '';
     if (!e.problem && e.change === 'new deadline' && e.target !== 'new') {
       const at = e.due.search(DEPENDS);
       if (at >= 0) e.due = e.due.slice(0, at).replace(/[\s,;]+$/, '');
@@ -317,7 +321,26 @@ export function applyRules(parsed, list) {
 export function readNote(answer, { shape, candidates, note }) {
   const checked = validateReading(answer, { shape, candidates, note });
   if (!checked.ok) return { ok: false, proposals: [], created: [], questions: [], manual: checked.manual, problems: checked.problems, notes: [] };
-  const ruled = applyRules({ updates: checked.updates, newCommitments: checked.newCommitments }, candidates);
+  // The device model (v1) nearly always adds a change to some listed
+  // commitment, even for a note about something new ("I'll send Sam the
+  // slides": "unclear", or a deadline on "Review the budget", beside the right
+  // new commitment). A change whose sentence mentions none of the commitments
+  // it could be about, over the same words as a new commitment of this
+  // reading, is that new commitment said twice; the change is dropped.
+  let updates = checked.updates;
+  if (shape === 'v1') {
+    const near = (a, b) => {
+      const [x, y] = [norm(a), norm(b)];
+      return x.length > 0 && y.length > 0 && (x.includes(y) || y.includes(x));
+    };
+    updates = updates.filter((u) => {
+      const sentence = sentenceOf(note, u.quote);
+      const about = u.commitment === 'unclear' ? candidates : candidates.filter((c) => c.label === u.commitment);
+      if (about.some((c) => mentions(sentence, c.what))) return true;
+      return !checked.newCommitments.some((n) => near(sentenceOf(note, n.quote), sentence));
+    });
+  }
+  const ruled = applyRules({ updates, newCommitments: checked.newCommitments }, candidates);
   const byLabel = new Map(candidates.map((c) => [c.label, c]));
   // Every option of a question as a complete answer.
   const optionsOf = (u, among) => among.flatMap((name) => {

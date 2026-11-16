@@ -91,7 +91,7 @@ const deviceOptions = {
   expectedOutputs: [{ type: 'text', languages: ['en'] }],
 };
 
-function modelFor(mode, schema = extractionSchema) {
+function modelFor(mode, schema = extractionSchema, signal) {
   return getGenerativeModel(ai, {
     mode,
     inCloudParams: {
@@ -102,8 +102,8 @@ function modelFor(mode, schema = extractionSchema) {
       },
     },
     onDeviceParams: {
-      createOptions: deviceOptions,
-      promptOptions: { responseConstraint: schema },
+      createOptions: signal ? { ...deviceOptions, signal } : deviceOptions,
+      promptOptions: signal ? { responseConstraint: schema, signal } : { responseConstraint: schema },
     },
   });
 }
@@ -118,7 +118,8 @@ export async function deviceModelState() {
   return LanguageModel.availability(deviceOptions);
 }
 
-const DEVICE_TIMEOUT_MS = 90000;
+// A device answer takes 2 to 6 s; one still going after 45 s is not ending.
+const DEVICE_TIMEOUT_MS = 45000;
 
 function whenVisible() {
   if (typeof document === 'undefined' || document.visibilityState === 'visible') return Promise.resolve();
@@ -147,15 +148,26 @@ export async function generateStructured(prompt, schema, mode) {
     }
   }
   // Chrome does not start the device model in a hidden tab: the call would
-  // wait with no error. It starts when the tab is shown, and a call that still
-  // does not answer is reported instead of left hanging.
+  // wait with no error. It starts when the tab is shown. A call that still does
+  // not answer is stopped, not only given up on: the model answers one call at
+  // a time, and an answer that never ends would hold up every later one.
   if (mode === InferenceMode.ONLY_ON_DEVICE) await whenVisible();
   const started = performance.now();
-  const call = modelFor(mode, schema).generateContent(prompt);
-  const result = mode === InferenceMode.ONLY_ON_DEVICE
-    ? await Promise.race([call, new Promise((_, reject) => setTimeout(() => reject(new Error(
-      `The device model did not answer within ${DEVICE_TIMEOUT_MS / 1000} s. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`)), DEVICE_TIMEOUT_MS))])
-    : await call;
+  let result;
+  if (mode === InferenceMode.ONLY_ON_DEVICE) {
+    const stop = new AbortController();
+    const timer = setTimeout(() => stop.abort(), DEVICE_TIMEOUT_MS);
+    try {
+      result = await modelFor(mode, schema, stop.signal).generateContent(prompt);
+    } catch (err) {
+      if (!stop.signal.aborted) throw err;
+      throw new Error(`The device model did not answer within ${DEVICE_TIMEOUT_MS / 1000} s, so it was stopped. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`);
+    } finally {
+      clearTimeout(timer);
+    }
+  } else {
+    result = await modelFor(mode, schema).generateContent(prompt);
+  }
   const text = result.response.text();
   let parsed = null;
   let parseError = null;

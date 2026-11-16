@@ -256,7 +256,8 @@ test('two new commitments that differ only in the owner stay two', () => {
 });
 
 test('a question keeps the complete new commitment behind its "new" option', () => {
-  const text = "I'll send Dana the invoice by Friday.";
+  // The sentence mentions the proposal, so the change is not dropped as the new commitment said twice.
+  const text = "I'll send Dana the invoice with the proposal by Friday.";
   const invoice = { quote: "I'll send Dana the invoice", what: 'Send invoice', owner: 'me', to: 'Dana', due: 'Friday' };
   const r = readNote({ updates: [up('K7', 'new deadline', 'Friday', text)], newCommitments: [invoice] }, { shape: 'v1', candidates, note: text });
   assert.deepEqual([r.proposals, r.created, r.questions.length], [[], [], 1]);
@@ -265,6 +266,28 @@ test('a question keeps the complete new commitment behind its "new" option', () 
   // Choosing the commitment gives the whole update; choosing "new" gives the whole new commitment.
   assert.deepEqual(question.options[0], { type: 'commitment', commitmentId: 'id-proposal', label: 'K7', change: 'new deadline', due: 'Friday', quote: text });
   assert.deepEqual(question.options[1], { type: 'new', ...invoice });
+});
+
+test('device route: a change that mentions none of its commitments, beside a new commitment from the same words, is dropped', () => {
+  // New sentences; round 1 on the device model had this shape with slides and a forecast.
+  const text = "I'll send Omar the seating chart by Monday.";
+  const chart = { quote: "I'll send Omar the seating chart", what: 'Send the seating chart', owner: 'me', to: 'Omar', due: 'Monday' };
+  for (const update of [up('K7', 'new deadline', 'Monday', text), up('unclear', 'new deadline', 'Monday', text)]) {
+    const r = readNote({ updates: [update], newCommitments: [chart] }, { shape: 'v1', candidates, note: text });
+    assert.deepEqual([r.proposals, r.questions, r.created.map((n) => n.what)], [[], [], ['Send the seating chart']], update.commitment);
+  }
+  // Without a new commitment from the same words, it is still asked about.
+  const alone = readNote({ updates: [up('K7', 'new deadline', 'Monday', text)], newCommitments: [] }, { shape: 'v1', candidates, note: text });
+  assert.equal(alone.questions.length, 1);
+});
+
+test('a placeholder date is no date: a dependency read as a deadline is not proposed', () => {
+  // New sentence; round 4 on the device model gave "not set" as the date.
+  const text = 'I can only print the menus once Dana confirms the wine.';
+  for (const due of ['not set', 'None', 'n/a']) {
+    const r = readNote({ updates: [up('K7', 'new deadline', due, text)], newCommitments: [] }, { shape: 'v1', candidates, note: text });
+    assert.deepEqual([r.proposals, r.questions, r.manual], [[], [], []], due);
+  }
 });
 
 test('two new commitments folded into one question are both kept', () => {
