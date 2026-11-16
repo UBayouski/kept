@@ -510,9 +510,38 @@ weighted to people on no listed commitment and to possessives. Device,
   same sentence; and a person's name and "'s" are left out when a new
   commitment is compared with the listed ones for a dependency.
 
+## Device model, round 11 (clean, three runs)
+
+Written and committed (0280cbc) after d19c279, before any model saw it;
+weighted to someone else's new commitment and to dependencies with a person's
+name in them. Device, 2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Dependencies missed / wrong |
+|---|---|---|---|---|
+| 1 | 6 | 6 | 0 | 0 / 0 |
+| 2 | 6 | 6 | 0 | 0 / 0 |
+| 3 | 6 | 6 | 0 | 1 / 0 |
+
+- **d19c279 held:** "I'll send Dana's contract once Lee confirms pricing." and
+  "I'll send Lee's proposal after Omar books the venue." put the dependency on
+  the listed commitment in 5 of 6 readings, never on a copy. "Sam will send
+  me the budget numbers by Monday." passed in all three.
+- **Steady passes:** the deadline, "Priya got my budget review", the ambiguous
+  "Dana said it can wait until Tuesday." (asked properly in all three), the
+  new commitment with a date.
+- **Left over:** "Lee no longer needs to confirm pricing." read as done in all
+  three, held back (safe) but not offered as cancelled; the copy of a listed
+  commitment still shows as its own card ("Send Lee's proposal") beside the
+  right dependency; "Sam will call me about the venue" was asked about in 2 of 3.
+
+**Today on the device, clean rounds only:** unsafe answers per run went from
+2 (round 5) to 0 in all three runs of round 11; passes from about 4 to 6 of 12.
+
 ## Open
 
-- A clean round 11 to measure the last two fixes.
+- "Done" read for a note that says it is off: offer it as cancelled in one
+  click, rather than only holding it back.
+- A copy of a listed commitment shown as its own card beside the dependency.
 - "Omar scrapped the venue booking." read as done is now held back (safe),
   but not offered as cancelled.
 - Round 6 on the cloud route: 6 of 12 ran (all pass) before the quota ran out.
