@@ -1,0 +1,25 @@
+{
+  "evaluation": "capture",
+  "set": "round4",
+  "route": "device",
+  "deviceModelSays": "I am Gemma 4.",
+  "ranAt": "2026-11-16T05:04:51.868Z",
+  "linkingPrompt": "v1",
+  "code": "a4f5ce1 (notes committed before any run)",
+  "note": "Summary and per-note scoring only; the full raw report was not copied out of the browser tab.",
+  "summary": {"notes":12,"errors":0,"pass":3,"safe":9,"unsafe":0,"wrongChange":0,"guessed":0,"missedChange":1,"missedNew":3,"extraNew":2,"cardErrors":0,"wrongDependency":0,"missedDependency":3,"needlessQuestions":5,"linkedByHand":3},
+  "rows": [
+    {"id":"r4-1","cards":"0 questions, 0 by hand","extraCreated":["Send the proposal (refused entry, one click)"],"note":"the deadline on proposalLee was right"},
+    {"id":"r4-2","cards":"0 questions, 0 by hand"},
+    {"id":"r4-3","cards":"1 question","missedCreated":["Send the floor plan"]},
+    {"id":"r4-4","cards":"1 question","extraCreated":["Send the update"]},
+    {"id":"r4-5","cards":"1 by hand"},
+    {"id":"r4-6","cards":"2 by hand","missedDeps":["proposal waits for pricing"]},
+    {"id":"r4-7","cards":"1 question","missedCreated":["Order the badges"],"missedDeps":["new:badges waits for venue"]},
+    {"id":"r4-8","cards":"1 by hand"},
+    {"id":"r4-9","cards":"1 question","missed":["proposal: deadline"]},
+    {"id":"r4-10","cards":"0 questions, 0 by hand"},
+    {"id":"r4-11","cards":"1 question","missedCreated":["Send the invoice"],"missedDeps":["new:invoice waits for pricing"]},
+    {"id":"r4-12","cards":"0 questions, 0 by hand"}
+  ]
+}

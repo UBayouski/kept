@@ -359,6 +359,20 @@ test('a change whose words do not mention the commitment becomes a question: tha
   assert.deepEqual(r.questions[0].options.map((o) => [o.type, o.label ?? '', o.due ?? '']), [['commitment', 'P1', 'Monday'], ['new', '', 'Monday']]);
 });
 
+test('a refused new commitment that repeats a commitment the reading updates is not a card', async () => {
+  const { readNote } = await import('../src/reading.js');
+  const candidates = [{ id: 'r', label: 'R1', what: 'Send the report', to: 'Sam' }, { id: 'q', label: 'R2', what: 'Send the report', to: 'Omar' }];
+  // New sentence; round 4 (device) had this shape with the proposal.
+  const note = 'Sam wants the report by Tuesday.';
+  const answer = (to) => ({ updates: [{ quote: note, commitment: 'R1', change: 'new deadline', due: 'Tuesday' }],
+    newCommitments: [{ quote: 'send the report', what: 'send the report', owner: 'me', to, due: 'Tuesday' }] });
+  const r = readNote(answer('Sam'), { shape: 'v1', candidates, note });
+  assert.deepEqual(r.proposals.map((p) => p.label), ['R1']);
+  assert.deepEqual(r.manual, []);
+  // The same wording for someone else is not that commitment: still offered.
+  assert.equal(readNote(answer('Priya'), { shape: 'v1', candidates, note }).manual.length, 1);
+});
+
 test('a refused new commitment that repeats a valid one is not a card', async () => {
   const { readNote } = await import('../src/reading.js');
   const candidates = [{ id: 'p', label: 'P1', what: 'Send the proposal' }];

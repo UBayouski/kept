@@ -169,9 +169,17 @@ export function validateReading(answer, { shape, candidates, note }) {
     const [x, y] = [norm(a), norm(b)];
     return x.length > 0 && y.length > 0 && (x.includes(y) || y.includes(x));
   };
+  // Likewise one with the wording of a listed commitment this reading updates
+  // ("Lee asked for the proposal by Monday": a new deadline on "Send the
+  // proposal" to Lee, and the same proposal again as new).
+  const updated = kept.filter((u) => u.commitment !== 'unclear').map((u) => candidates.find((c) => c.label === u.commitment)).filter(Boolean);
+  const repeatsUpdate = (said) => said && updated.some((c) => norm(c.what) === norm(said.what) && (!norm(said.to) || norm(said.to) === norm(c.to)));
   for (let i = manual.length - 1; i >= 0; i--) {
     if (manual[i].newLike && newCommitments.some((n) => overlaps(n.quote, manual[i].quote))) {
       problems.push({ reason: 'a refused new commitment repeated a valid one and was dropped' });
+      manual.splice(i, 1);
+    } else if (manual[i].newLike && repeatsUpdate(manual[i].saidNew)) {
+      problems.push({ reason: 'a refused new commitment repeated a commitment this reading updates and was dropped' });
       manual.splice(i, 1);
     }
   }

@@ -187,6 +187,28 @@ commitment it also gave was shown as two cards (seen live with an empty
 store). It is now one question, or just the new commitment when nothing is
 listed (rule 4).
 
+## Device model, round 4 (clean)
+
+12 new notes of every kind (`round4` in `src/evaluation.js`), committed in
+`a4f5ce1` before any model saw them, after rules 4 and 5 and the "no waiting
+on a copy of itself" check. Device route, run on 2026-11-16 in a real Chrome.
+
+**3 pass, 9 safe, 0 unsafe**, no errors. Nothing wrong was proposed. What it
+falls short on is asking instead of answering: 5 needless questions and 3
+things to link by hand. It missed 3 new commitments (they came back as "which
+one?" questions instead) and 3 of 4 dependencies.
+
+One thing was fixed after this, and it is not measured yet: "Lee asked for the
+proposal by Monday" got the right new deadline, and the same proposal again as
+a refused "new commitment" with a one-click card. A refused new commitment
+with the wording and recipient of a commitment that the same reading updates
+is now dropped.
+
+The first two attempts at this run failed on the evaluation's own store
+(`opfs://kept-eval`): a run abandoned mid-note left it unable to write ("WAL
+commit timestamp 1 must advance past 1"). Deleting the store fixed it. The
+reset the evaluation does before each note does not recover from that state.
+
 ## Open
 
 - A clean round to measure the last rule (the future and waiting).
@@ -194,7 +216,8 @@ listed (rule 4).
   the linking call answering about a dependency at all; a linking prompt that
   is told to leave dependencies alone is the next thing to try, measured on
   new notes.
-- The device route: a clean round. Since round 2, a commitment can no longer
+- The device route: round 4 above is clean and has no unsafe answers; it
+  needs fewer questions, and dependencies are still mostly missed. Since round 2, a commitment can no longer
   wait for one with its own wording (refused live on "I'll send Dana the
   proposal tomorrow, before lunch"), and a device read waits until its tab is
   shown and reports a call that takes over 90 s.
