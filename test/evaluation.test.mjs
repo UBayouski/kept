@@ -110,3 +110,20 @@ test('the summary counts verdicts by group', () => {
   assert.deepEqual([s.notes, s.errors, s.pass], [2, 1, 1]);
   assert.deepEqual(s.byGroup.new, { notes: 2, pass: 1, safe: 0, unsafe: 0, error: 1 });
 });
+
+test('the device route: prompt v1 answers go through the same path', async () => {
+  const q = open();
+  const ws = await e.seedWorkspace(q);
+  const calls = [];
+  const generate = async (prompt) => {
+    calls.push(prompt);
+    const label = /\[([A-Z0-9]+)\] Send the contract\. Owner: me\. For: Dana\./.exec(prompt)?.[1];
+    return { parsed: { updates: [{ quote: 'getting the contract on Monday', commitment: label, change: 'new deadline', due: 'Monday' }], newCommitments: [] }, ms: 1, source: 'on_device' };
+  };
+  const result = await pipeline.readNote(q, { text: byId('a1').note, ...e.NOTE_TIME, generate, shape: 'v1', extractedBy: 'device' });
+  assert.match(calls[0], /"updates" has one entry/, 'the v1 prompt was used');
+  const observed = await e.observe(q, result, ws);
+  assert.equal(e.score(observed, byId('a1').expect).verdict, 'pass');
+  const [note] = await q('MATCH (n:Note) RETURN n.extractedBy AS by');
+  assert.equal(note.by, 'device');
+});

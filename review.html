@@ -31,7 +31,7 @@
   </head>
   <body>
     <h1>Kept: review</h1>
-    <p class="muted">Demo workspace. What a note is read to say waits here until you confirm it. Nothing changes a commitment before that.</p>
+    <p class="muted"><span id="workspace-intro">Demo workspace.</span> What a note is read to say waits here until you confirm it. Nothing changes a commitment before that. <a id="workspace-switch" href="?workspace=private">Open the private workspace</a></p>
     <p id="status">Opening the store…</p>
     <p>
       <button id="seed">Load the demo scenario</button>
@@ -46,6 +46,11 @@
       <button id="read-note">Read this note</button>
     </p>
     <p class="muted" id="capture-notice">Demo workspace: the note and your open commitments are sent to the cloud model (<span id="cloud-model"></span>). What it reads waits below for you.</p>
+    <div id="private-capture" hidden>
+      <p class="muted">Private workspace: the note is read by the model built into this browser and does not leave this device. <span id="device-state"></span> <button id="prepare-device" hidden>Download the device model</button></p>
+      <p><label><input type="checkbox" id="cloud-opt-in" /> Use the cloud model (<span class="cloud-model"></span>) for this note instead</label></p>
+      <div id="cloud-preview" class="card" hidden></div>
+    </div>
     <p id="capture-status"></p>
     <p>
       <label>Someone not in the list yet: <input id="person-name" placeholder="Name" size="14" /></label>

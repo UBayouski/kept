@@ -19,10 +19,11 @@
     <h1>Kept: capture evaluation</h1>
     <p class="muted">Development tool. Each note is read through the same path as the review screen, by the cloud model, into its own store (<code>opfs://kept-eval</code>) holding a fixed workspace. See docs/evaluation.md.</p>
     <p id="appcheck" class="muted"></p>
+    <p class="muted">Add <code>?route=device</code> to read with the model built into this browser (prompt v1, the private workspace's route), and <code>&amp;set=round2</code> for another set.</p>
     <p><button id="run">Run all notes</button> <span id="progress"></span></p>
     <pre id="summary"></pre>
     <div id="rows"></div>
-    <p>Raw report: <button id="copy">Copy</button></p>
+    <p>Raw report: <button id="save">Save as a file</button> <button id="copy">Copy</button></p>
     <textarea id="report" readonly></textarea>
     <script type="module" src="/src/eval-page.js"></script>
   </body>

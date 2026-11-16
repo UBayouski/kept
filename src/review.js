@@ -1,8 +1,14 @@
-// The review screen. It reads and writes the demo workspace's store through
-// the rules in model.js; what it shows comes from review-data.js.
-// A captured note is read by the cloud model (the demo workspace's route, see
-// docs/linking-experiment.md) and goes through capture.js; the demo scenario is
-// loaded as already-read notes.
+// The review screen, for one of two workspaces, each with its own store
+// (docs/linking-experiment.md, "Routing"):
+//   demo     (default)  notes are read by the cloud model with prompt v2; the
+//                       demo scenario can be loaded
+//   private  (?workspace=private)  notes are read by the model built into this
+//            browser with prompt v1 and the app rules, and do not leave the
+//            device; what it proposes is provisional. The cloud model is used
+//            for a note only when the user ticks the box, after seeing exactly
+//            what would be sent
+// Every write goes through the rules in model.js; nothing is accepted without
+// the user.
 
 import * as db from './db.js';
 import * as m from './model.js';
@@ -11,7 +17,8 @@ import * as capture from './capture.js';
 import * as ai from './ai.js';
 import * as pipeline from './pipeline.js';
 
-const STORE = 'opfs://kept-demo';
+const PRIVATE = new URLSearchParams(location.search).get('workspace') === 'private';
+const STORE = PRIVATE ? 'opfs://kept-private' : 'opfs://kept-demo';
 const $ = (id) => document.getElementById(id);
 const q = (statement, params) => db.query(statement, params);
 
@@ -98,7 +105,9 @@ function card(item) {
       item.conflicts && el('span', { class: 'flag' }, 'another proposal wants the same value')),
     item.note
       ? [el('blockquote', {}, quoted(item.note.text, item.quote)),
-        el('div', { class: 'source muted' }, `From a ${item.note.kind}, ${when(item.note.occurredAt)}. Read from the note, not confirmed by you.`)]
+        el('div', { class: 'source muted' }, `From a ${item.note.kind}, ${when(item.note.occurredAt)}. ${item.note.extractedBy === 'device'
+          ? 'Read by the model on this device: provisional. Check that it is about this commitment and not another one.'
+          : 'Read from the note, not confirmed by you.'}`)]
       : el('div', { class: 'source muted' }, 'No source note.'),
     el('div', { class: 'actions' },
       el('button', { onclick: () => act(item.changeId, () => m.accept(q, item.changeId)) }, 'Accept'),
@@ -397,6 +406,75 @@ function renderPending() {
 const localNow = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 $('note-when').value = localNow();
 $('cloud-model').textContent = ai.CLOUD_MODEL;
+for (const node of document.querySelectorAll('.cloud-model')) node.textContent = ai.CLOUD_MODEL;
+
+// --- Private workspace ---
+
+if (PRIVATE) {
+  document.title = 'Kept: private';
+  $('workspace-intro').textContent = 'Private workspace, kept in this browser.';
+  $('workspace-switch').textContent = 'Open the demo workspace';
+  $('workspace-switch').href = '?';
+  $('seed').hidden = true;
+  $('capture-notice').hidden = true;
+  $('private-capture').hidden = false;
+}
+
+// The device model's state, and a way to download it, which needs a click.
+async function showDeviceState() {
+  const state = await ai.deviceModelState();
+  $('device-state').textContent = {
+    available: 'The device model is ready.',
+    downloadable: 'The device model is not downloaded yet.',
+    downloading: 'The device model is downloading.',
+    unavailable: 'This browser has no device model: use the cloud model below, or open the demo workspace.',
+  }[state] ?? `Device model: ${state}.`;
+  $('prepare-device').hidden = !(state === 'downloadable' || state === 'downloading');
+}
+if (PRIVATE) showDeviceState();
+$('prepare-device').onclick = async () => {
+  $('prepare-device').disabled = true;
+  try {
+    await ai.prepareDeviceModel((progress) => { $('device-state').textContent = `Downloading the device model: ${Math.round((progress?.loaded ?? 0) * 100)}%.`; });
+  } catch (err) {
+    $('device-state').textContent = `The device model could not be prepared: ${err.message}`;
+  }
+  $('prepare-device').disabled = false;
+  await showDeviceState();
+};
+
+// Before anything goes to the cloud from the private workspace, the page shows
+// what would be sent: the note, and the open commitments offered with it.
+async function showCloudPreview() {
+  const box = $('cloud-preview');
+  box.hidden = !$('cloud-opt-in').checked;
+  if (box.hidden) return;
+  const text = $('note').value.trim();
+  const { candidates } = await capture.prepare(q, text);
+  box.replaceChildren(...[
+    el('div', { class: 'summary' }, `Will be sent to ${ai.CLOUD_MODEL} when you click "Read this note":`),
+    el('blockquote', {}, text || '(the note, once you type it)'),
+    el('div', { class: 'source muted' }, candidates.length ? 'and these open commitments, so it can tell which one the note is about:' : 'and no commitments: there are none open.'),
+    candidates.length > 0 && el('ul', {}, candidates.map((c) => el('li', {}, `${c.what} (${c.owner}${c.to ? ` to ${c.to}` : ''}${c.due ? `, due ${c.due}` : ''})`))),
+    el('div', { class: 'source muted' }, 'Nothing else from this workspace is sent. The box unticks itself after this note.'),
+  ].filter(Boolean));
+}
+$('cloud-opt-in').onchange = () => showCloudPreview().catch(() => {});
+$('note').addEventListener('input', () => { if ($('cloud-opt-in').checked) showCloudPreview().catch(() => {}); });
+
+// How a note is read here: the cloud, or this browser's model.
+function route() {
+  if (PRIVATE && !$('cloud-opt-in').checked) {
+    return {
+      shape: 'v1', extractedBy: 'device',
+      generate: (prompt, schema) => ai.generateStructured(prompt, schema, ai.InferenceMode.ONLY_ON_DEVICE),
+    };
+  }
+  return {
+    shape: 'v2', extractedBy: `cloud:${ai.CLOUD_MODEL}`,
+    generate: (prompt, schema) => ai.generateStructured(prompt, schema, ai.InferenceMode.ONLY_IN_CLOUD),
+  };
+}
 
 $('read-note').onclick = async () => {
   const text = $('note').value.trim();
@@ -412,9 +490,10 @@ $('read-note').onclick = async () => {
   try {
     const r = await pipeline.readNote(q, {
       text, kind: $('note-kind').value, occurredAt: new Date(when).toISOString(), baseDate: when.slice(0, 10),
-      extractedBy: `cloud:${ai.CLOUD_MODEL}`,
-      generate: (prompt, schema) => ai.generateStructured(prompt, schema, ai.InferenceMode.ONLY_IN_CLOUD),
+      ...route(),
     });
+    $('cloud-opt-in').checked = false;
+    $('cloud-preview').hidden = true;
     for (const item of r.pending) pendingItems.push({ session: r.out.session, noteText: text, item });
     $('note').value = '';
     // The next note is from now, not from when the page was opened.
@@ -425,7 +504,8 @@ $('read-note').onclick = async () => {
       : deps.error ? `Dependencies were not read: ${deps.error}`
         : `${deps.proposed + deps.waiting ? `Dependencies: ${deps.proposed} proposed, ${deps.waiting} waiting for you` : 'No dependency found'} (${deps.ms} ms).${deps.problems.filter((p) => !p.repaired).length ? ` ${deps.problems.filter((p) => !p.repaired).length} refused.` : ''}`;
     status(out.usable ? 'ok' : 'bad', [
-      `Read by ${r.linking.source === 'in_cloud' ? 'the cloud model' : r.linking.source} in ${r.linking.ms} ms.`,
+      `Read by ${{ in_cloud: 'the cloud model', on_device: 'the model on this device' }[r.linking.source] ?? r.linking.source} in ${r.linking.ms} ms.`,
+      r.linking.source === 'on_device' ? 'What it read is provisional: check each proposal, and the other commitments it could be about.' : '',
       out.usable ? '' : 'Its answer could not be used.',
       r.proposed || pendingItems.length
         ? `${r.proposed} proposal(s) to review, ${pendingItems.length} thing(s) that need you first.`
@@ -436,8 +516,14 @@ $('read-note').onclick = async () => {
       r.similarBefore ? 'The same text was captured before; this is stored as a new note.' : '',
     ].filter(Boolean).join(' '));
   } catch (err) {
-    status('bad', `Not read, and nothing was stored: ${err.message}`,
-      ai.debugToken ? ` On localhost the cloud model needs this browser's App Check debug token registered in the Firebase console: ${ai.debugToken}` : '');
+    // The free tier allows 500 cloud requests a day; say so plainly, with when it comes back.
+    const quota = /\b429\b|quota/i.test(err.message);
+    const retry = /retry in ((\d+)h)?((\d+)m)?/i.exec(err.message);
+    const message = quota
+      ? `The cloud model's free quota is used up${retry ? `; it should work again in about ${retry[2] ? `${retry[2]} h ` : ''}${retry[4] ?? 0} min` : ''}.${PRIVATE ? ' The model on this device is not affected.' : ''}`
+      : err.message;
+    status('bad', `Not read, and nothing was stored: ${message}`,
+      ai.debugToken && route().shape === 'v2' && /app.?check|\b40[13]\b/i.test(err.message) ? ` On localhost the cloud model needs this browser's App Check debug token registered in the Firebase console: ${ai.debugToken}` : '');
   } finally {
     $('read-note').disabled = false;
   }

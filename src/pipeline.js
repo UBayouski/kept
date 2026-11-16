@@ -18,14 +18,16 @@ import { variants } from './linking-cases.js';
 //   deps       {ms, parsed, waiting, proposed, problems} of the dependency call, or
 //              {error} when it failed (the note is stored either way), or null when not made
 //   leftOut, similarBefore  for the status line
-export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, generate, extractedBy = 'model', now }) {
+// shape: 'v2' (one list, for the cloud model) or 'v1' (two lists, for the
+// device model with the app rules); see docs/linking-experiment.md.
+export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, generate, extractedBy = 'model', now, shape = 'v2' }) {
   const ready = await capture.prepare(q, text);
   const similarBefore = (await findSimilarNotes(q, text)).length > 0;
-  const variant = variants.v2;
+  const variant = variants[shape];
   // Nothing is stored until the model has answered.
   const linking = await generate(variant.buildPrompt(text, ready.candidates), variant.buildSchema(ready.candidates));
   const out = await capture.capture(q, {
-    text, kind, occurredAt, baseDate, answer: linking.parsed, shape: 'v2',
+    text, kind, occurredAt, baseDate, answer: linking.parsed, shape,
     candidates: ready.candidates, people: ready.people, extractedBy, ...(now ? { now } : {}),
   });
   const pending = [...out.pending];

@@ -19,7 +19,17 @@ if (ai.debugToken) {
 const GAP_MS = 4500;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let last = 0;
+// ?route=device reads with the model built into this browser and prompt v1,
+// the private workspace's route. It needs Chrome with the on-device model
+// ready; a device call is not paced, and gets longer to answer.
+const DEVICE = new URLSearchParams(location.search).get('route') === 'device';
 async function generate(prompt, schema) {
+  if (DEVICE) {
+    return Promise.race([
+      ai.generateStructured(prompt, schema, ai.InferenceMode.ONLY_ON_DEVICE),
+      wait(180000).then(() => { throw new Error('the device model did not answer within 180 s'); }),
+    ]);
+  }
   for (let attempt = 1; ; attempt++) {
     const since = Date.now() - last;
     if (since < GAP_MS) await wait(GAP_MS - since);
@@ -67,7 +77,7 @@ function show(rows) {
 // ?set=round2 runs another set; round 1 is the default.
 const setName = new URLSearchParams(location.search).get('set') ?? 'round1';
 const notes = e.sets[setName] ?? [];
-document.title += ` (${setName})`;
+document.title += ` (${setName}${DEVICE ? ', device' : ''})`;
 
 $('run').onclick = async () => {
   $('run').disabled = true;
@@ -80,7 +90,8 @@ $('run').onclick = async () => {
         // A reset that never finishes fails the note too.
         await Promise.race([db.reset(), wait(30000).then(() => { throw new Error('the store did not reset within 30 s'); })]);
         const ws = await e.seedWorkspace(q);
-        const result = await pipeline.readNote(q, { text: testCase.note, ...e.NOTE_TIME, generate, extractedBy: `cloud:${ai.CLOUD_MODEL}` });
+        const result = await pipeline.readNote(q, { text: testCase.note, ...e.NOTE_TIME, generate,
+          shape: DEVICE ? 'v1' : 'v2', extractedBy: DEVICE ? 'device' : `cloud:${ai.CLOUD_MODEL}` });
         row.observed = await e.observe(q, result, ws);
         row.score = e.score(row.observed, testCase.expect);
         row.raw = { linking: result.linking.parsed, linkingMs: result.linking.ms, source: result.linking.source, deps: result.deps };
@@ -96,10 +107,35 @@ $('run').onclick = async () => {
   const summary = e.summarise(rows);
   $('summary').textContent = JSON.stringify(summary, null, 2);
   $('report').value = JSON.stringify({
-    evaluation: 'capture', set: setName, ranAt: new Date().toISOString(), cloudModel: ai.CLOUD_MODEL, linkingPrompt: 'v2',
+    evaluation: 'capture', set: setName, route: DEVICE ? 'device' : 'cloud', deviceModelSays: DEVICE ? await deviceName() : undefined,
+    ranAt: new Date().toISOString(), cloudModel: DEVICE ? undefined : ai.CLOUD_MODEL, linkingPrompt: DEVICE ? 'v1' : 'v2',
     userAgent: navigator.userAgent, summary, rows,
   });
   $('progress').textContent = 'done';
+};
+
+// What the device model says it is, so a report records whether Gemma 4 answered. Self-report only.
+async function deviceName() {
+  try {
+    const session = await LanguageModel.create({ expectedInputs: [{ type: 'text', languages: ['en'] }], expectedOutputs: [{ type: 'text', languages: ['en'] }] });
+    const answer = await session.prompt('Which model are you, exactly? Give the model family and version only. If unsure of the version, say "unsure".');
+    session.destroy();
+    return answer.trim().slice(0, 200);
+  } catch (err) {
+    return `could not ask: ${err.message}`;
+  }
+}
+
+// The report as a file: the raw record of what the model returned.
+$('save').onclick = () => {
+  const text = $('report').value;
+  if (!text) return;
+  const { set, route, ranAt } = JSON.parse(text);
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  link.download = `capture-${set}-${route}-${ranAt.replace(/[:.]/g, '-')}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 };
 
 $('copy').onclick = () => navigator.clipboard.writeText($('report').value);

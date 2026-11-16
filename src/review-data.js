@@ -112,7 +112,7 @@ export async function reviewItems(q) {
             coalesce(named.name, named.what) AS names,
             c.id AS commitmentId, c.what AS what, c.status AS status, c.review AS review,
             toString(c.due) AS currentDue, c.dueText AS currentDueText, o.name AS owner, t.name AS recipient,
-            n.id AS noteId, n.text AS noteText, n.kind AS noteKind, toString(n.occurredAt) AS occurredAt
+            n.id AS noteId, n.text AS noteText, n.kind AS noteKind, toString(n.occurredAt) AS occurredAt, n.extractedBy AS extractedBy
      ORDER BY recordedAt, changeId`,
   );
   return rows.map((r) => {
@@ -120,7 +120,7 @@ export async function reviewItems(q) {
       changeId: r.changeId, kind: r.kind, clear: Boolean(r.clear), due: r.due, dueText: r.dueText, names: r.names,
       quote: r.quote, source: r.source,
       commitment: { id: r.commitmentId, what: r.what, status: r.status, review: r.review, due: r.currentDue, dueText: r.currentDueText, owner: r.owner, to: r.recipient },
-      note: r.noteId ? { id: r.noteId, text: r.noteText, kind: r.noteKind, occurredAt: r.occurredAt } : null,
+      note: r.noteId ? { id: r.noteId, text: r.noteText, kind: r.noteKind, occurredAt: r.occurredAt, extractedBy: r.extractedBy } : null,
       stale: Boolean(flags.get(r.changeId)?.stale),
       conflicts: Boolean(flags.get(r.changeId)?.conflicts),
     };
