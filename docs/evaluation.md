@@ -790,6 +790,20 @@ Device, 2026-11-16: **4/8/0, 5/7/0, 4/8/0**, no wrong dependency.
 - Passes are lower than rounds 18 and 19: this round was written to hit the
   words the lists do not know, which come out as questions (safe).
 
+## The hosted site, by hand (private workspace, device model)
+
+2026-11-16, https://relate-hybrid.web.app at the deploy of 459c23c, in the
+user's private workspace (one commitment, "Send the proposal" to Dana):
+
+- "Dana no longer needs the proposal." -> **Mark "Send the proposal" as
+  cancelled.**, read in 2.2 s, marked provisional. Rejected.
+- "I'll call Dana about the proposal on Friday." -> question: the proposal's
+  new deadline, **New: "Call about the proposal"**, or none. Dismissed.
+- "Sent it to Dana this morning." -> question: **"Send the proposal": done**,
+  something new, or none. Dismissed.
+
+The commitment is as it was; the three notes stay in the workspace.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
