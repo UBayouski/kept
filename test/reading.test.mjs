@@ -331,3 +331,16 @@ test('the future, or waiting, is not done or cancelled', async () => {
   assert.deepEqual(r.proposals.map((p) => [p.label, p.change]), [['Z3', 'done']]);
   assert.equal(r.manual.length, 2);
 });
+
+test('words that follow "until" or "once" are a condition, not news', async () => {
+  const { readNote } = await import('../src/reading.js');
+  const candidates = [{ id: 'k', label: 'K1', what: 'Sign the lease' }, { id: 'p', label: 'P2', what: 'Pay the deposit' }];
+  // New sentences, not the evaluation's.
+  const note = 'Movers come once Sam signs the lease. Paid the deposit.';
+  const r = readNote({ items: [
+    { quote: 'Sam signs the lease', about: 'K1', change: 'done', due: '', what: '' },
+    { quote: 'Paid the deposit', about: 'P2', change: 'done', due: '', what: '' },
+  ] }, { shape: 'v2', candidates, note });
+  assert.deepEqual(r.proposals.map((p) => p.label), ['P2']);
+  assert.equal(r.manual.length, 1);
+});

@@ -1,0 +1,675 @@
+{
+ "evaluation": "capture",
+ "set": "round3",
+ "ranAt": "2026-11-16T03:05:02.019Z",
+ "cloudModel": "gemini-3.5-flash-lite",
+ "linkingPrompt": "v2",
+ "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+ "summary": {
+  "notes": 10,
+  "errors": 0,
+  "pass": 8,
+  "safe": 2,
+  "unsafe": 0,
+  "wrongChange": 0,
+  "guessed": 0,
+  "missedChange": 0,
+  "missedNew": 2,
+  "extraNew": 0,
+  "cardErrors": 0,
+  "wrongDependency": 0,
+  "missedDependency": 2,
+  "needlessQuestions": 0,
+  "linkedByHand": 0,
+  "byGroup": {
+   "dependency": {
+    "notes": 10,
+    "pass": 8,
+    "safe": 2,
+    "unsafe": 0,
+    "error": 0
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "r3-1",
+   "group": "dependency",
+   "note": "Dana can't approve the proposal until Lee confirms pricing.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [
+     "Approve the proposal"
+    ],
+    "wrongDeps": [],
+    "missedDeps": [
+     "new:approve proposal waits for pricing"
+    ],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 932,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 877,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Lee confirms pricing",
+        "waiting": "R8",
+        "waitsFor": "A7",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": [
+      {
+       "reason": "\"Send the proposal\" is not the action of the person who waits",
+       "entry": {
+        "quote": "until Lee confirms pricing",
+        "waiting": "R8",
+        "waitsFor": "A7"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "r3-2",
+   "group": "dependency",
+   "note": "I'll send Priya the budget review by Friday, once Lee confirms pricing.",
+   "observed": {
+    "changes": [
+     {
+      "on": "budget",
+      "kind": "deadline",
+      "due": "2026-11-27",
+      "dueText": "Friday"
+     }
+    ],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "budget",
+      "on": "pricing"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Priya the budget review by Friday",
+       "about": "H1",
+       "change": "new deadline",
+       "due": "Friday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 884,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 863,
+     "parsed": {
+      "items": [
+       {
+        "quote": "once Lee confirms pricing",
+        "waiting": "H1",
+        "waitsFor": "Z0",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-3",
+   "group": "dependency",
+   "note": "After Omar books the venue, I'll send Dana the contract on Monday.",
+   "observed": {
+    "changes": [
+     {
+      "on": "contract",
+      "kind": "deadline",
+      "due": "2026-11-30",
+      "dueText": "Monday"
+     }
+    ],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "contract",
+      "on": "venue"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "After Omar books the venue, I'll send Dana the contract on Monday",
+       "about": "C2",
+       "change": "new deadline",
+       "due": "Monday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 792,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 809,
+     "parsed": {
+      "items": [
+       {
+        "quote": "After Omar books the venue",
+        "waiting": "C2",
+        "waitsFor": "M4",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-4",
+   "group": "dependency",
+   "note": "Lee will confirm pricing once I send him the volumes.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the volumes",
+      "owner": "Me",
+      "to": "Lee",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "pricing",
+      "on": "new:Send the volumes"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Lee will confirm pricing once I send him the volumes",
+       "about": "Q3",
+       "change": "new deadline",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 785,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 828,
+     "parsed": {
+      "items": [
+       {
+        "quote": "once I send him the volumes",
+        "waiting": "Q3",
+        "waitsFor": "new",
+        "newWhat": "Send the volumes",
+        "newOwner": "me"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-5",
+   "group": "dependency",
+   "note": "I'll send the proposal to Lee when Dana has seen it.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "See it",
+      "owner": "Dana",
+      "to": "Me",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "proposalLee",
+      "on": "new:See it"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send the proposal to Lee when Dana has seen it",
+       "about": "N8",
+       "change": "new deadline",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 952,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 891,
+     "parsed": {
+      "items": [
+       {
+        "quote": "when Dana has seen it",
+        "waiting": "N8",
+        "waitsFor": "new",
+        "newWhat": "See it",
+        "newOwner": "Dana"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-6",
+   "group": "dependency",
+   "note": "Sam can't start the design until Priya sends the brief.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [
+     "Start the design",
+     "Send the brief"
+    ],
+    "wrongDeps": [],
+    "missedDeps": [
+     "new:design waits for new:brief"
+    ],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 759,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 784,
+     "parsed": {
+      "items": []
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-7",
+   "group": "dependency",
+   "note": "The contract waits for Lee's pricing.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "contract",
+      "on": "pricing"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 1239,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 887,
+     "parsed": {
+      "items": [
+       {
+        "quote": "The contract waits for Lee's pricing",
+        "waiting": "Y2",
+        "waitsFor": "G5",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-8",
+   "group": "dependency",
+   "note": "Dana will get the proposal tomorrow after lunch.",
+   "observed": {
+    "changes": [
+     {
+      "on": "proposal",
+      "kind": "deadline",
+      "due": "2026-11-26",
+      "dueText": "tomorrow"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Dana will get the proposal tomorrow after lunch",
+       "about": "E8",
+       "change": "new deadline",
+       "due": "tomorrow after lunch",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 816,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 1058,
+     "parsed": {
+      "items": []
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-9",
+   "group": "dependency",
+   "note": "Priya says the budget review can wait until next month.",
+   "observed": {
+    "changes": [
+     {
+      "on": "budget",
+      "kind": "deadline",
+      "due": "words",
+      "dueText": "next month"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "the budget review can wait until next month",
+       "about": "E9",
+       "change": "new deadline",
+       "due": "next month",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1055,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 984,
+     "parsed": {
+      "items": []
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r3-10",
+   "group": "dependency",
+   "note": "Omar will book the venue as soon as Dana confirms the date, by Friday at the latest.",
+   "observed": {
+    "changes": [
+     {
+      "on": "venue",
+      "kind": "deadline",
+      "due": "2026-11-27",
+      "dueText": "Friday"
+     }
+    ],
+    "created": [
+     {
+      "what": "Confirm the date",
+      "owner": "Dana",
+      "to": "Omar",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "venue",
+      "on": "new:Confirm the date"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Omar will book the venue as soon as Dana confirms the date, by Friday at the latest",
+       "about": "M9",
+       "change": "new deadline",
+       "due": "Friday",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 766,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 844,
+     "parsed": {
+      "items": [
+       {
+        "quote": "Dana confirms the date",
+        "waiting": "M9",
+        "waitsFor": "new",
+        "newWhat": "Confirm the date",
+        "newOwner": "Dana"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  }
+ ]
+}

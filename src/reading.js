@@ -285,7 +285,7 @@ export function readNote(answer, { shape, candidates, note }) {
   for (const u of ruled.updates) {
     // "The venue can't be booked until Dana confirms" says it waits, not that it
     // is done or cancelled. Such a reading is not proposed; the user links it.
-    if ((u.change === 'done' || u.change === 'cancelled') && WAITS.test(u.quote)) {
+    if ((u.change === 'done' || u.change === 'cancelled') && (WAITS.test(u.quote) || isCondition(note, u.quote))) {
       manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but the words say it waits for something. Link it by hand if it is either.` });
       continue;
     }
@@ -304,6 +304,12 @@ export function readNote(answer, { shape, candidates, note }) {
 
 // Words that say the thing has not happened yet: a negation followed by
 // "until", "unless" or "before"; the future ("will", "I'll"); or waiting.
+// The quoted words come right after "until", "once", "after" and the like:
+// "until Lee confirms pricing" is a condition, not news that Lee did.
+function isCondition(note, quote) {
+  const at = note.toLowerCase().indexOf(String(quote ?? '').trim().toLowerCase());
+  return at > 0 && /\b(until|till|unless|once|after|when|before|as soon as|if)\s*$/i.test(note.slice(0, at));
+}
 const WAITS = /\b(can'?t|cannot|can not|won'?t|will not|not|no|never)\b[^.;]*\b(until|till|unless|before)\b|\bwill\b|\w'll\b|\b(waits?|waiting|blocked)\b/i;
 
 // What goes to model.js recordExtraction for one reading: the proposals as

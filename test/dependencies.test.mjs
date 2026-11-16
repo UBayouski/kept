@@ -227,3 +227,24 @@ test('a listed commitment is not what waits when the words make someone else wai
   assert.equal(deps.recorded, null);
   assert.match(deps.problems[0].reason, /not the action of the person who waits/);
 });
+
+test('a listed commitment the words do not mention is not what waits, nor what is waited for', async () => {
+  const q = await storeWithoutDependency();
+  // The demo store has "Send the proposal" and "Confirm pricing". New sentences, not the evaluation's.
+  const run = async (text, waitingWhat, blockerWhat) => {
+    const ready = await c.prepare(q, text);
+    const out = await c.capture(q, { text, answer: { items: [] }, shape: 'v2', ...ready, ...WHEN });
+    const list = c.dependencyList(ready.candidates, out.pending);
+    const label = (what) => list.find((x) => x.what === what).label;
+    const quote = text.slice(text.search(/once|after|until/));
+    return c.addDependencies(q, out.session, { answer: { items: [dep(quote.replace(/\.$/, ''), label(waitingWhat), label(blockerWhat))] }, list, note: text, people: ready.people });
+  };
+  // The live test on 2026-11-15: the note is about a contract, the model chose the proposal.
+  const contract = await run("I'll send Dana the invoice on Monday, once Lee confirms pricing.", 'Send the proposal', 'Confirm pricing');
+  assert.equal(contract.recorded, null);
+  assert.match(contract.problems[0].reason, /do not mention "Send the proposal" as what waits/);
+  const blocker = await run("I'll send Dana the proposal once Lee signs the lease.", 'Send the proposal', 'Confirm pricing');
+  assert.match(blocker.problems[0].reason, /dependency do not mention "Confirm pricing"/);
+  const right = await run("I'll send Dana the proposals once Lee confirms the pricing.", 'Send the proposal', 'Confirm pricing');
+  assert.equal(right.recorded.added.length, 1, 'plural and "the" do not matter');
+});

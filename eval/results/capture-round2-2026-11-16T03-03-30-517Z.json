@@ -1,0 +1,830 @@
+{
+ "evaluation": "capture",
+ "set": "round2",
+ "ranAt": "2026-11-16T03:03:30.517Z",
+ "cloudModel": "gemini-3.5-flash-lite",
+ "linkingPrompt": "v2",
+ "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+ "summary": {
+  "notes": 12,
+  "errors": 0,
+  "pass": 6,
+  "safe": 5,
+  "unsafe": 1,
+  "wrongChange": 1,
+  "guessed": 0,
+  "missedChange": 0,
+  "missedNew": 3,
+  "extraNew": 1,
+  "cardErrors": 0,
+  "wrongDependency": 0,
+  "missedDependency": 3,
+  "needlessQuestions": 0,
+  "linkedByHand": 1,
+  "byGroup": {
+   "dependency": {
+    "notes": 12,
+    "pass": 6,
+    "safe": 5,
+    "unsafe": 1,
+    "error": 0
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "r2-1",
+   "group": "dependency",
+   "note": "I'll send Priya the budget review once Lee confirms pricing.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the budget review",
+      "owner": "Me",
+      "to": "Priya",
+      "due": null,
+      "how": "refused, one click"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "budget",
+      "on": "pricing"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [
+     "Send the budget review"
+    ],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Priya the budget review",
+       "about": "C8",
+       "change": "new commitment",
+       "due": "",
+       "what": "Send the budget review"
+      }
+     ]
+    },
+    "linkingMs": 1460,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 957,
+     "parsed": {
+      "items": [
+       {
+        "quote": "once Lee confirms pricing",
+        "waiting": "C8",
+        "waitsFor": "S7",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-2",
+   "group": "dependency",
+   "note": "The contract can't go to Dana until Lee confirms pricing.",
+   "observed": {
+    "changes": [
+     {
+      "on": "pricing",
+      "kind": "completed"
+     }
+    ],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "contract",
+      "on": "pricing"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [
+     "pricing: completed"
+    ],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "unsafe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Lee confirms pricing",
+       "about": "G9",
+       "change": "done",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 953,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 796,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Lee confirms pricing",
+        "waiting": "L2",
+        "waitsFor": "G9",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-3",
+   "group": "dependency",
+   "note": "I won't send Lee the proposal until Dana reviews it.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Review it",
+      "owner": "Dana",
+      "to": "Me",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "proposalLee",
+      "on": "new:Review it"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 2718,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 1030,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Dana reviews it",
+        "waiting": "X6",
+        "waitsFor": "new",
+        "newWhat": "Review it",
+        "newOwner": "Dana"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-4",
+   "group": "dependency",
+   "note": "After Priya reviews the budget, I'll send Dana the contract.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [
+     "Review the budget"
+    ],
+    "wrongDeps": [],
+    "missedDeps": [
+     "contract waits for new:review budget"
+    ],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Dana the contract",
+       "about": "C9",
+       "change": "new deadline",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 1102,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 811,
+     "parsed": {
+      "items": [
+       {
+        "quote": "After Priya reviews the budget",
+        "waiting": "C9",
+        "waitsFor": "F5",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": [
+      {
+       "reason": "\"Review the budget\" is not the action of the person the words name",
+       "entry": {
+        "quote": "After Priya reviews the budget",
+        "waiting": "C9",
+        "waitsFor": "F5"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "r2-5",
+   "group": "dependency",
+   "note": "Omar can only book the venue once I send him the deposit.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the deposit",
+      "owner": "Me",
+      "to": "Omar",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "venue",
+      "on": "new:Send the deposit"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 839,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 752,
+     "parsed": {
+      "items": [
+       {
+        "quote": "once I send him the deposit",
+        "waiting": "E6",
+        "waitsFor": "new",
+        "newWhat": "Send the deposit",
+        "newOwner": "me"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-6",
+   "group": "dependency",
+   "note": "Once the contract is out, I'll send Dana the proposal.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "proposal",
+      "on": "contract"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Dana the proposal",
+       "about": "C7",
+       "change": "new deadline",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 865,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 928,
+     "parsed": {
+      "items": [
+       {
+        "quote": "Once the contract is out",
+        "waiting": "C7",
+        "waitsFor": "G6",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-7",
+   "group": "dependency",
+   "note": "I'll send Dana the proposal tomorrow, before lunch.",
+   "observed": {
+    "changes": [
+     {
+      "on": "proposal",
+      "kind": "deadline",
+      "due": "2026-11-26",
+      "dueText": "tomorrow, before lunch"
+     }
+    ],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "I'll send Dana the proposal tomorrow, before lunch",
+       "about": "H8",
+       "change": "new deadline",
+       "due": "tomorrow, before lunch",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 820,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 803,
+     "parsed": {
+      "items": []
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-8",
+   "group": "dependency",
+   "note": "The budget review is blocked until Priya sends the numbers.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the numbers",
+      "owner": "Priya",
+      "to": "Me",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "budget",
+      "on": "new:Send the numbers"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 741,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 1079,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Priya sends the numbers",
+        "waiting": "H1",
+        "waitsFor": "new",
+        "newWhat": "Send the numbers",
+        "newOwner": "Priya"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-9",
+   "group": "dependency",
+   "note": "I can't book flights until Omar books the venue.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [
+     "Book flights"
+    ],
+    "wrongDeps": [],
+    "missedDeps": [
+     "new:flights waits for venue"
+    ],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 853,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 1647,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Omar books the venue",
+        "waiting": "H4",
+        "waitsFor": "new",
+        "newWhat": "Book flights",
+        "newOwner": "me"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": [
+      {
+       "reason": "the words do not mention \"Book the venue\" as what waits",
+       "entry": {
+        "quote": "until Omar books the venue",
+        "waiting": "H4",
+        "waitsFor": "new",
+        "newWhat": "Book flights",
+        "newOwner": "me"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "r2-10",
+   "group": "dependency",
+   "note": "Sam will send me the mockups once Priya signs off the copy.",
+   "observed": {
+    "changes": [],
+    "created": [
+     {
+      "what": "Send the mockups",
+      "owner": "Sam",
+      "to": "Me",
+      "due": null,
+      "how": "card"
+     },
+     {
+      "what": "Sign off the copy",
+      "owner": "Priya",
+      "to": "Sam",
+      "due": null,
+      "how": "card"
+     }
+    ],
+    "deps": [
+     {
+      "waiting": "new:Send the mockups",
+      "on": "new:Sign off the copy"
+     }
+    ],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "pass"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "Sam will send me the mockups once Priya signs off the copy",
+       "about": "new",
+       "change": "new commitment",
+       "due": "",
+       "what": "Send the mockups"
+      }
+     ]
+    },
+    "linkingMs": 953,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 778,
+     "parsed": {
+      "items": [
+       {
+        "quote": "once Priya signs off the copy",
+        "waiting": "N1",
+        "waitsFor": "new",
+        "newWhat": "Sign off the copy",
+        "newOwner": "Priya"
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 1,
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "r2-11",
+   "group": "dependency",
+   "note": "Dana can't sign the contract until Lee confirms pricing.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [],
+    "questions": [],
+    "manual": [],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [
+     "Sign the contract"
+    ],
+    "wrongDeps": [],
+    "missedDeps": [
+     "new:sign contract waits for pricing"
+    ],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": []
+    },
+    "linkingMs": 1261,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 974,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Lee confirms pricing",
+        "waiting": "J6",
+        "waitsFor": "P1",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 0,
+     "waiting": 0,
+     "problems": [
+      {
+       "reason": "\"Send the contract\" is not the action of the person who waits",
+       "entry": {
+        "quote": "until Lee confirms pricing",
+        "waiting": "J6",
+        "waitsFor": "P1"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "r2-12",
+   "group": "dependency",
+   "note": "The proposal for Lee waits until Omar has booked the venue.",
+   "observed": {
+    "changes": [],
+    "created": [],
+    "deps": [
+     {
+      "waiting": "proposalLee",
+      "on": "venue"
+     }
+    ],
+    "questions": [],
+    "manual": [
+     "An entry was refused: a new deadline has no date."
+    ],
+    "depsError": null
+   },
+   "score": {
+    "wrong": [],
+    "missed": [],
+    "guessed": [],
+    "cardErrors": [],
+    "extraCreated": [],
+    "missedCreated": [],
+    "wrongDeps": [],
+    "missedDeps": [],
+    "needlessQuestions": 0,
+    "asked": false,
+    "verdict": "safe"
+   },
+   "raw": {
+    "linking": {
+     "items": [
+      {
+       "quote": "The proposal for Lee waits until Omar has booked the venue",
+       "about": "R7",
+       "change": "new deadline",
+       "due": "",
+       "what": ""
+      }
+     ]
+    },
+    "linkingMs": 690,
+    "source": "in_cloud",
+    "deps": {
+     "ms": 928,
+     "parsed": {
+      "items": [
+       {
+        "quote": "until Omar has booked the venue",
+        "waiting": "R7",
+        "waitsFor": "V0",
+        "newWhat": "",
+        "newOwner": ""
+       }
+      ]
+     },
+     "proposed": 1,
+     "waiting": 0,
+     "problems": []
+    }
+   }
+  }
+ ]
+}

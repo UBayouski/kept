@@ -137,6 +137,16 @@ that run it often returned nothing for "can't ... until" notes). One run of
 10 or 12 notes is a rough measure; differences of one or two notes between
 runs are noise.
 
+**After a live test on the hosted site** ("I'll send Dana the contract on
+Monday, once Lee confirms pricing" made "Send the proposal" wait): a listed
+commitment is what waits only if the note's main clause mentions it, and is
+what is waited for only if the dependency's words do; and words right after
+"until", "once" or "after" are a condition, never news that something is done.
+Rounds 2 and 3 run again after the mention check (not clean): round 2 had 6 pass,
+5 safe, 1 unsafe (that "until Lee confirms pricing" read as done, which the
+condition rule now holds back); round 3 had 8 pass, 2 safe, 0 unsafe. The check
+refused one wrong link and no right one.
+
 **Re-runs of round 1** after the fixes (not clean, for regressions): 35 pass,
 4 safe, 1 unsafe; the one unsafe is still "Sent Dana the document".
 

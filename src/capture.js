@@ -387,9 +387,28 @@ export async function addDependencies(q, session, { answer, list, note, people: 
     if (first === 'i' || first === 'we') return meId;
     return persons.find((p) => !p.isMe && norm(p.name).split(' ')[0] === first)?.id ?? null;
   })();
+  // A listed commitment has to be mentioned where the dependency says it is:
+  // what waits in the note's main clause, what is waited for in the words of
+  // the dependency. "I'll send Dana the contract, once ..." does not mention
+  // "Send the proposal". The verb is left out: "send" says nothing about which.
+  const stem = (w) => w.replace(/(es|s)$/, '');
+  const mentions = (text, what) => {
+    const said = new Set(tokens(text).map(stem));
+    const named = tokens(what).slice(1).filter((w) => w.length > 2 && !SMALL.has(w));
+    return !named.length || named.some((w) => said.has(stem(w)));
+  };
+  const mainClause = beforeCue(note);
   for (const dep of read.dependencies) {
     const waiting = byLabel.get(dep.waiting);
     let blocker = byLabel.get(dep.waitsFor);
+    if (read.dependencies.length === 1 && !waiting.isNew && !mentions(mainClause, waiting.what)) {
+      problems.push({ reason: `the words do not mention "${waiting.what}" as what waits`, entry: dep });
+      continue;
+    }
+    if (dep.waitsFor !== 'new' && !blocker.isNew && !mentions(dep.quote, blocker.what)) {
+      problems.push({ reason: `the words of the dependency do not mention "${blocker.what}"`, entry: dep });
+      continue;
+    }
     if (read.dependencies.length === 1 && !waiting.isNew && subject) {
       const ownerId = matchPerson(waiting.owner, persons);
       if (ownerId && ownerId !== subject) {
