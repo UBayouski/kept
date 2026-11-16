@@ -571,11 +571,38 @@ Device, 2026-11-16:
 - **Fix after it (not measured):** a commitment the words name only after
   "about" or "regarding" is asked about (that one, or new), not changed.
 
+## Device model, round 13 (clean for runs 1 and 2)
+
+Written and committed (c47a7cc) after 659c252, before any model saw it;
+weighted to listed commitments named only as what something is about.
+Device, 2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Error |
+|---|---|---|---|---|
+| 1 | 4 | 7 | 0 | 1 (45 s timeout) |
+| 2 | 4 | 7 | 1 | 0 |
+| 3 (with d440b4f) | 5 | 7 | 0 | 0 |
+
+- **659c252 held:** "I'll email Lee about the proposal", "Omar will ring me
+  about the venue", "I'll ask Priya about the budget" were never proposed as
+  a change to the proposal, venue or budget; they were asked about. They do
+  not pass: the device model gives a change, not the new commitment, so the
+  question's "new" has to be filled in by hand.
+- **The unsafe answer (run 2):** "Sent Dana the contract after lunch."
+  "After" started the dependency call, which made up a new "Send the proposal"
+  for the contract to wait for.
+- **Fix (d440b4f, run 3 had it):** something new to wait for has to be named
+  in the words of the dependency ("after lunch" names no proposal); "it" and
+  "them" still count.
+- **Not asked:** "Dana asked for it on Tuesday." gave a vague new commitment
+  ("Send something", "Send item") for Dana instead of a question.
+
 ## Open
 
-- "Sam will call me about the venue tomorrow." is still asked about in most
-  runs: a deadline on the venue beside Sam's new commitment.
-- A clean round 13 to measure the "about" rule.
+- "About" notes: the right answer is a new commitment, which the device
+  model rarely gives; the question then has an empty "new".
+- A vague new commitment ("Send something") for a note that says "it".
+- "Sam will call me about the venue tomorrow." is still asked about.
 - "Omar scrapped the venue booking." read as done is now held back (safe),
   but not offered as cancelled.
 - Round 6 on the cloud route: 6 of 12 ran (all pass) before the quota ran out.
