@@ -65,6 +65,7 @@ let personRows = [];
 // What captured notes still need from the user. Kept in the page only: a
 // reload loses these, and the notes they came from stay in the store.
 const pendingItems = []; // { session, noteText, item, error }
+let loadedPending = false;
 const messages = new Map(); // changeId -> { outcome, text }
 const decided = []; // what was done in this session, newest first: { summary, text }
 const summaries = new Map(); // changeId -> the sentence shown on its card
@@ -289,10 +290,16 @@ async function settle(entry, work) {
       // The capture line counted this as waiting; it no longer is.
       if (!pendingItems.length) $('capture-status').replaceChildren();
     }
+    await persist(entry.session);
   } catch (err) {
     entry.error = err.message;
   }
   await refresh();
+}
+
+// Saves a note's cards with the note, after every change to them.
+function persist(session) {
+  return capture.savePending(q, session, pendingItems.filter((e) => e.session === session).map((e) => e.item));
 }
 
 function pendingCard(entry) {
@@ -305,6 +312,7 @@ function pendingCard(entry) {
     entry.item = next;
     entry.error = null;
     renderPending();
+    persist(session).catch((err) => { entry.error = `Not saved: ${err.message}`; renderPending(); });
   };
 
   if (item.type === 'new') {
@@ -382,7 +390,7 @@ function pendingCard(entry) {
 
 function renderPending() {
   $('pending').replaceChildren(...(pendingItems.length
-    ? [el('p', { class: 'muted' }, `${pendingItems.length} thing(s) from captured notes need you before they can be proposed. They are not saved: reloading the page drops them.`),
+    ? [el('p', { class: 'muted' }, `${pendingItems.length} thing(s) from captured notes need you before they can be proposed. They are kept with their notes until you deal with them.`),
       ...pendingItems.map(pendingCard)]
     : []));
 }
@@ -437,6 +445,7 @@ $('read-note').onclick = async () => {
         dependencyLine = `Dependencies were not read: ${err.message}`;
       }
     }
+    await persist(out.session);
     await refresh();
     const proposed = out.recorded.added.length + dependencyProposals;
     status(out.usable ? 'ok' : 'bad', [
@@ -481,6 +490,11 @@ db.init(async (msg) => {
     return;
   }
   try {
+    // Cards left from an earlier visit, once per page: a restarted worker opens the store again.
+    if (!loadedPending) {
+      loadedPending = true;
+      pendingItems.push(...await capture.loadPending(q));
+    }
     await refresh();
   } catch (err) {
     $('status').replaceChildren(el('span', { class: 'bad' }, `Error: ${err.message}`));

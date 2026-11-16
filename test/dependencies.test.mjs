@@ -147,6 +147,40 @@ test('the demo sentence into a store with nothing in it yet: two new commitments
     [['Send the proposal', 'Confirm pricing', 'Lee', null]]);
 });
 
+test('what a note still needs is kept with the note and comes back with its session', async () => {
+  const q = open();
+  await c.prepare(q, 'x');
+  await c.addPerson(q, 'Dana');
+  await c.addPerson(q, 'Lee');
+  const text = "I'll send Dana the proposal Friday, once Lee confirms pricing.";
+  const ready = await c.prepare(q, text);
+  const out = await c.capture(q, { text, shape: 'v2', ...ready, ...WHEN,
+    answer: { items: [{ quote: "I'll send Dana the proposal Friday", about: 'new', change: 'new commitment', due: 'Friday', what: 'Send the proposal' }] } });
+  const list = c.dependencyList(ready.candidates, out.pending);
+  const deps = await c.addDependencies(q, out.session, { list, note: text, people: ready.people,
+    answer: { items: [dep('once Lee confirms pricing', 'N1', 'new', 'Confirm pricing', 'Lee')] } });
+  const items = [...out.pending, ...deps.pending];
+  await c.savePending(q, out.session, items);
+  assert.deepEqual(await c.loadPending(open()), [], 'another store has none');
+
+  // As after a reload: everything comes from the store.
+  const back = await c.loadPending(q);
+  assert.deepEqual(back.map((e) => e.item.type), ['new', 'new', 'dependency']);
+  assert.equal(back[0].noteText, text);
+  assert.ok(back.every((e) => e.session === back[0].session), 'the cards of a note share one session');
+  assert.ok(back[0].session.candidateIds instanceof Set);
+  const session = back[0].session;
+  await c.proposeNew(q, session, back[0].item);
+  await c.proposeNew(q, session, back[1].item);
+  assert.equal((await c.proposeDependency(q, session, back[2].item)).added.length, 1);
+
+  // Saved again after a card is dealt with; nothing left clears it.
+  await c.savePending(q, session, [back[2].item]);
+  assert.equal((await c.loadPending(q)).length, 1);
+  await c.savePending(q, session, []);
+  assert.deepEqual(await c.loadPending(q), []);
+});
+
 test('a rejected new commitment cannot be waited for', async () => {
   const q = open();
   await c.prepare(q, 'x');

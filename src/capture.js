@@ -313,6 +313,37 @@ export function proposeNew(q, session, { what, ownerId, toId = null, dueText = '
   }]);
 }
 
+// --- What still needs the user, kept with the note ---
+
+// The cards a note still has, stored on the note itself, so a reload or a
+// closed tab does not lose them and emptying the store removes them. One
+// session per note: the cards of a note share it, because each answer adds to
+// what that note has proposed so far.
+export async function savePending(q, session, items) {
+  const pending = items.length
+    ? JSON.stringify({ session: { ...session, candidateIds: [...session.candidateIds] }, items })
+    : null;
+  await q('MATCH (n:Note {id: $id}) SET n.pending = $pending', { id: session.noteId, pending });
+}
+
+// Every note's cards, oldest note first: [{session, noteText, item}].
+export async function loadPending(q) {
+  const rows = await q(
+    `MATCH (n:Note) WHERE n.pending IS NOT NULL
+     RETURN n.text AS text, n.pending AS pending ORDER BY toString(n.capturedAt), n.id`,
+  );
+  return rows.flatMap((row) => {
+    let saved;
+    try {
+      saved = JSON.parse(row.pending);
+    } catch {
+      return [];
+    }
+    const session = { ...saved.session, candidateIds: new Set(saved.session.candidateIds) };
+    return saved.items.map((item) => ({ session, noteText: row.text, item }));
+  });
+}
+
 // --- Dependencies ---
 
 // What a dependency can be between: the commitments the linking call was
