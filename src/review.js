@@ -353,7 +353,17 @@ function pendingCard(entry) {
       error);
   }
 
+  // A new commitment the model did not name: the form, with the people and the
+  // date the words give, so only "what" is left to type.
+  const unnamedNew = (o) => ({ type: 'new', what: '', quote: o.quote, dueText: o.due ?? '', ...capture.guessPeople(o.quote, personRows) });
+
   if (item.type === 'question') {
+    // With no commitment to choose from, "which one?" has a single answer.
+    const answers = item.options.filter((o) => o.type !== 'all');
+    if (answers.length === 1 && answers[0].type === 'new' && answers[0].incomplete) {
+      entry.item = unnamedNew(answers[0]);
+      return pendingCard(entry);
+    }
     const whatOf = (id) => commitmentRows.find((c) => c.id === id)?.what ?? 'a commitment';
     const changes = item.options.filter((o) => o.type === 'commitment');
     const said = (o) => {
@@ -365,7 +375,7 @@ function pendingCard(entry) {
       if (o.type === 'all') return changes.length > 1 && el('button', { onclick: () => settle(entry, () => capture.proposeChange(q, session, changes)) }, 'All of them');
       if (o.type === 'same') return dismiss(`The same thing as "${whatOf(o.commitmentId)}", said twice`);
       // Something new: the card becomes the new-commitment form.
-      return el('button', { onclick: become({ ...o, type: 'new' }) }, o.incomplete ? 'Something new' : `New: "${o.what}"`);
+      return el('button', { onclick: become(o.incomplete ? unnamedNew(o) : { ...o, type: 'new' }) }, o.incomplete ? 'Something new' : `New: "${o.what}"`);
     });
     return el('div', { class: 'card needs' },
       el('div', { class: 'summary' }, 'Which commitment does this mean?'),
