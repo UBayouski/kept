@@ -334,3 +334,13 @@ test('"Review Priya\'s budget" read as new is the listed "Review the budget" for
   const r = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] }, { list, note: "I'll review Priya's budget once Lee confirms pricing." });
   assert.deepEqual(r.dependencies.map((x) => [x.waiting, x.waitsFor]), [['B1', 'P1']]);
 });
+
+test('a copy whose dependency moved to the listed one is reported, so its card can go', () => {
+  const list = [
+    { label: 'C1', what: 'Send the contract', owner: 'me', to: 'Dana' },
+    { label: 'P1', what: 'Confirm pricing', owner: 'Lee', to: 'me' },
+    { label: 'N1', what: 'send the contract', owner: 'me', to: 'Dana', isNew: true },
+  ];
+  const r = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] }, { list, note: "I'll send Dana's contract once Lee confirms pricing." });
+  assert.deepEqual([r.dependencies.map((x) => [x.waiting, x.waitsFor]), r.copies], [[['C1', 'P1']], ['N1']]);
+});

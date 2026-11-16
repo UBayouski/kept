@@ -456,7 +456,7 @@ export async function addDependencies(q, session, { answer, list, note, people: 
     }
   }
   const recorded = direct.length ? await record(q, session, direct) : null;
-  return { ok: read.ok, recorded, pending, problems };
+  return { ok: read.ok, recorded, pending, problems, copies: (read.copies ?? []).map((label) => byLabel.get(label)?.ref).filter(Boolean) };
 }
 
 // The user confirms a dependency that involves a commitment new in this note.

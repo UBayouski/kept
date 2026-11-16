@@ -122,6 +122,7 @@ export function readDependencies(answer, { list, note }) {
   // for "Review the budget"). A dependency on that copy is one on the listed
   // commitment: same words in any order, and the same person if it names one.
   const copyOf = new Map();
+  const usedCopies = new Set();
   // "Review Priya's budget" is "Review the budget" for Priya: the person's
   // name and the "'s" are left out of the words compared.
   const names = new Set(list.flatMap((c) => [c.owner, c.to]).map(norm).filter((p) => p && p !== 'me'));
@@ -146,6 +147,7 @@ export function readDependencies(answer, { list, note }) {
     if (unknown) { refuse(`unknown field "${unknown}"`); continue; }
     const missing = FIELDS.find((key) => typeof entry[key] !== 'string');
     if (missing) { refuse(`"${missing}" is missing or not text`); continue; }
+    const copied = [entry.waiting, entry.waitsFor].filter((l) => copyOf.has(l));
     if (copyOf.has(entry.waiting)) entry.waiting = copyOf.get(entry.waiting);
     if (copyOf.has(entry.waitsFor)) entry.waitsFor = copyOf.get(entry.waitsFor);
     // "The proposal for Lee waits ..." given as the proposal for Dana: the
@@ -181,6 +183,9 @@ export function readDependencies(answer, { list, note }) {
     const key = [dependency.waiting, dependency.waitsFor, norm(dependency.newWhat)].join('|');
     if (found.has(key)) problems.push({ reason: 'a repeated dependency was dropped', entry });
     else found.set(key, dependency);
+    for (const label of copied) usedCopies.add(label);
   }
-  return { ok: true, dependencies: [...found.values()], problems };
+  // copies: new commitments of this note that are listed ones said again; the
+  // dependency is on the listed one, so their cards are not needed.
+  return { ok: true, dependencies: [...found.values()], problems, copies: [...usedCopies] };
 }

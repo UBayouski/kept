@@ -414,7 +414,13 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
   const proposals = [];
   const questions = [];
   const manual = [...checked.manual];
-  for (const u of ruled.updates) {
+  for (const read of ruled.updates) {
+    // "Lee no longer needs to confirm pricing" and "Priya dropped the budget
+    // review" were read as done; the words say it is off. It is proposed as
+    // cancelled, which the user confirms like any other proposal.
+    const off = read.change === 'done' && STOPPED.test(sentenceOf(note, read.quote));
+    const u = off ? { ...read, change: 'cancelled' } : read;
+    if (off) ruled.notes.push(`"${read.quote}" was read as done; the words say it is off, so it is proposed as cancelled`);
     // "The venue can't be booked until Dana confirms" says it waits, not that it
     // is done or cancelled. Such a reading is not proposed; the user links it.
     if ((u.change === 'done' || u.change === 'cancelled') && (WAITS.test(u.quote) || isCondition(note, u.quote))) {
@@ -433,12 +439,6 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
     }
     if (u.change === 'cancelled' && !STOPPED.test(wholeSentence(note, u.quote))) {
       manual.push({ quote: u.quote, reason: 'It was read as "cancelled", but the words do not say it is off. Link it by hand if it was cancelled.' });
-      continue;
-    }
-    // "Priya dropped the budget review": "dropped" is a past tense, but the
-    // words say it is off, not done.
-    if (u.change === 'done' && STOPPED.test(sentenceOf(note, u.quote))) {
-      manual.push({ quote: u.quote, reason: 'It was read as "done", but the words say it is off. Link it by hand if it was done or cancelled.' });
       continue;
     }
     // Words that name someone, but none of the people of the commitment, are

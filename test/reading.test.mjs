@@ -464,7 +464,8 @@ test('"done" is proposed only when the words say something happened', () => {
     assert.deepEqual(readNote({ updates: [up('Q4', 'done', '', felt)], newCommitments: [] }, { shape: 'v1', candidates, note: felt }).proposals, [], felt);
   }
   const need = "Omar won't need the venue after all.";
-  assert.deepEqual(readNote({ updates: [up('Q4', 'done', '', need)], newCommitments: [] }, { shape: 'v1', candidates, note: need }).proposals, []);
+  // Read as done, but the words say it is off: proposed as cancelled.
+  assert.deepEqual(readNote({ updates: [up('Q4', 'done', '', need)], newCommitments: [] }, { shape: 'v1', candidates, note: need }).proposals.map((p) => [p.label, p.change]), [['Q4', 'cancelled']]);
 });
 
 test('"cancelled" is proposed only when the words say it is off', () => {
@@ -530,7 +531,7 @@ test('round 8 repeats: another person named asks; a twin of an updated one is dr
 
   const dropped = 'Dana dropped the contract.';
   const c = readNote({ updates: [up('R2', 'done', '', dropped)], newCommitments: [] }, { shape: 'v1', candidates, note: dropped });
-  assert.deepEqual([c.proposals, c.manual.length], [[], 1]);
+  assert.deepEqual([c.proposals.map((p) => [p.label, p.change]), c.manual], [[['R2', 'cancelled']], []]);
   assert.equal(readNote({ updates: [up('R2', 'cancelled', '', dropped)], newCommitments: [] }, { shape: 'v1', candidates, note: dropped }).proposals.length, 1);
 });
 
