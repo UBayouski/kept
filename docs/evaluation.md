@@ -340,10 +340,42 @@ is now dropped and only recorded in the log.
 - Most of what still does not pass is a needless question beside the right
   answer (6 in round 5 this run), and it varies from run to run.
 
+## Fewer needless questions: three app rules (39e07f8)
+
+- **Rule 2, one named:** the same change from the same words on several
+  commitments ("Omar sorted out the venue" as done on the venue and on
+  pricing) is that one change when the words name exactly one of them.
+- **A guess asks among the same person:** a change whose words do not name its
+  commitment was a question "that one, or new". It now also offers the other
+  commitments owed to the same person (not "me"): "Sent Dana the file" asks
+  about the proposal or the contract, the question the note needs.
+- **"It" looks back:** "Dana has the contract; I sent it" checks "it" against
+  the clause before.
+- The replayed first device run: 17 to 19 pass, unsafe still 3.
+
+**Device runs after it** (2026-11-16, after a Chrome restart; not clean):
+
+| Set | Pass | Safe | Unsafe | Needless questions |
+|---|---|---|---|---|
+| Round 6 | 5 | 7 | 0 | 2 |
+| Round 5 | 5 | 7 | 0 | 4 |
+
+The ambiguous note passed in both: "Sent Dana the file this morning." and
+"Dana wants it on Thursday instead." were asked about correctly; before, they
+were asked properly once in seven runs. All 4 new commitments in round 5 passed.
+
+**Cloud, round 6** (2026-11-16): stopped by the daily free quota (500).
+Of the notes that ran across two attempts, all 6 passed, including "Dana liked
+the venue photos." as nothing; 3 failed on the quota and 3 did not run.
+
 ## Open
 
-- Needless questions on the device route: the model adds an "unclear" or a
-  change on an unrelated commitment beside the right answer.
+- Finish round 6 on the cloud route once the quota resets.
+- Needless questions left on the device route: a change on an unrelated
+  commitment beside a right deadline (rounds 5 and 6, one each), and a
+  "done" on small talk ("Coffee with Sam") asked about everything.
+- The model sometimes writes the card's fields into "what" ("Send the case
+  study. owner: me. to: Lee"); the scorer counts it as the right thing.
 - The word rules are a list of words: a "done" said in words not on it is
   held back (safe), and a feeling verb not on it can still pass as done.
 
