@@ -601,7 +601,11 @@ Device, 2026-11-16:
 
 - "About" notes: the right answer is a new commitment, which the device
   model rarely gives; the question then has an empty "new".
-- A vague new commitment ("Send something") for a note that says "it".
+- A vague new commitment ("Send something") for a note that says "it": fixed
+  in 9ce2c22 (it becomes the question among that person's commitments, with
+  the change the words give). Round 13 again (not clean): 6 pass, 6 safe,
+  0 unsafe; the model gave a change that run, so the older same-person rule
+  asked the question, and the new rule was not exercised live.
 - "Sam will call me about the venue tomorrow." is still asked about.
 - "Omar scrapped the venue booking." read as done is now held back (safe),
   but not offered as cancelled.
