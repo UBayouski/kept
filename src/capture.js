@@ -14,6 +14,7 @@
 
 import * as m from './model.js';
 import { readNote, toExtraction, norm } from './reading.js';
+import { readDependencies, beforeCue } from './dependencies.js';
 
 // --- Dates ---
 
@@ -110,7 +111,10 @@ export function peopleNamed(text, people) {
 //   - "I ..." or "we ...": the user owes it, to the one other person named
 //   - otherwise the first person named owes it, to the user if the words say
 //     "me" or "us", else to the one other person named
-export function guessPeople(quote, people) {
+// Only the words before a dependency count: in "..., once Lee confirms
+// pricing" Lee is who it waits for, not who it is for.
+export function guessPeople(fullQuote, people) {
+  const quote = beforeCue(fullQuote);
   const me = people.find((p) => p.isMe)?.id ?? null;
   const words = new Set(tokens(quote));
   const named = peopleNamed(quote, people);
@@ -271,8 +275,10 @@ export async function capture(q, { text, kind = 'note', occurredAt, baseDate, an
       toId,
     };
   };
+  // Each new commitment gets a ref, so a dependency read later from the same
+  // note can point at it before it is in the store.
   const pending = [
-    ...reading.created.map(asNew),
+    ...reading.created.map((n, i) => ({ ...asNew(n), ref: `new-${i + 1}` })),
     ...reading.questions.map((question) => ({
       type: 'question', quote: question.quote, from: question.from,
       options: question.options.map((option) => (option.type === 'new' ? { ...option, ...asNew(option), type: 'new', incomplete: Boolean(option.incomplete) } : option)),
@@ -296,12 +302,79 @@ export function proposeChange(q, session, changes) {
 
 // A new commitment, with the people the user chose. Stored unconfirmed, with a
 // proposal in the review queue.
-export function proposeNew(q, session, { what, ownerId, toId = null, dueText = '', quote }) {
+export function proposeNew(q, session, { what, ownerId, toId = null, dueText = '', quote, ref }) {
   const clean = String(what ?? '').trim();
   if (!clean) throw new Error('Say what is promised');
   if (!ownerId) throw new Error('Choose who owes it');
   return record(q, session, [{
     kind: 'created', what: clean, ownerId, toId: toId || null, quote,
     dueText: dueText || null, due: resolveDate(dueText, session.baseDate),
+    ...(ref ? { ref } : {}),
+  }]);
+}
+
+// --- Dependencies ---
+
+// What a dependency can be between: the commitments the linking call was
+// given, and the new ones it found in this note (they are not in the store
+// until the user proposes them, so they are named by their ref).
+export function dependencyList(candidates, pending) {
+  const fresh = pending.filter((item) => item.type === 'new' && item.ref);
+  return [
+    ...candidates.map((c) => ({ label: c.label, what: c.what, owner: c.owner, to: c.to, commitmentId: c.id })),
+    ...fresh.map((item, i) => ({ label: `N${i + 1}`, what: item.what, owner: item.ownerName || '', to: item.toName || '', isNew: true, ref: item.ref, ownerId: item.ownerId })),
+  ];
+}
+
+const sideOf = (entry) => (entry.ref ? { ref: entry.ref, what: entry.what } : { commitmentId: entry.commitmentId, what: entry.what });
+
+// Records what the dependency call read. A dependency between two commitments
+// already in the store is proposed at once. One that involves a commitment
+// new in this note waits for the user: they propose that commitment first.
+// Something to wait for that the note names but nobody listed becomes a new
+// commitment to propose, owed to whoever waits.
+// Returns {recorded, pending, problems}.
+export async function addDependencies(q, session, { answer, list, note, people: persons, nextRef = 1 }) {
+  const read = readDependencies(answer, { list, note });
+  const byLabel = new Map(list.map((c) => [c.label, c]));
+  const pending = [];
+  const direct = [];
+  let n = nextRef;
+  for (const dep of read.dependencies) {
+    const waiting = byLabel.get(dep.waiting);
+    let blocker = byLabel.get(dep.waitsFor);
+    if (dep.waitsFor === 'new') {
+      // The thing waited for is owed to whoever waits.
+      const waiterId = waiting.ownerId ?? matchPerson(waiting.owner, persons);
+      const ref = `dep-${n++}`;
+      const ownerId = matchPerson(dep.newOwner, persons);
+      pending.push({
+        type: 'new', what: withoutRecipient(dep.newWhat, null), quote: dep.quote, dueText: '', due: null,
+        ownerName: dep.newOwner, toName: waiting.owner, ownerId, toId: waiterId, ref,
+      });
+      blocker = { ref, what: dep.newWhat };
+    }
+    if (!waiting.ref && !blocker.ref) {
+      direct.push({ kind: 'blocked', commitmentId: waiting.commitmentId, namesId: blocker.commitmentId, quote: dep.quote });
+    } else {
+      pending.push({ type: 'dependency', quote: dep.quote, waiting: sideOf(waiting), waitsFor: sideOf(blocker) });
+    }
+  }
+  const recorded = direct.length ? await record(q, session, direct) : null;
+  return { ok: read.ok, recorded, pending, problems: read.problems };
+}
+
+// The user confirms a dependency that involves a commitment new in this note.
+// That commitment has to be proposed first.
+export function proposeDependency(q, session, { waiting, waitsFor, quote }) {
+  for (const side of [waiting, waitsFor]) {
+    if (side.ref && !session.assertions.some((a) => a.kind === 'created' && a.ref === side.ref)) {
+      throw new Error(`Propose the new commitment "${side.what}" first, then this.`);
+    }
+  }
+  return record(q, session, [{
+    kind: 'blocked', quote,
+    ...(waiting.ref ? { commitmentRef: waiting.ref } : { commitmentId: waiting.commitmentId }),
+    ...(waitsFor.ref ? { namesRef: waitsFor.ref } : { namesId: waitsFor.commitmentId }),
   }]);
 }

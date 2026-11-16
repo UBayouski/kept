@@ -10,6 +10,7 @@ import * as data from './review-data.js';
 import * as capture from './capture.js';
 import * as ai from './ai.js';
 import { variants } from './linking-cases.js';
+import * as dependencies from './dependencies.js';
 
 const STORE = 'opfs://kept-demo';
 const $ = (id) => document.getElementById(id);
@@ -277,6 +278,8 @@ const resolvedHint = (input, session) => {
 // Settles one thing a note still needed: runs `work` if there is any, and
 // removes the entry unless the store rules refused what it proposed.
 async function settle(entry, work) {
+  // An earlier error on this card no longer applies once it is tried again.
+  entry.error = null;
   try {
     const result = work ? await work() : null;
     const refused = result?.invalid?.[0];
@@ -318,8 +321,19 @@ function pendingCard(entry) {
       el('div', { class: 'source muted' }, 'The people and the date are how the app reads the words. Correct them before proposing.'),
       el('div', { class: 'actions' },
         el('button', { onclick: () => settle(entry, () => capture.proposeNew(q, session,
-          { what: what.value, ownerId: owner.value, toId: to.value, dueText: due.value.trim(), quote: item.quote })) }, 'Propose it'),
+          { what: what.value, ownerId: owner.value, toId: to.value, dueText: due.value.trim(), quote: item.quote, ref: item.ref })) }, 'Propose it'),
         dismiss('Not a commitment')),
+      error);
+  }
+
+  if (item.type === 'dependency') {
+    return el('div', { class: 'card needs' },
+      el('div', { class: 'summary' }, `"${item.waiting.what}" cannot be done until "${item.waitsFor.what}" is.`),
+      source,
+      el('div', { class: 'source muted' }, 'One of these is new in this note. Propose it first (its card is above), then this.'),
+      el('div', { class: 'actions' },
+        el('button', { onclick: () => settle(entry, () => capture.proposeDependency(q, session, item)) }, 'Propose it'),
+        dismiss('Not a dependency')),
       error);
   }
 
@@ -402,14 +416,36 @@ $('read-note').onclick = async () => {
     $('note').value = '';
     // The next note is from now, not from when the page was opened.
     $('note-when').value = localNow();
+
+    // A second call for dependencies, only when the note has a word that states one.
+    // The note is stored already: a failure here loses only the dependencies.
+    let dependencyLine = '';
+    let dependencyProposals = 0;
+    const list = out.usable && dependencies.hasCue(text) ? capture.dependencyList(ready.candidates, out.pending) : [];
+    if (list.length) {
+      try {
+        const read = await ai.generateStructured(dependencies.buildPrompt(text, list), dependencies.buildSchema(list), ai.InferenceMode.ONLY_IN_CLOUD);
+        const deps = await capture.addDependencies(q, out.session, { answer: read.parsed, list, note: text, people: ready.people });
+        for (const item of deps.pending) pendingItems.push({ session: out.session, noteText: text, item });
+        dependencyProposals = deps.recorded?.added.length ?? 0;
+        const waiting = deps.pending.filter((p) => p.type === 'dependency').length;
+        dependencyLine = dependencyProposals + waiting
+          ? `Dependencies: ${dependencyProposals} proposed, ${waiting} waiting for you (${read.ms} ms).`
+          : `No dependency found (${read.ms} ms).`;
+        if (deps.problems.length) dependencyLine += ` ${deps.problems.length} refused.`;
+      } catch (err) {
+        dependencyLine = `Dependencies were not read: ${err.message}`;
+      }
+    }
     await refresh();
-    const proposed = out.recorded.added.length;
+    const proposed = out.recorded.added.length + dependencyProposals;
     status(out.usable ? 'ok' : 'bad', [
       `Read by ${result.source === 'in_cloud' ? 'the cloud model' : result.source} in ${result.ms} ms.`,
       out.usable ? '' : 'Its answer could not be used.',
-      proposed || out.pending.length
-        ? `${proposed} proposal(s) to review, ${out.pending.length} thing(s) that need you first.`
+      proposed || pendingItems.length
+        ? `${proposed} proposal(s) to review, ${pendingItems.length} thing(s) that need you first.`
         : 'It found nothing that promises or changes anything. The note is stored.',
+      dependencyLine,
       out.recorded.invalid.length ? `${out.recorded.invalid.length} proposal(s) were refused by the store rules.` : '',
       ready.leftOut ? `${ready.leftOut} open commitment(s) were not offered to the model: only the ${ready.candidates.length} closest to the note are.` : '',
       before.length ? 'The same text was captured before; this is stored as a new note.' : '',
