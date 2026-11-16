@@ -486,7 +486,25 @@ export const round19 = [
     expect: { changes: [c('pricing', 'completed'), c('budget', 'deadline', '2026-11-30')] } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17, round18, round19 };
+// Round 20: weighted to done, cancelled and nothing to do, where the second
+// look (bb03a8c) acts, and an "about" note; written on 2026-11-16 after
+// bb03a8c, before any model saw them.
+export const round20 = [
+  { id: 'r20-1', group: 'status', note: 'Dana got the proposal from me this morning.', expect: { changes: [c('proposal', 'completed')] } },
+  { id: 'r20-2', group: 'status', note: "Lee's numbers on pricing arrived today.", expect: { changes: [c('pricing', 'completed')] } },
+  { id: 'r20-3', group: 'status', note: 'The venue booking fell through; Omar is not doing it.', expect: { changes: [c('venue', 'cancelled')] } },
+  { id: 'r20-4', group: 'status', note: 'Priya signed off my budget review.', expect: { changes: [c('budget', 'completed')] } },
+  { id: 'r20-5', group: 'nothing', note: 'The contract template looks outdated.', expect: {} },
+  { id: 'r20-6', group: 'nothing', note: 'Omar mentioned the venue has parking.', expect: {} },
+  { id: 'r20-7', group: 'nothing', note: 'Lee reviewed the pricing slide with me, but nothing is settled.', expect: {} },
+  { id: 'r20-8', group: 'nothing', note: 'Sam asked whether the offsite is still on.', expect: {} },
+  { id: 'r20-9', group: 'new', note: "I'll message Dana about the contract tomorrow.", expect: { created: [n('Message Dana about the contract', 'Me', 'Dana', '2026-11-26')] } },
+  { id: 'r20-10', group: 'status', note: 'Pricing is no longer needed, Lee said.', expect: { changes: [c('pricing', 'cancelled')] } },
+  { id: 'r20-11', group: 'new', note: 'Omar will send me the parking details on Friday.', expect: { created: [n('Send the parking details', 'Omar', 'Me', '2026-11-27')] } },
+  { id: 'r20-12', group: 'ambiguous', note: 'Dana has it; I sent it over earlier.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'completed' } } },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17, round18, round19, round20 };
 
 // --- What came out of one note ---
 
