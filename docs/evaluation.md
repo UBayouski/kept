@@ -639,6 +639,24 @@ saw it. Device, 2026-11-16: **7/4/1 in all three runs.**
   and when they name the person of the one other commitment of the same
   wording, that one is meant (this also turns the old twin test into a pass).
 
+## Device model, round 16 (clean, three runs)
+
+Written and committed (6d43758) after 4987ddd, before any model saw it.
+Device, 2026-11-16: **6/5/1, 6/5/1, 7/4/1.**
+
+- **The unsafe answer, every run:** "Lee's proposal can wait until Monday."
+  "Until" started the dependency call, which made up a new "Wait until
+  Monday" for the proposal to wait for. d440b4f did not stop it: "until" and
+  "Monday" are in the words.
+- **4987ddd held:** "Dana wants the contract by Monday, and Lee wants his
+  proposal by Tuesday." passed in all three; "Omar went over the seating plan
+  with me." was never done.
+- **Word lists:** "Lee's pricing came through this morning." was held back
+  in all three ("came through" is not on the list): safe, missed.
+- **Fixes (not measured):** something to wait for that is only a time
+  ("wait until Monday", "lunch") is refused; a new commitment whose "what" is
+  "None" says nothing.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
