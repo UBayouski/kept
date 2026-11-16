@@ -431,7 +431,26 @@ export const round16 = [
   { id: 'r16-12', group: 'status', note: 'Finished the budget review for Priya.', expect: { changes: [c('budget', 'completed')] } },
 ];
 
-export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16 };
+// Round 17: every kind of note, with "wait until" as a deadline and as small
+// talk, written on 2026-11-16 after 252724d's fixes, before any model saw them.
+export const round17 = [
+  { id: 'r17-1', group: 'deadline', note: "Dana's contract can wait until Tuesday.", expect: { changes: [c('contract', 'deadline', '2026-12-01')] } },
+  { id: 'r17-2', group: 'deadline', note: 'Priya can have the budget review on Monday.', expect: { changes: [c('budget', 'deadline', '2026-11-30')] } },
+  { id: 'r17-3', group: 'status', note: 'Omar got back to me: the venue is booked.', expect: { changes: [c('venue', 'completed')] } },
+  { id: 'r17-4', group: 'status', note: 'Lee came back with the pricing today.', expect: { changes: [c('pricing', 'completed')] } },
+  { id: 'r17-5', group: 'status', note: 'The budget review is off; Priya changed her plans.', expect: { changes: [c('budget', 'cancelled')] } },
+  { id: 'r17-6', group: 'nothing', note: 'Lee was in a good mood today.', expect: {} },
+  { id: 'r17-7', group: 'nothing', note: 'Dana is on holiday until Monday.', expect: {} },
+  { id: 'r17-8', group: 'new', note: "I'll book a room for the workshop on Thursday.", expect: { created: [n('Book a room for the workshop', 'Me', null, '2026-11-26')] } },
+  { id: 'r17-9', group: 'new', note: 'Omar will email me the catering menu tomorrow.', expect: { created: [n('Email the catering menu', 'Omar', 'Me', '2026-11-26')] } },
+  { id: 'r17-10', group: 'dependency', note: "I'll send the proposal to Lee once Dana signs it off.",
+    expect: { created: [n('Sign off the proposal', 'Dana', 'Me')], deps: [{ waiting: 'proposalLee', on: 'new:sign off proposal' }] } },
+  { id: 'r17-11', group: 'ambiguous', note: 'Dana needs it by Monday.', expect: { ambiguous: { among: ['proposal', 'contract'], kind: 'deadline', due: '2026-11-30' } } },
+  { id: 'r17-12', group: 'several', note: "Omar booked the venue, so I'll send Sam the invitations on Friday.",
+    expect: { changes: [c('venue', 'completed')], created: [n('Send the invitations', 'Me', 'Sam', '2026-11-27')] } },
+];
+
+export const sets = { round1: cases, round2, round3, round4, round5, round6, round7, round8, round9, round10, round11, round12, round13, round14, round15, round16, round17 };
 
 // --- What came out of one note ---
 
