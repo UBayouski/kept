@@ -444,7 +444,11 @@ export function readNote(answer, { shape, candidates, note, people = [], happene
     if (off) ruled.notes.push(`"${read.quote}" was read as done; the words say it is off, so it is proposed as cancelled`);
     // "The venue can't be booked until Dana confirms" says it waits, not that it
     // is done or cancelled. Such a reading is not proposed; the user links it.
-    if ((u.change === 'done' || u.change === 'cancelled') && (WAITS.test(u.quote) || isCondition(note, u.quote))) {
+    // A cancelled reading is held back only by "until", "unless", "before" or
+    // a condition: "forget the venue, we'll meet online" has a future, but of
+    // something else.
+    const waits = u.change === 'cancelled' ? /\b(until|till|unless|before)\b/i.test(u.quote) : WAITS.test(u.quote);
+    if ((u.change === 'done' || u.change === 'cancelled') && (waits || isCondition(note, u.quote))) {
       manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but the words say it waits for something. Link it by hand if it is either.` });
       continue;
     }

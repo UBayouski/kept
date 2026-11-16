@@ -41,3 +41,11 @@ test('"happened" with words that agree changes nothing; the proposal stands', ()
   const note = 'Omar booked the venue.';
   assert.equal(read(up('Q4', 'done', note), note, 'happened').proposals.length, 1);
 });
+
+test('"forget the venue, we\'ll meet online": a future of something else does not hold a cancelled back', () => {
+  const note = "Omar says forget the venue, we'll meet online.";
+  const r = read(up('Q4', 'cancelled', note), note, 'off');
+  assert.deepEqual(r.questions[0].options.map((o) => [o.label ?? o.type, o.change]), [['Q4', 'cancelled'], ['new', undefined]]);
+  const until = "Omar won't cancel the venue until Dana confirms.";
+  assert.equal(read(up('Q4', 'cancelled', until), until, 'off').manual.length, 1);
+});
