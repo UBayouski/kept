@@ -537,11 +537,24 @@ name in them. Device, 2026-11-16:
 **Today on the device, clean rounds only:** unsafe answers per run went from
 2 (round 5) to 0 in all three runs of round 11; passes from about 4 to 6 of 12.
 
+## Cancelled in one click, no card for a copy (c9f6f4c, 04e02f8)
+
+- A "done" whose words say it is off ("no longer", "dropped", "called off")
+  is proposed as cancelled, through the same checks as any cancelled reading.
+- A new commitment that is a listed one said again, beside a dependency on
+  the listed one, no longer shows as its own card, nor as a "new or the same"
+  question.
+
+**Round 11 again** (not clean, it showed both): 6 pass, 6 safe, 0 unsafe, no
+extra card, dependencies 0 missed and 0 wrong. "Lee no longer needs to
+confirm pricing." and "I'll send Lee's proposal after Omar books the venue."
+now pass.
+
 ## Open
 
-- "Done" read for a note that says it is off: offer it as cancelled in one
-  click, rather than only holding it back.
-- A copy of a listed commitment shown as its own card beside the dependency.
+- "Sam will call me about the venue tomorrow." is still asked about in most
+  runs: a deadline on the venue beside Sam's new commitment.
+- A clean round 12 to measure c9f6f4c and 04e02f8.
 - "Omar scrapped the venue booking." read as done is now held back (safe),
   but not offered as cancelled.
 - Round 6 on the cloud route: 6 of 12 ran (all pass) before the quota ran out.
