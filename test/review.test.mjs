@@ -42,6 +42,17 @@ test('the demo scenario: Monday is confirmed, Wednesday and Thursday wait for re
   ]);
 });
 
+test('the demo scenario loads into a store that has people but no commitments, without making them twice', async () => {
+  const q = open();
+  const me = await m.createPerson(q, { name: 'Me', isMe: true });
+  await m.createPerson(q, { name: 'Dana' });
+  assert.equal(await r.seedDemo(q, DEMO), true);
+  const people = await r.people(q);
+  assert.deepEqual(people.map((p) => p.name), ['Me', 'Dana', 'Lee']);
+  assert.equal(people[0].id, me);
+  assert.equal((await r.commitments(q)).length, 2);
+});
+
 test('the demo question: before review the proposal is due Friday, after it is not', async () => {
   const q = open();
   await r.seedDemo(q, DEMO);

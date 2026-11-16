@@ -235,7 +235,7 @@ $('seed').onclick = async () => {
   try {
     const added = await data.seedDemo(q);
     await refresh();
-    if (!added) $('status').append(' The store already has data; the demo scenario was not loaded again.');
+    if (!added) $('status').append(' The store already has commitments; the demo scenario was not loaded. Empty the store first to load it.');
   } catch (err) {
     $('status').replaceChildren(el('span', { class: 'bad' }, `Error: ${err.message}`));
   }

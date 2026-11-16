@@ -19,15 +19,21 @@ export function demoDates(today = new Date()) {
 // The demonstration scenario from docs/decisions.md, built through the rules:
 // the Monday meeting is confirmed, the Wednesday and Thursday notes are still
 // proposals. No model is involved; the notes are "read" by hand here.
-// Does nothing if the store already has people in it.
+// Does nothing if the store already has commitments. People already there
+// (the user, made by a first capture, or Dana and Lee added by hand) are used,
+// not made twice.
 export async function seedDemo(q, { today = new Date() } = {}) {
-  const [{ n }] = await q('MATCH (p:Person) RETURN count(p) AS n');
+  const [{ n }] = await q('MATCH (c:Commitment) RETURN count(c) AS n');
   if (n > 0) return false;
   const days = demoDates(today);
   const at = (day, time) => `${days[day]}T${time}:00Z`;
-  const me = await m.createPerson(q, { name: 'Me', isMe: true });
-  const dana = await m.createPerson(q, { name: 'Dana' });
-  const lee = await m.createPerson(q, { name: 'Lee' });
+  const person = async (name, isMe = false) => {
+    const [found] = await q(isMe ? 'MATCH (p:Person {isMe: true}) RETURN p.id AS id' : 'MATCH (p:Person {name: $name, isMe: false}) RETURN p.id AS id', { name });
+    return found?.id ?? m.createPerson(q, { name, isMe });
+  };
+  const me = await person('Me', true);
+  const dana = await person('Dana');
+  const lee = await person('Lee');
 
   const monday = await m.createNote(q, {
     kind: 'meeting', text: "I'll send Dana the proposal Friday, once Lee confirms pricing.",
