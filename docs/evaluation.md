@@ -159,6 +159,34 @@ earlier run, is now asked about instead of guessed.
 **Re-runs of round 1** after the fixes (not clean, for regressions): 35 pass,
 4 safe, 1 unsafe; the one unsafe is still "Sent Dana the document".
 
+## Device model, round 2
+
+The private workspace's route: Chrome's built-in model (it says Gemma 4),
+prompt v1 plus the app rules, run from `eval.html?route=device&set=round2` in
+a real Chrome on 2026-11-16. Not clean: round 2 was used to tune the cloud
+route, and the app rules apply to both. About 5 s a note, no cloud calls.
+
+**12 notes: 2 pass, 6 safe, 4 unsafe** (cloud on the same notes, also not
+clean: 6 pass, 5 safe, 1 unsafe).
+
+- **Unsafe:** a new deadline on the contract from "After Priya reviews the
+  budget, I'll send Dana the contract"; deadline words put on the budget from
+  "blocked until Priya sends the numbers"; and twice a commitment made to wait
+  on a new copy of itself ("I'll send Dana the proposal tomorrow, before
+  lunch"; "The proposal for Lee waits until ...").
+- **Mostly missed, not wrong:** 7 of 12 dependencies missed and 4 new
+  commitments missed ("I can't book flights ...", "Sam will send me the
+  mockups ..."). Five notes left something to link by hand.
+
+The device route is usable for plain commitments (the live capture "I'll send
+Dana the proposal by Friday" gave the right card in 6 s) but not yet for
+dependencies. Its proposals are already marked provisional.
+
+**Fixed after this:** the model's own "unclear" over the same words as a new
+commitment it also gave was shown as two cards (seen live with an empty
+store). It is now one question, or just the new commitment when nothing is
+listed (rule 4).
+
 ## Open
 
 - A clean round to measure the last rule (the future and waiting).
@@ -166,5 +194,5 @@ earlier run, is now asked about instead of guessed.
   the linking call answering about a dependency at all; a linking prompt that
   is told to leave dependencies alone is the next thing to try, measured on
   new notes.
-- The private workspace route (device model, prompt v1 with the app rules) has
-  not been run through this evaluation.
+- The device route: a clean round, and a rule that a commitment never waits
+  on a new commitment with its own wording.

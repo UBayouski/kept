@@ -1,0 +1,25 @@
+{
+  "evaluation": "capture",
+  "set": "round2",
+  "route": "device",
+  "deviceModelSays": "I am a Large Language Model named Gemma 4. I do not have a specific version number.",
+  "ranAt": "2026-11-16T04:21:54.777Z",
+  "linkingPrompt": "v1",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+  "note": "Summary and per-note scoring only. The full raw report (model answers) could not be copied out of the browser tab; run eval.html?route=device&set=round2 and use 'Save as a file' for it.",
+  "summary": {"notes":12,"errors":0,"pass":2,"safe":6,"unsafe":4,"wrongChange":2,"guessed":0,"missedChange":0,"missedNew":4,"extraNew":4,"cardErrors":1,"wrongDependency":2,"missedDependency":7,"needlessQuestions":1,"linkedByHand":5},
+  "rows": [
+    {"id":"r2-1","note":"I'll send Priya the budget review once Lee confirms pricing.","missedDeps":["budget waits for pricing"]},
+    {"id":"r2-2","note":"The contract can't go to Dana until Lee confirms pricing.","extraCreated":["Confirm pricing (for me)"]},
+    {"id":"r2-3","note":"I won't send Lee the proposal until Dana reviews it.","cardErrors":["Review the proposal: to Lee, expected Me"],"missedDeps":["proposalLee waits for new:review proposal"]},
+    {"id":"r2-4","note":"After Priya reviews the budget, I'll send Dana the contract.","wrong":["contract: deadline 2026-11-27"],"extraCreated":["Send the contract"],"missedCreated":["Review the budget"],"missedDeps":["contract waits for new:review budget"]},
+    {"id":"r2-5","note":"Omar can only book the venue once I send him the deposit."},
+    {"id":"r2-6","note":"Once the contract is out, I'll send Dana the proposal."},
+    {"id":"r2-7","note":"I'll send Dana the proposal tomorrow, before lunch.","extraCreated":["Send the proposal"],"wrongDeps":["proposal waits for new:Send the proposal"]},
+    {"id":"r2-8","note":"The budget review is blocked until Priya sends the numbers.","wrong":["budget: deadline words"]},
+    {"id":"r2-9","note":"I can't book flights until Omar books the venue.","missedCreated":["Book flights"],"missedDeps":["new:flights waits for venue"]},
+    {"id":"r2-10","note":"Sam will send me the mockups once Priya signs off the copy.","missedCreated":["Send the mockups","Sign off the copy"],"missedDeps":["new:mockups waits for new:sign off copy"]},
+    {"id":"r2-11","note":"Dana can't sign the contract until Lee confirms pricing.","missedCreated":["Sign the contract"],"missedDeps":["new:sign contract waits for pricing"]},
+    {"id":"r2-12","note":"The proposal for Lee waits until Omar has booked the venue.","extraCreated":["Send the proposal"],"wrongDeps":["new:Send the proposal waits for venue"],"missedDeps":["proposalLee waits for venue"]}
+  ]
+}

@@ -243,6 +243,24 @@ export function applyRules(parsed, list) {
     const [x, y] = [norm(a), norm(b)];
     return x.length > 0 && y.length > 0 && (x.includes(y) || y.includes(x));
   };
+  // Rule 4: the model's own "unclear" over the same words as a new commitment
+  // it also gave is one question, not a question and a card. With nothing
+  // listed, the only answer is "new", so the new commitment stands alone.
+  for (const u of [...updates]) {
+    if (u.commitment !== 'unclear' || u.among) continue;
+    const same = created.filter((n) => sameWords(u.quote, n.quote));
+    if (!same.length) continue;
+    if (!list.length) {
+      updates = updates.filter((x) => x !== u);
+      notes.push(`rule 4: "unclear" with nothing listed is the new "${same[0].what}"`);
+      continue;
+    }
+    u.among = [...list.map((c) => c.label), 'new', 'all'];
+    u.newCommitments = same;
+    created = created.filter((n) => !same.includes(n));
+    notes.push(`rule 4: "unclear" and new "${same[0].what}" are one question`);
+  }
+
   created = created.filter((n) => {
     const clash = updates.find((u) => sameWords(u.quote, n.quote) && (u.commitment !== 'unclear' || u.among));
     if (!clash) return true;

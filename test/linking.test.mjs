@@ -238,6 +238,17 @@ test('rule 3: the same words as a change and as something new become one questio
   assert.deepEqual([s.pass, s.safe, s.wrong], [false, true, []]);
 });
 
+test('rule 4: the model\'s "unclear" over the words of a new commitment is one question, or nothing when nothing is listed', () => {
+  const q = "I'll send Dana the proposal by Friday.";
+  const answer = () => ({ updates: [said('unclear', 'new deadline', 'Friday', q)], newCommitments: [created('send the proposal', q)] });
+  const empty = applyRules(answer(), []);
+  assert.deepEqual(empty.updates, []);
+  assert.deepEqual(empty.newCommitments.map((n) => n.what), ['send the proposal']);
+  const listed = applyRules(answer(), listOf('none-new-similar'));
+  assert.deepEqual(listed.newCommitments, []);
+  assert.deepEqual(listed.updates.map((u) => [u.commitment, u.among.slice(-2), u.newCommitments.length]), [['unclear', ['new', 'all'], 1]]);
+});
+
 test('the rules cannot rescue a wrong answer that does not contradict itself', () => {
   const ruled = applyRules({ updates: [said(L.proposal, 'new deadline', 'Thursday', "I'll book a room for Thursday's workshop with Dana.")], newCommitments: [] }, listOf('none-new-different'));
   const s = score(ruled, byId('none-new-different'));
