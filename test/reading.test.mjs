@@ -415,3 +415,14 @@ test('a refused new commitment that repeats a valid one is not a card', async ()
   assert.equal(alone.manual[0].saidNew.what, 'Send the invoice');
   assert.equal(alone.manual[0].newLike, undefined);
 });
+
+test('"done" is proposed only when the words say something happened', () => {
+  const only = 'Omar thinks the venue is too small.';
+  const r = readNote({ updates: [up('Q4', 'done', '', only)], newCommitments: [] }, { shape: 'v1', candidates, note: only });
+  assert.deepEqual([r.proposals, r.questions, r.manual.length], [[], [], 1]);
+  assert.match(r.manual[0].reason, /do not say that anything happened/);
+  for (const said of ['Omar booked the venue.', 'Omar got the venue sorted.', 'The venue is done.']) {
+    const ok = readNote({ updates: [up('Q4', 'done', '', said)], newCommitments: [] }, { shape: 'v1', candidates, note: said });
+    assert.deepEqual(ok.proposals.map((p) => [p.label, p.change]), [['Q4', 'done']], said);
+  }
+});
