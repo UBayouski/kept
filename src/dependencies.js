@@ -92,6 +92,13 @@ const FIELDS = ['quote', 'waiting', 'waitsFor', 'newWhat', 'newOwner'];
 const SMALL = new Set(['the', 'a', 'an', 'to', 'for', 'of', 'my', 'his', 'her', 'their', 'our']);
 const bag = (text) => norm(text).split(' ').filter((w) => w && !SMALL.has(w)).sort().join(' ');
 const sameWords = (a, b) => bag(a).length > 0 && bag(a) === bag(b);
+// b is a's words and exactly one more.
+const oneMore = (a, b) => {
+  const [x, y] = [bag(a).split(' ').filter(Boolean), bag(b).split(' ').filter(Boolean)];
+  const left = [...y];
+  for (const w of x) { const at = left.indexOf(w); if (at < 0) return false; left.splice(at, 1); }
+  return x.length > 0 && left.length === 1;
+};
 const MAX_ITEMS = 10;
 
 // Checks the answer. Returns
@@ -116,7 +123,9 @@ export function readDependencies(answer, { list, note }) {
   // commitment: same words in any order, and the same person if it names one.
   const copyOf = new Map();
   for (const n of list.filter((c) => c.isNew)) {
-    const same = list.filter((c) => !c.isNew && sameWords(c.what, n.what) && (!norm(n.to) || norm(n.to) === norm(c.to)));
+    // One word more ("Send the budget review") only when it names the same person.
+    const samePerson = (c) => norm(n.to) && norm(n.to) === norm(c.to);
+    const same = list.filter((c) => !c.isNew && (sameWords(c.what, n.what) ? (!norm(n.to) || samePerson(c)) : (oneMore(c.what, n.what) && samePerson(c))));
     if (same.length === 1) copyOf.set(n.label, same[0].label);
   }
   const people = [...new Set(list.flatMap((c) => [c.owner, c.to]).map(norm).filter((p) => p && p !== 'me'))];

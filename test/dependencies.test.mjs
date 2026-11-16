@@ -292,6 +292,13 @@ test('device copies: a dependency on a listed commitment read again as new is on
   const copy = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] },
     { list, note: "I'll send Priya the budget review once Lee confirms pricing." });
   assert.deepEqual(copy.dependencies.map((x) => [x.waiting, x.waitsFor]), [['B1', 'P1']]);
+  const more = [...list.slice(0, 5), { label: 'N1', what: 'Send the budget review', owner: 'me', to: 'Priya', isNew: true }];
+  const oneWord = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] },
+    { list: more, note: "I'll send Priya the budget review once Lee confirms pricing." });
+  assert.deepEqual(oneWord.dependencies.map((x) => [x.waiting, x.waitsFor]), [['B1', 'P1']]);
+  const noPerson = d.readDependencies({ items: [dep('once Lee confirms pricing', 'N1', 'P1')] },
+    { list: [...list.slice(0, 5), { ...more[5], to: '' }], note: "I'll send the budget review once Lee confirms pricing." });
+  assert.deepEqual(noPerson.dependencies.map((x) => [x.waiting, x.waitsFor]), [['N1', 'P1']]);
 
   const twin = d.readDependencies({ items: [dep('until Omar has booked the venue', 'K7', 'V1')] },
     { list, note: 'The proposal for Lee waits until Omar has booked the venue.' });
