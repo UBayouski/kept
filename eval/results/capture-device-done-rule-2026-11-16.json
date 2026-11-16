@@ -1,0 +1,9 @@
+{
+  "route": "device", "commit": "c23dcf8",
+  "note": "Summaries only; the full reports were too long to copy out of the tab.",
+  "round5": {"notes":12,"errors":0,"pass":2,"safe":10,"unsafe":0,"wrongChange":0,"missedChange":3,"missedNew":2,"extraNew":0,"cardErrors":1,"missedDependency":1,"needlessQuestions":3,"linkedByHand":5},
+  "round5_done_rule_only_d4b1523": {"notes":12,"errors":0,"pass":3,"safe":7,"unsafe":2,"wrongChange":2,"missedChange":3,"missedNew":3,"extraNew":1,"needlessQuestions":5,"linkedByHand":1},
+  "round1": {"notes":40,"errors":0,"pass":16,"safe":24,"unsafe":0,"wrongChange":0,"guessed":0,"missedChange":3,"missedNew":6,"extraNew":3,"cardErrors":1,"wrongDependency":0,"missedDependency":3,"needlessQuestions":13,"linkedByHand":11,
+    "byGroup":{"ambiguous":{"notes":4,"pass":2,"safe":2},"deadline":{"notes":8,"pass":4,"safe":4},"dependency":{"notes":6,"pass":0,"safe":6},"new":{"notes":8,"pass":3,"safe":5},"nothing":{"notes":4,"pass":0,"safe":4},"several":{"notes":4,"pass":2,"safe":2},"status":{"notes":6,"pass":5,"safe":1}},
+    "heldBackByTheRule":["b4 Dana no longer needs the contract (read as done)","d1 Long day. Dana seemed tired. (done)","d2 Lunch with Lee and Omar (done)","g1 I can only send Dana the contract once Lee confirms pricing (done)"]}
+}

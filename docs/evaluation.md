@@ -265,11 +265,39 @@ model loaded in 15 s and answered, and the second attempt ran with no timeout.
 Whether the abort frees the model at once, or it was still loading cold, is
 not settled.
 
+## Device model: "done" and "cancelled" need words for them
+
+**The rule (both routes, d4b1523 and c23dcf8):** a "done" is proposed or asked
+about only when the sentence says something happened (a past tense, "done",
+"out", "sorted"); a "cancelled" only when it says it is off ("called off",
+"no longer", "anymore", "after all", "off"). Otherwise the reading goes to
+"link by hand" with the reason. It answers round 5's two unsafe answers: "Omar
+thinks the venue is too small." read as done, and in another run as cancelled.
+
+**Runs after it** (device, 2026-11-16; neither set is clean for this rule):
+
+| Run | Pass | Safe | Unsafe | Needless questions |
+|---|---|---|---|---|
+| Round 5, before the rule (clean) | 6 | 4 | 2 | 4 |
+| Round 5, "done" rule only | 3 | 7 | 2 | 5 |
+| Round 5, both rules | 2 | 10 | 0 | 3 |
+| Round 1, before the rule | 20 | 16 | 4 | 9 |
+| Round 1, both rules | 16 | 24 | 0 | 13 |
+
+- In round 1 the rule held back 4 readings, all wrong: "no longer needs the
+  contract" read as done, "Long day. Dana seemed tired." and "Lunch ... about
+  football" read as done, and a "done" on a note that waits for pricing. No
+  right "done" or "cancelled" was held back; status notes pass 5 of 6.
+- The "done" rule alone missed "Lee won't need the proposal" because "need"
+  ends in "ed"; "need" and similar words are no longer a past tense.
+- Pass counts swing between runs of the same notes (round 5: 6, 3, 2) on new
+  commitments the rule does not touch. The device model varies more than any
+  rule changes; one run of a set is not a measurement of a small change.
+
 ## Open
 
-- "Nothing to do" notes on the device route: the model says "done" on a
-  commitment the note only mentions ("the venue is too small"). The one
-  remaining kind of unsafe answer that repeats.
+- A clean round 6 for the device route, run two or three times, since one run
+  varies this much.
 
 - A clean round to measure the last rule (the future and waiting).
 - Dependencies stay the least reliable part. The remaining errors are mostly
