@@ -451,9 +451,36 @@ that has that person waits instead, or the dependency is refused.
 dependencies right, 1 wrong (was 0/9/3, about 2 right). The remaining wrong
 one ("Send the budget review", one word more) is what the next commit covers.
 
+## Device model, round 9 (clean, three runs)
+
+Written and committed (9ab0663) after d335cea and the dependency fixes, before
+any model saw it; a third of it dependencies. Device, 2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Dependencies missed / wrong |
+|---|---|---|---|---|
+| 1 | 5 | 7 | 0 | 2 / 0 |
+| 2 | 6 | 6 | 0 | 2 / 0 |
+| 3 | 5 | 6 | 1 | 1 / 0 |
+
+- **Steady passes:** deadlines (both proposals told apart by "his"), "wrapped
+  up" as done, the ambiguous "Sent it to Dana an hour ago." asked properly in
+  all three; "I can't send Dana the proposal until Lee confirms pricing." found
+  its dependency in all three. No wrong dependency in any run.
+- **The unsafe answer:** "Sam will send me the budget template on Friday." as
+  a deadline on "Review the budget". The person rule knew only the people of
+  listed commitments, and none has Sam.
+- **Missed in all three:** "Priya's budget review has to wait until Omar books
+  the venue." The model's dependency was right, but a check took "Priya's" for
+  the one who does the review and refused it.
+- **Fixes after it (not measured):** every person in the store counts for
+  the person rule, not only those on listed commitments; and a possessive
+  ("Priya's ...") at the start is not who does what waits.
+
 ## Open
 
-- Round 9, clean, to measure d335cea and the dependency fixes together.
+- A clean round 10 to measure the last two fixes.
+- "Omar scrapped the venue booking." read as done is now held back (safe),
+  but not offered as cancelled.
 - Round 7 on the cloud route: one note ran (pass) before the daily quota,
   which counts over a rolling window, ran out again.
 - Finish round 6 on the cloud route once the quota resets.
