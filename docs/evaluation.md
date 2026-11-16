@@ -476,14 +476,19 @@ any model saw it; a third of it dependencies. Device, 2026-11-16:
   the person rule, not only those on listed commitments; and a possessive
   ("Priya's ...") at the start is not who does what waits.
 
+## Cloud model, round 7
+
+Cloud route (gemini-3.5-flash-lite), 2026-11-16, at 8dd2ae8: **12 pass, 0 safe,
+0 unsafe**, no needless questions, about 24 requests. Every rule added today
+for the device route applies on this route too, and none of them cost a pass.
+Not fully clean: two rules (b90c010) came from the device runs of these notes.
+
 ## Open
 
 - A clean round 10 to measure the last two fixes.
 - "Omar scrapped the venue booking." read as done is now held back (safe),
   but not offered as cancelled.
-- Round 7 on the cloud route: one note ran (pass) before the daily quota,
-  which counts over a rolling window, ran out again.
-- Finish round 6 on the cloud route once the quota resets.
+- Round 6 on the cloud route: 6 of 12 ran (all pass) before the quota ran out.
 - Needless questions left on the device route: a change on an unrelated
   commitment beside a right deadline (rounds 5 and 6, one each), and a
   "done" on small talk ("Coffee with Sam") asked about everything.
