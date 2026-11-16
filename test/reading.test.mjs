@@ -553,3 +553,13 @@ test('a change whose words name only someone else gives way to that person\'s ne
   const o = readNote({ updates: [up('Q4', 'new deadline', 'Monday', omar)], newCommitments: [] }, { shape: 'v1', candidates, note: omar, people: ['Sam'] });
   assert.equal(o.proposals.length, 1);
 });
+
+test('a commitment named only as what something is about is asked about, not changed', () => {
+  const list = [...candidates, { label: 'B1', id: 'id-budget', what: 'Review the budget', owner: 'me', to: 'Priya' }];
+  const call = "I'll call Priya about the budget tomorrow.";
+  const r = readNote({ updates: [up('B1', 'new deadline', 'tomorrow', call)], newCommitments: [] }, { shape: 'v1', candidates: list, note: call, people: ['Priya'] });
+  assert.deepEqual([r.proposals, r.questions[0].options.map((o) => o.label ?? o.type)], [[], ['B1', 'new']]);
+  // Named as the thing itself, it stands.
+  const review = "I'll review the budget tomorrow, and talk to Priya about it.";
+  assert.equal(readNote({ updates: [up('B1', 'new deadline', 'tomorrow', review)], newCommitments: [] }, { shape: 'v1', candidates: list, note: review }).proposals.length, 1);
+});

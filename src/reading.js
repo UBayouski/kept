@@ -441,6 +441,13 @@ export function readNote(answer, { shape, candidates, note, people = [] }) {
       manual.push({ quote: u.quote, reason: 'It was read as "cancelled", but the words do not say it is off. Link it by hand if it was cancelled.' });
       continue;
     }
+    // "I'll call Priya about the budget tomorrow": the budget is what the call
+    // is about, not what is done. A commitment named only after "about" or
+    // "regarding" becomes a question: that one, or new.
+    if (u.commitment !== 'unclear' && onlyAsTopic(sentenceOf(note, u.quote), byLabel.get(u.commitment).what)) {
+      questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
+      continue;
+    }
     // Words that name someone, but none of the people of the commitment, are
     // likely about something else: "Lee will share the contract draft with me"
     // is not "Send the contract" to Dana. It becomes a question: that one, or new.
@@ -527,6 +534,20 @@ function isCondition(note, quote) {
 // Not a past tense, or one of feeling, speaking or thinking, which says nothing
 // was done: "Dana liked the venue photos", "Priya asked how the review is going".
 const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
+// True when every word of the commitment the text names comes right after
+// "about" or "regarding" (with "the", "my" and the like between).
+function onlyAsTopic(text, what) {
+  const words = norm(text).split(' ');
+  const named = norm(what).split(' ').slice(1).filter((w) => w.length > 2 && !SMALL_WORDS.has(w));
+  const at = words.flatMap((w, i) => (named.some((n) => n.replace(/s$/, '') === w.replace(/s$/, '')) ? [i] : []));
+  if (!at.length) return false;
+  const LINK = new Set(['the', 'a', 'an', 'my', 'his', 'her', 'their', 'our', 'your']);
+  return at.every((i) => {
+    let j = i - 1;
+    while (j >= 0 && (LINK.has(words[j]) || named.includes(words[j]))) j -= 1;
+    return j >= 0 && (words[j] === 'about' || words[j] === 'regarding');
+  });
+}
 // The people the listed commitments are about, other than the writer.
 const PEOPLE = (candidates, names = []) => [...new Set([...candidates.flatMap((c) => [c.to, c.owner]), ...names, ...names.map((n) => String(n).split(" ")[0])].map(norm).filter((p) => p && p !== 'me'))];
 // An "-ed" word that describes, after "looks", "seems" and the like: "the
