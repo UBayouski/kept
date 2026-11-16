@@ -249,6 +249,15 @@ test('rule 4: the model\'s "unclear" over the words of a new commitment is one q
   assert.deepEqual(listed.updates.map((u) => [u.commitment, u.among.slice(-2), u.newCommitments.length]), [['unclear', ['new', 'all'], 1]]);
 });
 
+test('rule 5: a new commitment with the wording of a listed one is asked about, not proposed', () => {
+  const q = 'The proposal waits until Omar has booked the venue.';
+  const ruled = applyRules({ updates: [], newCommitments: [created('Send the proposal', q)] }, listOf('none-new-similar'));
+  assert.deepEqual(ruled.newCommitments, []);
+  assert.deepEqual(ruled.updates.map((u) => [u.commitment, u.among, u.restates]), [['unclear', ['new', 'same'], L.proposal]]);
+  const other = applyRules({ updates: [], newCommitments: [created('Send the invoice', q)] }, listOf('none-new-similar'));
+  assert.deepEqual(other.newCommitments.map((n) => n.what), ['Send the invoice']);
+});
+
 test('the rules cannot rescue a wrong answer that does not contradict itself', () => {
   const ruled = applyRules({ updates: [said(L.proposal, 'new deadline', 'Thursday', "I'll book a room for Thursday's workshop with Dana.")], newCommitments: [] }, listOf('none-new-different'));
   const s = score(ruled, byId('none-new-different'));

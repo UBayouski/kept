@@ -174,7 +174,29 @@ export const round3 = [
     expect: { changes: [c('venue', 'deadline', '2026-11-27')], created: [n('Confirm the date', 'Dana', 'Omar')], deps: [{ waiting: 'venue', on: 'new:confirm date' }] } },
 ];
 
-export const sets = { round1: cases, round2, round3 };
+// Round 4: every kind of note, written on 2026-11-15 after the device-model run
+// of round 2 and the fixes made because of it (rules 4 and 5, no waiting on a
+// copy of itself), before any model saw them. A clean measure of both routes.
+export const round4 = [
+  { id: 'r4-1', group: 'deadline', note: 'Lee asked for the proposal by Monday.', expect: { changes: [c('proposalLee', 'deadline', '2026-11-30')] } },
+  { id: 'r4-2', group: 'status', note: 'Omar got the venue booked this morning.', expect: { changes: [c('venue', 'completed')] } },
+  { id: 'r4-3', group: 'new', note: "I'll send Omar the floor plan on Tuesday.", expect: { created: [n('Send the floor plan', 'Me', 'Omar', '2026-12-01')] } },
+  { id: 'r4-4', group: 'nothing', note: "Dana mentioned she's travelling next week.", expect: {} },
+  { id: 'r4-5', group: 'nothing', note: 'Remember that the contract for Dana is the priority.', expect: {} },
+  { id: 'r4-6', group: 'dependency', note: "Dana's proposal has to wait until Lee confirms pricing.", expect: { deps: [{ waiting: 'proposal', on: 'pricing' }] } },
+  { id: 'r4-7', group: 'dependency', note: 'I can only order the badges once Omar books the venue.',
+    expect: { created: [n('Order the badges', 'Me')], deps: [{ waiting: 'new:badges', on: 'venue' }] } },
+  { id: 'r4-8', group: 'dependency', note: "I can't finish Priya's budget review until Sam sends me the headcount.",
+    expect: { created: [n('Send the headcount', 'Sam', 'Me')], deps: [{ waiting: 'budget', on: 'new:headcount' }] } },
+  { id: 'r4-9', group: 'several', note: 'Sent Lee the proposal, and Dana gets hers on Thursday.',
+    expect: { changes: [c('proposalLee', 'completed'), c('proposal', 'deadline', '2026-11-26')] } },
+  { id: 'r4-10', group: 'status', note: 'Lee finally confirmed pricing.', expect: { changes: [c('pricing', 'completed')] } },
+  { id: 'r4-11', group: 'dependency', note: "Once Lee confirms pricing, I'll send Dana the invoice by Tuesday.",
+    expect: { created: [n('Send the invoice', 'Me', 'Dana', '2026-12-01')], deps: [{ waiting: 'new:invoice', on: 'pricing' }] } },
+  { id: 'r4-12', group: 'status', note: "Omar doesn't need to book the venue anymore; we're going remote.", expect: { changes: [c('venue', 'cancelled')] } },
+];
+
+export const sets = { round1: cases, round2, round3, round4 };
 
 // --- What came out of one note ---
 

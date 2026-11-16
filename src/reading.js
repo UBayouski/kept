@@ -274,6 +274,18 @@ export function applyRules(parsed, list) {
     return false;
   });
 
+  // Rule 5: a new commitment with the wording and recipient of a listed one
+  // this reading does not update ("The proposal for Lee waits until ..." with
+  // "Send the proposal" to Lee listed) is most likely that one, mentioned
+  // again. It becomes the same question as rule 1: new, or the same.
+  created = created.filter((n) => {
+    const same = list.find((c) => norm(c.what) === norm(n.what) && (!norm(n.to) || norm(n.to) === norm(c.to)));
+    if (!same) return true;
+    restated.push({ quote: n.quote, commitment: 'unclear', change: 'new commitment', due: n.due, what: n.what, among: ['new', 'same'], restates: same.label, newCommitments: [n] });
+    notes.push(`rule 5: new "${n.what}" has the wording of ${same.label}, already listed`);
+    return false;
+  });
+
   return { updates: [...updates, ...restated], newCommitments: created, notes };
 }
 
