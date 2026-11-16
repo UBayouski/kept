@@ -392,8 +392,21 @@ for across a semicolon), before any model saw it. Device, 2026-11-16:
   and when the words name two commitments of the same wording, the person they
   name decides ("Lee" picks the proposal for Lee).
 
+## A stuck device model (745a66d)
+
+Three times on 2026-11-16 the device model stopped answering altogether, also
+to a bare "Say OK." in a new tab, until Chrome was restarted; stopping the
+call at 45 s did not free it. After a timeout the app now makes one short
+check (15 s). If that does not answer either, the read fails with "Chrome's
+on-device model is stuck ... Restart Chrome", and every later device read
+fails at once with the same message instead of waiting 45 s. Seen live on
+round 8: the first note took 60 s, the other 11 failed at once.
+
 ## Open
 
+- Round 8 (345d659, clean) has not run: the device model was stuck.
+- Round 7 on the cloud route: one note ran (pass) before the daily quota,
+  which counts over a rolling window, ran out again.
 - Finish round 6 on the cloud route once the quota resets.
 - Needless questions left on the device route: a change on an unrelated
   commitment beside a right deadline (rounds 5 and 6, one each), and a
