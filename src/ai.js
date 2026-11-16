@@ -141,6 +141,25 @@ function whenVisible() {
   });
 }
 
+// True when the device model answers a short prompt within `ms`. Chrome's
+// model sometimes stops answering until Chrome is restarted, most often when
+// a session starts; the private workspace checks once when it opens, so the
+// user learns it before writing a note, not after a 45 s wait.
+export async function deviceResponds(ms = 20000) {
+  await whenVisible();
+  const stop = new AbortController();
+  const timer = setTimeout(() => stop.abort(), ms);
+  try {
+    const session = await LanguageModel.create({ ...deviceOptions, signal: stop.signal });
+    try { await session.prompt('Say OK.', { signal: stop.signal }); } finally { session.destroy(); }
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function extract(note, mode) {
   return generateStructured(instructions + note, extractionSchema, mode);
 }

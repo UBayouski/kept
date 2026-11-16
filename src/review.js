@@ -440,8 +440,18 @@ async function showDeviceState() {
     unavailable: 'This browser has no device model: use the cloud model below, or open the demo workspace.',
   }[state] ?? `Device model: ${state}.`;
   $('prepare-device').hidden = !(state === 'downloadable' || state === 'downloading');
+  return state;
 }
-if (PRIVATE) showDeviceState();
+// Once, when the workspace opens: does the ready model also answer?
+async function checkDeviceAnswers() {
+  if ((await showDeviceState()) !== 'available') return;
+  $('device-state').textContent = 'The device model is ready; checking that it answers…';
+  const answers = await ai.deviceResponds();
+  $('device-state').textContent = answers
+    ? 'The device model is ready.'
+    : "Chrome's on-device model is not answering. Restart Chrome (close every Chrome window), then reload this page. You can still use the cloud model below.";
+}
+if (PRIVATE) checkDeviceAnswers();
 $('prepare-device').onclick = async () => {
   $('prepare-device').disabled = true;
   try {
