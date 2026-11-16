@@ -772,9 +772,26 @@ if it gets no answer, says so at once: "Chrome's on-device model is not
 answering. Restart Chrome ..., then reload this page. You can still use the
 cloud model below." Seen live on localhost with the model stuck.
 
+## Device model, round 21 (clean, three runs)
+
+Written and committed (153d377) after 7974d6a, before any model saw it.
+Device, 2026-11-16: **4/8/0, 5/7/0, 4/8/0**, no wrong dependency.
+
+- "Lee signed off the pricing yesterday." passed (runs 2, 3); "isn't final
+  yet" and "went through the contract" were never done; "Handed it to Dana
+  after the meeting." was asked properly in all three; "I'll ping Lee about
+  the proposal tomorrow." passed once.
+- **The second look rescued** "Dana has had the contract since Monday." (no
+  word on the list) in all three: "happened", so a one-click question.
+- **Held back in all three:** "Omar says forget the venue, we'll meet
+  online." The second look said "off", but "we'll" counted as waiting. Fixed
+  after it: a cancelled reading is held back only by "until", "unless",
+  "before" or a condition.
+- Passes are lower than rounds 18 and 19: this round was written to hit the
+  words the lists do not know, which come out as questions (safe).
+
 ## Open
 
-- Round 21 (153d377, clean) has not run: the device model was stuck.
 - "About" notes: the right answer is a new commitment, which the device
   model rarely gives; the question then has an empty "new".
 - A vague new commitment ("Send something") for a note that says "it": fixed
