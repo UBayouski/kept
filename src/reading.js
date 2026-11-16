@@ -254,6 +254,14 @@ export function applyRules(parsed, list) {
   for (const group of groups.values()) {
     const labels = [...new Set(group.map((u) => u.commitment))];
     if (labels.length < 2) continue;
+    // "Omar sorted out the venue" given as done on the venue and on pricing:
+    // when the words name exactly one of them, that one is the change.
+    const named = labels.filter((l) => byLabel.has(l) && mentions(group[0].quote, byLabel.get(l).what));
+    if (named.length === 1) {
+      updates = updates.filter((u) => !group.includes(u) || (u.commitment === named[0] && u === group.find((g) => g.commitment === named[0])));
+      notes.push(`rule 2: ${labels.join(' and ')} given the same change from the same words, which name only ${named[0]}`);
+      continue;
+    }
     updates = updates.filter((u) => !group.includes(u));
     updates.push({ ...group[0], commitment: 'unclear', among: [...labels, 'all'] });
     notes.push(`rule 2: ${labels.join(' and ')} given the same change from the same words`);
@@ -389,9 +397,15 @@ export function readNote(answer, { shape, candidates, note }) {
     }
     // Words that do not mention the commitment ("I'll send Dana the contract"
     // for "Send the proposal") may be about something not in the list: the
-    // model picks the nearest one. It becomes a question: that one, or new.
-    if (u.commitment !== 'unclear' && !mentions(sentenceOf(note, u.quote), byLabel.get(u.commitment).what)) {
-      questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
+    // model picks the nearest one. It becomes a question: that one, the others
+    // owed to the same person ("Sent Dana the file": the proposal or the
+    // contract), or new.
+    if (u.commitment !== 'unclear' && !mentions(clauseWithReferent(note, u.quote), byLabel.get(u.commitment).what)) {
+      const chosen = byLabel.get(u.commitment);
+      const samePerson = norm(chosen.to) && norm(chosen.to) !== 'me'
+        ? candidates.filter((c) => c.label !== chosen.label && norm(c.to) === norm(chosen.to)).map((c) => c.label)
+        : [];
+      questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, ...samePerson, 'new']), from: 'app rule' });
       continue;
     }
     if (u.commitment !== 'unclear') {
@@ -424,6 +438,16 @@ export function mentions(text, what) {
 function sentenceOf(note, quote) {
   const q = String(quote ?? '').trim().toLowerCase();
   return note.split(/(?<=[.!?;])\s+/).find((s) => s.toLowerCase().includes(q)) ?? quote;
+}
+
+// The sentence of the quote, with the one before it when it says "it" or
+// "them" for something named there: "Dana has the contract; I sent it".
+function clauseWithReferent(note, quote) {
+  const parts = note.split(/(?<=[.!?;])\s+/);
+  const q = String(quote ?? '').trim().toLowerCase();
+  const at = parts.findIndex((s) => s.toLowerCase().includes(q));
+  if (at < 0) return quote;
+  return at > 0 && /\b(it|them)\b/i.test(parts[at]) ? `${parts[at - 1]} ${parts[at]}` : parts[at];
 }
 
 // The quoted words come right after "until", "once", "after" and the like:

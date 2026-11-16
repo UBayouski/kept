@@ -299,7 +299,8 @@ test('the first device run, replayed: the scorer reproduces the reported summary
   for (const key of Object.keys(reported)) assert.equal(raw[key], reported[key], key);
   assert.deepEqual([raw.passed, raw.safeWithQuestion, raw.unsafe], [12, 2, 16]);
   const ruled = summarise(out, 'ruled');
-  assert.deepEqual([ruled.passed, ruled.safeWithQuestion, ruled.unsafe], [17, 10, 3]);
+  // Rule 2 keeps the one commitment the words name, so two questions become passes.
+  assert.deepEqual([ruled.passed, ruled.safeWithQuestion, ruled.unsafe], [19, 8, 3]);
   assert.deepEqual([raw.verdictChangedWithOrder.length, raw.selectionChangedWithOrder.length], [6, 9]);
   // The third is a question that lost the date the note gave ("next week").
   assert.deepEqual(out.filter((r) => !r.ruled.safe).map((r) => `${r.id} ${r.order}`),

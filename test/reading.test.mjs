@@ -476,3 +476,17 @@ test('"cancelled" is proposed only when the words say it is off', () => {
     assert.deepEqual(ok.proposals.map((p) => [p.label, p.change]), [['Q4', 'cancelled']], said);
   }
 });
+
+test('needless questions: one named commitment wins rule 2, a guess asks among the same person, "it" looks back', () => {
+  const venue = 'Omar booked the venue yesterday.';
+  const both = readNote({ updates: [up('Q4', 'done', '', venue), up('K7', 'done', '', venue)], newCommitments: [] }, { shape: 'v1', candidates, note: venue });
+  assert.deepEqual([both.proposals.map((p) => p.label), both.questions], [['Q4'], []]);
+
+  const file = 'Sent Dana the file this morning.';
+  const guess = readNote({ updates: [up('K7', 'done', '', file)], newCommitments: [] }, { shape: 'v1', candidates, note: file });
+  assert.deepEqual(guess.questions[0].options.map((o) => o.label ?? o.type), ['K7', 'R2', 'new']);
+
+  const it = 'Dana has the contract; I sent it this morning.';
+  const back = readNote({ updates: [up('R2', 'done', '', 'I sent it this morning.')], newCommitments: [] }, { shape: 'v1', candidates, note: it });
+  assert.deepEqual([back.proposals.map((p) => p.label), back.questions], [['R2'], []]);
+});

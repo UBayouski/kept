@@ -66,8 +66,10 @@ test('an ambiguous note: a question passes, a guess is held back, silence is saf
   assert.equal(asked.score.verdict, 'pass');
   const guess = await run(byId('e1'), fake({ linking: (label) => ({ items: [
     { quote: 'Dana moved it to Monday', about: label('Send the proposal', 'Dana'), change: 'new deadline', due: 'Monday', what: '' }] }) }));
-  // The words do not mention the proposal, so the app turns the guess into a question.
-  assert.equal(guess.score.verdict, 'safe');
+  // The words do not mention the proposal, so the app turns the guess into a
+  // question, among everything owed to Dana: the question the note needs.
+  assert.equal(guess.score.verdict, 'pass');
+  assert.equal(guess.score.asked, true);
   assert.deepEqual(guess.score.guessed, []);
   const silent = await run(byId('e1'), fake({ linking: { items: [] } }));
   assert.equal(silent.score.verdict, 'safe');
