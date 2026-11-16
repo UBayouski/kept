@@ -448,17 +448,14 @@ export function readNote(answer, { shape, candidates, note, people = [], happene
       manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but the words say it waits for something. Link it by hand if it is either.` });
       continue;
     }
-    // The second look (happened.js), when it was made. It never proposes by
-    // itself: "neither" holds a reading back; a reading the words do not
-    // support but the second look does becomes a question.
+    // The second look (happened.js), asked only for a reading the words do not
+    // support. It never proposes, nor holds back: on the device it answers
+    // "neither" for real ones too ("arrived today", round 20). When it says the
+    // thing happened or is off, the reading becomes a one-click question.
     const verdict = happened?.get(`${read.commitment}|${norm(read.quote)}`);
-    if ((u.change === 'done' || u.change === 'cancelled') && verdict === 'neither') {
-      manual.push({ quote: u.quote, reason: `It was read as "${u.change}", but asked again, the model says the words only mention it. Link it by hand if it is ${u.change}.` });
-      continue;
-    }
-    const wordsSay = u.change === 'done' ? HAPPENED.test(wholeSentence(note, u.quote).replace(DESCRIBED, '')) : u.change === 'cancelled' ? STOPPED.test(wholeSentence(note, u.quote)) : true;
+    const wordsSay = wordsSupport(note, u);
     const second = verdict === 'happened' ? 'done' : verdict === 'off' ? 'cancelled' : null;
-    if (second && u.commitment !== 'unclear' && (!wordsSay || second !== u.change)) {
+    if (second && u.commitment !== 'unclear' && !wordsSay) {
       questions.push({ quote: u.quote, options: optionsOf({ ...u, change: second }, [u.commitment, 'new']), from: 'app rule' });
       continue;
     }
@@ -620,6 +617,16 @@ function onlyAsTopic(text, what) {
     while (j >= 0 && (LINK.has(words[j]) || named.includes(words[j]))) j -= 1;
     return j >= 0 && (words[j] === 'about' || words[j] === 'regarding');
   });
+}
+// True when the words support a done or cancelled reading as the word rules
+// read them (anything else: true). A reading they do not support is what the
+// second look (happened.js) is asked about.
+export function wordsSupport(note, u) {
+  if (u.change === 'done') {
+    return HAPPENED.test(wholeSentence(note, u.quote).replace(DESCRIBED, '')) || STOPPED.test(sentenceOf(note, u.quote));
+  }
+  if (u.change === 'cancelled') return STOPPED.test(wholeSentence(note, u.quote));
+  return true;
 }
 // When something happened, not when it is due; and words that look ahead.
 const PAST_TIME = /^(today|yesterday|this (morning|afternoon|evening)|earlier( today)?|just now)$/i;

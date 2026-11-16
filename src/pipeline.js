@@ -9,7 +9,7 @@ import * as capture from './capture.js';
 import { findSimilarNotes } from './model.js';
 import * as dependencies from './dependencies.js';
 import * as happenedCheck from './happened.js';
-import { validateReading } from './reading.js';
+import { validateReading, wordsSupport } from './reading.js';
 import { variants } from './linking-cases.js';
 
 // Returns
@@ -28,13 +28,14 @@ export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, g
   const variant = variants[shape];
   // Nothing is stored until the model has answered.
   const linking = await generate(variant.buildPrompt(text, ready.candidates), variant.buildSchema(ready.candidates));
-  // A second look at each "done" or "cancelled" reading, when there is one.
+  // A second look at a "done" or "cancelled" reading the words do not support.
   let happened = null;
   let check = null;
   const pre = validateReading(linking.parsed, { shape, candidates: ready.candidates, note: text });
   if (pre.ok) {
     const byLabel = new Map(ready.candidates.map((c) => [c.label, c]));
-    const items = pre.updates.filter((u) => (u.change === 'done' || u.change === 'cancelled') && byLabel.has(u.commitment))
+    // Only for readings the words do not support: the rest needs no call.
+    const items = pre.updates.filter((u) => (u.change === 'done' || u.change === 'cancelled') && byLabel.has(u.commitment) && !wordsSupport(text, u))
       .map((u, i) => ({ id: `S${i + 1}`, what: byLabel.get(u.commitment).what, quote: u.quote, key: happenedCheck.keyOf(u.commitment, u.quote) }));
     if (items.length) {
       try {

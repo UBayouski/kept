@@ -22,13 +22,12 @@ test('the answer is read by id; anything not understood is left out', () => {
   assert.equal(h.readAnswer({ updates: [] }, items).size, 0);
 });
 
-test('"neither" holds back a done the words seemed to support', () => {
-  const note = 'Dana and I went over the proposal.';
-  assert.equal(read(up('K7', 'done', note), note, null).proposals.length, 0, 'held back by the words already');
-  const sorted = 'Omar sorted the venue photos.';
-  assert.equal(read(up('Q4', 'done', sorted), sorted, null).proposals.length, 1, 'the words alone let it through');
-  const r = read(up('Q4', 'done', sorted), sorted, 'neither');
-  assert.deepEqual([r.proposals, r.manual.length], [[], 1]);
+test('"neither" changes nothing: the words decide (on the device it says "neither" for real ones too)', () => {
+  const sorted = 'Omar booked the venue.';
+  assert.equal(read(up('Q4', 'done', sorted), sorted, 'neither').proposals.length, 1);
+  const thinks = 'Omar thinks the venue is too small.';
+  const r = read(up('Q4', 'done', thinks), thinks, 'neither');
+  assert.deepEqual([r.proposals, r.questions, r.manual.length], [[], [], 1]);
 });
 
 test('"happened" for words not on the list asks, one click; it does not propose', () => {
