@@ -597,6 +597,29 @@ Device, 2026-11-16:
 - **Not asked:** "Dana asked for it on Tuesday." gave a vague new commitment
   ("Send something", "Send item") for Dana instead of a question.
 
+## Device model, round 14 (clean, three runs)
+
+Written and committed (09e8b37) after d440b4f and 9ce2c22, before any model
+saw it; with time words that are not dependencies and "it". Device,
+2026-11-16:
+
+| Run | Pass | Safe | Unsafe | Dependencies missed / wrong |
+|---|---|---|---|---|
+| 1 | 9 | 2 | 1 | 0 / 0 |
+| 2 | 9 | 3 | 0 | 1 / 0 |
+| 3 | 8 | 4 | 0 | 1 / 0 |
+
+- **The best device round so far.** "Sent Lee the proposal before lunch." and
+  "Omar booked the venue after the call." passed in all three; both "it"
+  notes ("Dana wants it by Thursday now.", "Gave it to Dana this morning.")
+  were asked properly in all three.
+- **The unsafe answer:** "Dana and I discussed the proposal over coffee." as
+  done: "over" was a "finished" word.
+- **Fix (not measured):** "over" and "out" say it is finished only after
+  "is", "was", "went" and the like ("it went out", "the meeting is over").
+- **Missed in 2 of 3:** "I can only book the caterer after Omar books the
+  venue." The new commitment was not given, so there was nothing to wait.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device
