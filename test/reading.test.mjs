@@ -517,3 +517,19 @@ test('two of the same wording: the person named decides; "looks dated" is not do
   const booked = 'The venue looks great and Omar booked it.';
   assert.equal(readNote({ updates: [up('Q4', 'done', '', booked)], newCommitments: [] }, { shape: 'v1', candidates, note: booked }).proposals.length, 1);
 });
+
+test('round 8 repeats: another person named asks; a twin of an updated one is dropped on the device; "dropped" is not done', () => {
+  const lee = [...candidates, { label: 'L5', id: 'id-pricing', what: 'Confirm pricing', owner: 'Lee', to: 'me' }];
+  const share = 'Lee will share the contract draft with me tomorrow.';
+  const a = readNote({ updates: [up('R2', 'new deadline', 'tomorrow', share)], newCommitments: [] }, { shape: 'v1', candidates: lee, note: share });
+  assert.deepEqual([a.proposals, a.questions[0].options.map((o) => o.label ?? o.type)], [[], ['R2', 'new']]);
+
+  const her = 'Dana would like her proposal on Monday.';
+  const b = readNote({ updates: [up('K7', 'new deadline', 'Monday', her)], newCommitments: [{ quote: her, what: 'Send the proposal for Dana', owner: 'me', to: 'Dana', due: 'Monday' }] }, { shape: 'v1', candidates, note: her });
+  assert.deepEqual([b.proposals.map((p) => [p.label, p.due]), b.created, b.questions], [[['K7', 'Monday']], [], []]);
+
+  const dropped = 'Dana dropped the contract.';
+  const c = readNote({ updates: [up('R2', 'done', '', dropped)], newCommitments: [] }, { shape: 'v1', candidates, note: dropped });
+  assert.deepEqual([c.proposals, c.manual.length], [[], 1]);
+  assert.equal(readNote({ updates: [up('R2', 'cancelled', '', dropped)], newCommitments: [] }, { shape: 'v1', candidates, note: dropped }).proposals.length, 1);
+});

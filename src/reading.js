@@ -358,7 +358,19 @@ export function readNote(answer, { shape, candidates, note }) {
   // it could be about, over the same words as a new commitment of this
   // reading, is that new commitment said twice; the change is dropped.
   let updates = checked.updates;
+  let newCommitments = checked.newCommitments;
   if (shape === 'v1') {
+    // The device model also gives a listed commitment it updates as new, in
+    // the same words ("Dana would like her proposal on Monday": a deadline on
+    // "Send the proposal" for Dana, and a new "Send the proposal for Dana").
+    // A new commitment with a listed one's wording and person, from words that
+    // also update that one, is that one said twice; it is dropped.
+    const bare = (what, to) => norm(what).replace(new RegExp(`\\s(for|to)\\s${norm(to)}$`), '');
+    newCommitments = newCommitments.filter((n) => !updates.some((u) => {
+      const c = candidates.find((x) => x.label === u.commitment);
+      return c && norm(u.quote) === norm(n.quote) && bare(n.what, n.to || c.to) === norm(c.what)
+        && (!norm(n.to) || norm(n.to) === norm(c.to));
+    }));
     const near = (a, b) => {
       const [x, y] = [norm(a), norm(b)];
       return x.length > 0 && y.length > 0 && (x.includes(y) || y.includes(x));
@@ -367,10 +379,10 @@ export function readNote(answer, { shape, candidates, note }) {
       const sentence = sentenceOf(note, u.quote);
       const about = u.commitment === 'unclear' ? candidates : candidates.filter((c) => c.label === u.commitment);
       if (about.some((c) => mentions(sentence, c.what))) return true;
-      return !checked.newCommitments.some((n) => near(sentenceOf(note, n.quote), sentence));
+      return !newCommitments.some((n) => near(sentenceOf(note, n.quote), sentence));
     });
   }
-  const ruled = applyRules({ updates, newCommitments: checked.newCommitments }, candidates);
+  const ruled = applyRules({ updates, newCommitments }, candidates);
   const byLabel = new Map(candidates.map((c) => [c.label, c]));
   // Every option of a question as a complete answer.
   const optionsOf = (u, among) => among.flatMap((name) => {
@@ -408,6 +420,25 @@ export function readNote(answer, { shape, candidates, note }) {
     if (u.change === 'cancelled' && !STOPPED.test(wholeSentence(note, u.quote))) {
       manual.push({ quote: u.quote, reason: 'It was read as "cancelled", but the words do not say it is off. Link it by hand if it was cancelled.' });
       continue;
+    }
+    // "Priya dropped the budget review": "dropped" is a past tense, but the
+    // words say it is off, not done.
+    if (u.change === 'done' && STOPPED.test(sentenceOf(note, u.quote))) {
+      manual.push({ quote: u.quote, reason: 'It was read as "done", but the words say it is off. Link it by hand if it was done or cancelled.' });
+      continue;
+    }
+    // Words that name someone, but none of the people of the commitment, are
+    // likely about something else: "Lee will share the contract draft with me"
+    // is not "Send the contract" to Dana. It becomes a question: that one, or new.
+    if (u.commitment !== 'unclear') {
+      const chosen = byLabel.get(u.commitment);
+      const said = ` ${norm(clauseWithReferent(note, u.quote))} `;
+      const ownPeople = [chosen.to, chosen.owner].map(norm);
+      const named = PEOPLE(candidates).filter((p) => said.includes(` ${p} `));
+      if (named.length && !named.some((p) => ownPeople.includes(p))) {
+        questions.push({ quote: u.quote, options: optionsOf(u, [u.commitment, 'new']), from: 'app rule' });
+        continue;
+      }
     }
     // Words that do not mention the commitment ("I'll send Dana the contract"
     // for "Send the proposal") may be about something not in the list: the
@@ -482,6 +513,8 @@ function isCondition(note, quote) {
 // Not a past tense, or one of feeling, speaking or thinking, which says nothing
 // was done: "Dana liked the venue photos", "Priya asked how the review is going".
 const HAPPENED = /\b((?!(?:need|needed|indeed|proceed|exceed|succeed|speed|feed|seed|liked|loved|hated|enjoyed|wanted|asked|wondered|worried|seemed|looked|sounded|mentioned|talked|chatted|discussed|suggested|hoped|wished|preferred|expected|planned|offered|promised|joked|complained|noticed|reminded|warned|stressed|pointed|explained|claimed|insisted|repeated|requested|questioned)\b)\w{2,}ed|sent|did|done|made|paid|gave|given|wrote|written|took|taken|brought|bought|sold|built|told|met|held|shipped|finished|complete|out|over|sorted|handled|delivered|received|got)\b/i;
+// The people the listed commitments are about, other than the writer.
+const PEOPLE = (candidates) => [...new Set(candidates.flatMap((c) => [c.to, c.owner]).map(norm).filter((p) => p && p !== 'me'))];
 // An "-ed" word that describes, after "looks", "seems" and the like: "the
 // template looks dated" says nothing was done.
 const DESCRIBED = /\b(looks?|looked|seems?|seemed|sounds?|sounded|feels?|felt|appears?|appeared)\s+(\w+\s+)?\w+ed\b/gi;
