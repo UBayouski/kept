@@ -114,8 +114,8 @@ function card(item) {
           : 'Read from the note, not confirmed by you.'}`)]
       : el('div', { class: 'source muted' }, 'No source note.'),
     el('div', { class: 'actions' },
-      el('button', { onclick: () => act(item.changeId, () => m.accept(q, item.changeId)) }, 'Accept'),
-      el('button', { onclick: () => act(item.changeId, () => m.reject(q, item.changeId)) }, 'Reject'),
+      el('button', { class: 'primary', onclick: () => act(item.changeId, () => m.accept(q, item.changeId)) }, 'Accept'),
+      el('button', { class: 'quiet', onclick: () => act(item.changeId, () => m.reject(q, item.changeId)) }, 'Reject'),
       message?.outcome === 'stale' && el('button', { onclick: () => act(item.changeId, () => m.accept(q, item.changeId, { confirmStale: true })) }, 'Apply anyway'),
       message?.outcome === 'needs-confirmation' && el('button', { onclick: () => act(item.changeId, () => m.reject(q, item.changeId, { confirmConsequences: true })) }, 'Reject and remove those too'),
       movable && [' It is about another commitment: ', target,
@@ -160,20 +160,20 @@ async function refresh() {
     ['Status', (c) => (c.review === 'unreviewed' ? `${c.status}, not confirmed` : c.status)],
     ['Waiting for review', (c) => (c.pendingChanges ? `${c.pendingChanges} change(s)` : '')],
     ['', (c) => el('button', { onclick: () => why(c) }, 'Why?')],
-  ], list, 'No commitments yet. Load the demo scenario.'));
+  ], list, PRIVATE ? 'No commitments yet. Capture a note to start.' : 'No commitments yet. Load the demo scenario, or capture a note.'));
 
   const summary = await data.peopleSummary(q);
   const counts = (p) => [p.owes && `owes ${p.owes}`, p.owed && `owed ${p.owed}`].filter(Boolean).join(', ');
   $('people-list').replaceChildren(...(summary.length
-    ? ['People: ', ...summary.flatMap((p, i) => [i ? ' · ' : '',
-        el('strong', {}, p.isMe ? `${p.name} (you)` : p.name), counts(p) ? `: ${counts(p)}` : ''])]
+    ? summary.map((p) => el('div', {}, el('strong', {}, p.isMe ? `${p.name} (you)` : p.name), counts(p) ? `: ${counts(p)}` : ''))
     : ['No people yet. They are added by the first note, or by hand above.']));
 
   const select = $('person');
   const chosen = select.value;
   select.replaceChildren(...persons.filter((p) => !p.isMe).map((p) => el('option', { value: p.id }, p.name)));
   if (chosen) select.value = chosen;
-  $('status').replaceChildren(el('span', { class: 'ok' }, `Store ${STORE} open: ${list.length} commitment(s), ${items.length} waiting for review.`));
+  // "open" stays in the text: scripts wait for it before they start.
+  $('status').replaceChildren(el('span', {}, `Kept in this browser (store open): ${list.length} commitment${list.length === 1 ? '' : 's'}, ${items.length} waiting for review.`));
 }
 
 const pending = (n) => (n ? `${n} change(s) waiting for review` : '');
@@ -261,13 +261,15 @@ async function why(commitment) {
     answer('answer-why',
       el('p', {}, el('strong', {}, `"${commitment.what}" is ${current.owner === 'Me' ? 'yours' : `${current.owner}'s`}. `), basis),
       proposals.map((p) => el('p', { class: 'muted' }, `Waiting for review: a note says ${p.proposedOwner} should own it ("${p.quote ?? ''}").`)),
-      el('p', { class: 'muted' }, 'Its history, oldest first:'),
-      table([
-        ['Learned', (h) => when(h.learned)],
-        ['What', (h) => (h.derived ? el('span', { class: 'muted' }, h.summary) : h.summary)],
-        ['From', (h) => (h.note ? el('span', {}, quoted(h.note, h.quote), h.extractedBy === 'device' ? el('span', { class: 'muted' }, ' (device)') : '') : 'no note')],
-        ['', decided],
-      ], past, 'No history.'));
+      el('h3', {}, 'History'),
+      past.length
+        ? el('ol', { class: 'timeline' }, past.map((h) => el('li', { class: h.derived ? 'derived' : h.state },
+          el('div', { class: 'when' }, when(h.learned), el('span', { class: 'decision' }, decided(h))),
+          el('div', { class: 'what' }, h.summary),
+          h.note && el('blockquote', {}, quoted(h.note, h.quote)),
+          h.note && h.extractedBy === 'device' && el('div', { class: 'by' }, 'Read on this device')))
+        )
+        : el('p', { class: 'muted' }, 'No history.'));
     $('answer-why').scrollIntoView({ block: 'nearest' });
   } catch (err) {
     answer('answer-why', el('p', { class: 'bad' }, `Error: ${err.message}`));
@@ -349,7 +351,7 @@ function pendingCard(entry) {
   const { session, noteText, item } = entry;
   const source = el('blockquote', {}, quoted(noteText, item.quote));
   const error = entry.error && el('div', { class: 'message bad' }, entry.error);
-  const dismiss = (label) => el('button', { onclick: () => settle(entry) }, label);
+  const dismiss = (label) => el('button', { class: 'quiet', onclick: () => settle(entry) }, label);
   const openOnes = commitmentRows.filter((c) => c.status === 'open');
   const become = (next) => () => {
     entry.item = next;
@@ -371,7 +373,7 @@ function pendingCard(entry) {
       el('div', { class: 'row' }, el('label', {}, 'What ', what), el('label', {}, 'Owed by ', owner), el('label', {}, 'to ', to), el('label', {}, 'due ', due, resolvedHint(due, session))),
       el('div', { class: 'source muted' }, 'The people and the date are how the app reads the words. Correct them before proposing.'),
       el('div', { class: 'actions' },
-        el('button', { onclick: () => settle(entry, () => capture.proposeNew(q, session,
+        el('button', { class: 'primary', onclick: () => settle(entry, () => capture.proposeNew(q, session,
           { what: what.value, ownerId: owner.value, toId: to.value, dueText: due.value.trim(), quote: item.quote, ref: item.ref })) }, 'Propose it'),
         dismiss('Not a commitment')),
       error);
@@ -383,7 +385,7 @@ function pendingCard(entry) {
       source,
       el('div', { class: 'source muted' }, 'One of these is new in this note. Propose it first (its card is above), then this.'),
       el('div', { class: 'actions' },
-        el('button', { onclick: () => settle(entry, () => capture.proposeDependency(q, session, item)) }, 'Propose it'),
+        el('button', { class: 'primary', onclick: () => settle(entry, () => capture.proposeDependency(q, session, item)) }, 'Propose it'),
         dismiss('Not a dependency')),
       error);
   }
@@ -430,7 +432,7 @@ function pendingCard(entry) {
     el('div', { class: 'source muted' }, item.reason),
     openOnes.length > 0 && el('div', { class: 'row' }, el('label', {}, 'It changes ', target), el('label', {}, 'to ', change), el('label', {}, due, resolvedHint(due, session))),
     el('div', { class: 'actions' },
-      openOnes.length > 0 && el('button', { onclick: () => settle(entry, () => {
+      openOnes.length > 0 && el('button', { class: 'primary', onclick: () => settle(entry, () => {
         if (change.value === 'new deadline' && !due.value.trim()) throw new Error('A new deadline needs a date.');
         return capture.proposeChange(q, session, [{ commitmentId: target.value, change: change.value, due: due.value.trim(), quote: item.quote }]);
       }) }, 'Propose it'),
@@ -453,13 +455,30 @@ $('note-when').value = localNow();
 $('cloud-model').textContent = ai.CLOUD_MODEL;
 for (const node of document.querySelectorAll('.cloud-model')) node.textContent = ai.CLOUD_MODEL;
 
+// --- Workspace switch and where a note will be read ---
+
+$(PRIVATE ? 'ws-private' : 'ws-demo').setAttribute('aria-current', 'page');
+
+// The stamp beside "Read this note": where this note would be read now.
+async function showRoute() {
+  const stamp = $('route-stamp');
+  let kind = 'cloud';
+  let text = 'Cloud';
+  if (PRIVATE) {
+    [kind, text] = $('cloud-opt-in').checked ? ['cloud', 'Cloud, this note only'] : ['device', 'On this device'];
+  } else if ($('device-first').checked) {
+    const ready = !ai.deviceStuck() && (await ai.deviceModelState().catch(() => 'unavailable')) === 'available';
+    [kind, text] = ready ? ['hybrid', 'Device first, cloud if needed'] : ['cloud', 'Cloud (device not ready)'];
+  }
+  stamp.className = `stamp ${kind}`;
+  stamp.textContent = text;
+}
+
 // --- Private workspace ---
 
 if (PRIVATE) {
   document.title = 'Kept: private';
   $('workspace-intro').textContent = 'Private workspace, kept in this browser.';
-  $('workspace-switch').textContent = 'Open the demo workspace';
-  $('workspace-switch').href = '?';
   $('seed').hidden = true;
   $('capture-notice').hidden = true;
   $('demo-hybrid').hidden = true;
@@ -488,6 +507,7 @@ async function checkDeviceAnswers() {
     : "Chrome's on-device model is not answering. Restart Chrome (close every Chrome window), then reload this page. You can still use the cloud model below.";
 }
 if (PRIVATE) checkDeviceAnswers();
+if (PRIVATE) showRoute();
 $('prepare-device').onclick = async () => {
   $('prepare-device').disabled = true;
   try {
@@ -515,7 +535,7 @@ async function showCloudPreview() {
     el('div', { class: 'source muted' }, 'Nothing else from this workspace is sent. The box unticks itself after this note.'),
   ].filter(Boolean));
 }
-$('cloud-opt-in').onchange = () => showCloudPreview().catch(() => {});
+$('cloud-opt-in').onchange = () => { showCloudPreview().catch(() => {}); showRoute(); };
 $('note').addEventListener('input', () => { if ($('cloud-opt-in').checked) showCloudPreview().catch(() => {}); });
 
 // Demo workspace: prefer the device when the user turns it on. Demo data
@@ -538,10 +558,10 @@ async function showDeviceFirst() {
 }
 if (!PRIVATE) {
   try { $('device-first').checked = localStorage.getItem(DEVICE_FIRST_KEY) === '1'; } catch {}
-  showDeviceFirst().catch(() => {});
+  showDeviceFirst().catch(() => {}).then(showRoute);
   $('device-first').onchange = () => {
     try { localStorage.setItem(DEVICE_FIRST_KEY, $('device-first').checked ? '1' : '0'); } catch {}
-    showDeviceFirst().catch(() => {});
+    showDeviceFirst().catch(() => {}).then(showRoute);
   };
 }
 
@@ -590,6 +610,7 @@ $('read-note').onclick = async () => {
     const fallback = r.linking.fallback ?? chosen.fallback;
     $('cloud-opt-in').checked = false;
     $('cloud-preview').hidden = true;
+    showRoute();
     for (const item of r.pending) pendingItems.push({ session: r.out.session, noteText: text, item });
     $('note').value = '';
     // The next note is from now, not from when the page was opened.

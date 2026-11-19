@@ -4,87 +4,324 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kept</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-      body { font: 15px/1.5 system-ui, sans-serif; max-width: 860px; margin: 32px auto; padding: 0 16px; color: #1c1c1c; }
-      h1 { font-size: 20px; margin-bottom: 4px; }
-      h2 { font-size: 16px; margin-top: 32px; }
-      button, select, input { font: inherit; }
-      button { padding: 5px 12px; margin-right: 6px; }
+      :root {
+        --paper: #f2f4f7;
+        --surface: #ffffff;
+        --ink: #1b2230;
+        --ink-2: #576173;
+        --rule: #d9dee6;
+        --rule-strong: #c3cad5;
+        --accent: #2b4acb;
+        --accent-ink: #ffffff;
+        --accent-soft: #e6ebfb;
+        --mark: #ffe45c;
+        --mark-ink: #1b2230;
+        --device: #17795a;
+        --device-soft: #e2f2ea;
+        --warn: #a85a12;
+        --warn-soft: #fbeedd;
+        --bad: #b3261e;
+        --ok: #17795a;
+        --ui: 'Schibsted Grotesk', ui-sans-serif, system-ui, sans-serif;
+        --text: 'Newsreader', Georgia, 'Times New Roman', serif;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #12161e;
+          --surface: #1a1f2a;
+          --ink: #e7eaf0;
+          --ink-2: #9aa3b4;
+          --rule: #2c3342;
+          --rule-strong: #3b4456;
+          --accent: #8ea4ff;
+          --accent-ink: #10142a;
+          --accent-soft: #232c4d;
+          --mark: rgba(255, 228, 92, 0.42);
+          --mark-ink: #fff8d6;
+          --device: #5fcf9f;
+          --device-soft: #173328;
+          --warn: #f0b066;
+          --warn-soft: #3a2a16;
+          --bad: #ff8a80;
+          --ok: #5fcf9f;
+          color-scheme: dark;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html { background: var(--paper); }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 15px/1.5 var(--ui);
+        -webkit-font-smoothing: antialiased;
+      }
+      .page { max-width: 1180px; margin: 0 auto; padding: 28px 24px 64px; }
+
+      /* Header */
+      .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--rule); }
+      .brand h1 { margin: 0; font-size: 34px; line-height: 1; font-weight: 700; letter-spacing: -0.02em; }
+      .brand p { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+      .ws { display: inline-flex; padding: 3px; border: 1px solid var(--rule-strong); border-radius: 999px; background: var(--surface); }
+      .ws a { padding: 6px 16px; border-radius: 999px; color: var(--ink-2); text-decoration: none; font-weight: 500; }
+      .ws a:hover { color: var(--ink); }
+      .ws a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+      .intro { margin: 14px 0 0; color: var(--ink-2); max-width: 70ch; }
+      #status { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+
+      /* Layout */
+      .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 24px; }
+      @media (min-width: 1040px) {
+        .layout { grid-template-columns: minmax(0, 1fr) 400px; align-items: start; }
+        .side { position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow: auto; padding-right: 2px; }
+      }
+      section { margin: 0 0 32px; }
+      h2 { margin: 0 0 12px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+      h2 .muted { font-weight: 400; font-size: 15px; }
+      .side h2 { font-size: 16px; }
+      p { margin: 0 0 10px; }
+      .muted { color: var(--ink-2); }
+      .ok { color: var(--ok); }
+      .bad { color: var(--bad); }
+      a { color: var(--accent); }
+
+      /* Controls */
+      button, select, input, textarea { font: inherit; color: inherit; }
+      button {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 13px; margin: 0 6px 6px 0;
+        border: 1px solid var(--rule-strong); border-radius: 7px;
+        background: var(--surface); color: var(--ink); font-weight: 500; cursor: pointer;
+      }
+      button:hover { border-color: var(--ink-2); }
+      button:disabled { opacity: 0.55; cursor: progress; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      button.primary:hover { filter: brightness(1.08); }
+      button.quiet { background: transparent; border-color: transparent; color: var(--ink-2); padding-left: 6px; padding-right: 6px; }
+      button.quiet:hover { color: var(--ink); text-decoration: underline; }
+      input[type="text"], input:not([type]), input[type="date"], input[type="datetime-local"], select {
+        padding: 5px 8px; border: 1px solid var(--rule-strong); border-radius: 7px; background: var(--surface);
+      }
+      input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      label { margin-right: 12px; }
+
+      /* Capture */
+      .capture { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px 12px; }
+      .capture h2 { margin-bottom: 10px; }
+      #note {
+        display: block; width: 100%; min-height: 104px; resize: vertical;
+        padding: 12px 14px; border: 1px solid var(--rule-strong); border-radius: 9px; background: var(--paper);
+        font-family: var(--text); font-size: 18px; line-height: 1.5;
+      }
+      #note::placeholder { color: var(--ink-2); font-style: italic; }
+      .capture-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 12px 0 6px; }
+      .capture-row label { margin: 0; }
+      .capture-row .go { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+      .capture-row .go button { margin: 0; }
+      .stamp {
+        display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+        font-size: 13px; font-weight: 500; border: 1px solid currentColor; white-space: nowrap;
+      }
+      .stamp::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+      .stamp.device { color: var(--device); background: var(--device-soft); }
+      .stamp.cloud { color: var(--accent); background: var(--accent-soft); }
+      .stamp.hybrid { color: var(--device); background: linear-gradient(90deg, var(--device-soft), var(--accent-soft)); }
+      .capture .notice { font-size: 13.5px; color: var(--ink-2); margin: 8px 0 6px; }
+      #demo-hybrid { font-size: 14px; margin: 6px 0; }
+      #private-capture p { font-size: 14px; }
+      #capture-status { font-size: 14px; margin: 8px 0 4px; }
+      #capture-status:empty { display: none; }
+
+      /* Cards in the queue */
+      .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px 12px; margin: 0 0 12px; }
+      .card.needs { border: 1px dashed var(--rule-strong); background: transparent; }
+      .card .summary { font-weight: 600; font-size: 16px; line-height: 1.4; }
+      .card blockquote, .answer blockquote {
+        margin: 10px 0 8px; padding: 2px 0 2px 14px; border-left: 2px solid var(--rule-strong);
+        font-family: var(--text); font-size: 17.5px; line-height: 1.55; color: var(--ink);
+      }
+      .card .source { font-size: 13px; color: var(--ink-2); }
+      .card .row { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 10px; }
+      .card .row label { margin: 0; }
+      .card .actions { margin-top: 12px; }
+      .card ul { margin: 6px 0; padding-left: 20px; }
+      .flag { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--warn); background: var(--warn-soft); vertical-align: 2px; }
+      .message { font-size: 13.5px; margin-top: 6px; }
+
+      /* The evidence: a highlighter stroke on the words a claim rests on */
+      mark {
+        color: var(--mark-ink);
+        background: linear-gradient(transparent 16%, var(--mark) 16%, var(--mark) 88%, transparent 88%);
+        padding: 0 0.12em; margin: 0 -0.06em; border-radius: 0.2em;
+        -webkit-box-decoration-break: clone; box-decoration-break: clone;
+      }
+
+      /* Tables: the commitments list and the answers */
       table { border-collapse: collapse; width: 100%; font-size: 14px; }
-      th, td { border-bottom: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
-      .muted { color: #666; }
-      .ok { color: #0a7a2f; } .bad { color: #b00020; }
-      .card { border: 1px solid #ccc; border-radius: 6px; padding: 12px 14px; margin: 12px 0; }
-      .card .summary { font-weight: 600; }
-      .card blockquote { margin: 8px 0; padding-left: 10px; border-left: 3px solid #bbb; }
-      .card .source { font-size: 13px; }
-      .card .actions { margin-top: 10px; }
-      .flag { display: inline-block; font-size: 12px; padding: 1px 6px; border-radius: 3px; background: #fde7c2; margin-left: 6px; }
-      .message { font-size: 13px; margin-top: 8px; }
-      .answer { margin: 8px 0 0; }
-      mark { background: #fff1a8; }
-      textarea { font: inherit; width: 100%; box-sizing: border-box; padding: 8px; }
-      .card.needs { border-style: dashed; }
-      .card .row { margin-top: 8px; }
-      .card label { margin-right: 10px; }
+      th { text-align: left; font-weight: 500; font-size: 12.5px; color: var(--ink-2); padding: 0 10px 6px 0; border-bottom: 1px solid var(--rule-strong); }
+      td { text-align: left; vertical-align: top; padding: 9px 10px 9px 0; border-bottom: 1px solid var(--rule); }
+      td button { margin: -3px 0 0; padding: 3px 10px; font-size: 13px; }
+      tr:last-child td { border-bottom: 0; }
+      .list { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 18px 6px; overflow-x: auto; }
+      .list > p { margin: 4px 0 10px; }
+
+      /* Side panel: questions, why, people */
+      .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+      .ask { padding: 12px 0; border-top: 1px solid var(--rule); }
+      .ask:first-of-type { border-top: 0; padding-top: 2px; }
+      .ask > p { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+      .ask > p label { margin: 0; }
+      .ask > p button { margin: 0; }
+      .ask > p { justify-content: space-between; flex-wrap: nowrap; align-items: flex-start; }
+      .ask > p > .ask-q, .ask > p > label { flex: 1 1 0; min-width: 0; font-weight: 500; }
+      .ask > p > label:not(.ask-q) { font-weight: 400; }
+      .ask > p > button { flex: none; }
+      .ask-q input, .ask-q select { margin-top: 4px; }
+      .answer { margin: 8px 0 0; font-size: 14px; }
+      .answer:empty { display: none; }
+      .answer td, .answer th { font-size: 13.5px; }
+      .answer td span.muted { font-family: var(--ui); }
+      #answer-why { margin: 0; }
+      #answer-why:not(:empty) { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+      #answer-why h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 600; }
+      .timeline { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--rule); }
+      .timeline li { position: relative; padding: 0 0 14px 10px; }
+      .timeline li::before { content: ''; position: absolute; left: -21px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink-2); }
+      .timeline li.accepted::before { background: var(--ink); border-color: var(--ink); }
+      .timeline li.proposed::before { border-style: dashed; }
+      .timeline li.rejected { opacity: 0.6; }
+      .timeline li.derived::before { border-color: var(--device); }
+      .timeline li.derived .what { color: var(--ink-2); font-style: italic; }
+      .timeline .when { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+      .timeline .decision { white-space: nowrap; }
+      .timeline .what { font-weight: 500; margin-top: 1px; }
+      .timeline blockquote { margin: 6px 0 2px; font-size: 16px; }
+      .timeline .by { font-size: 12.5px; color: var(--device); }
+      #answer-why > p:first-child strong { font-size: 16px; }
+      .people-row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+      .people-row input { flex: 1 1 140px; }
+      #people-list { margin: 10px 0 0; font-size: 14px; line-height: 1.7; }
+      .tools { margin-top: 6px; }
+      .tools button { font-size: 13.5px; }
+
+      @media (max-width: 640px) {
+        .page { padding: 20px 16px 48px; }
+        .brand h1 { font-size: 28px; }
+        .capture-row .go { margin-left: 0; width: 100%; justify-content: space-between; }
+        td { padding-right: 8px; }
+        /* The commitments list as stacked entries: the wording first, the rest as a line under it. */
+        .list table, .list tbody, .list tr, .list td { display: block; }
+        .list tr:first-child { display: none; }
+        .list tr { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+        .list tr:last-child { border-bottom: 0; }
+        .list td { border: 0; padding: 0; color: var(--ink-2); font-size: 13.5px; }
+        .list td:first-child { flex-basis: 100%; color: var(--ink); font-size: 15px; font-weight: 500; }
+        .list td:last-child { margin-left: auto; }
+        .list td:empty { display: none; }
+      }
+      @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
   </head>
   <body>
-    <h1>Kept <span class="muted" style="font-size:15px;font-weight:normal">Know what you owe. See what changed.</span></h1>
-    <p class="muted"><span id="workspace-intro">Demo workspace.</span> What a note is read to say waits here until you confirm it. Nothing changes a commitment before that. <a id="workspace-switch" href="?workspace=private">Open the private workspace</a></p>
-    <p id="status">Opening the store…</p>
-    <p>
-      <button id="seed">Load the demo scenario</button>
-      <button id="reset">Empty the store</button>
-    </p>
+    <div class="page">
+      <header class="top">
+        <div class="brand">
+          <h1>Kept</h1>
+          <p>Know what you owe. See what changed.</p>
+        </div>
+        <nav class="ws" aria-label="Workspace">
+          <a id="ws-demo" href="?">Demo</a>
+          <a id="ws-private" href="?workspace=private">Private</a>
+        </nav>
+      </header>
+      <p class="intro"><span id="workspace-intro">Demo workspace.</span> What a note is read to say waits here until you confirm it. Nothing changes a commitment before that.</p>
+      <p id="status">Opening the store…</p>
 
-    <h2>Capture a note</h2>
-    <textarea id="note" rows="3" placeholder="Type or paste a note here. For example: Dana says Thursday is fine for the proposal."></textarea>
-    <p>
-      <label>It is a <select id="note-kind"><option value="note">note</option><option value="meeting">meeting</option><option value="message">message</option></select></label>
-      <label>from <input type="datetime-local" id="note-when" /></label>
-      <button id="read-note">Read this note</button>
-    </p>
-    <p class="muted" id="capture-notice">Demo workspace: <span id="demo-route">the note and your open commitments are sent to the cloud model (<span id="cloud-model"></span>).</span> What it reads waits below for you.</p>
-    <p id="demo-hybrid"><label><input type="checkbox" id="device-first" /> Read on this device when its model is ready, otherwise in the cloud (Firebase AI Logic, prefer on-device)</label> <span id="device-first-state" class="muted"></span></p>
-    <div id="private-capture" hidden>
-      <p class="muted">Private workspace: the note is read by the model built into this browser and does not leave this device. <span id="device-state"></span> <button id="prepare-device" hidden>Download the device model</button></p>
-      <p><label><input type="checkbox" id="cloud-opt-in" /> Use the cloud model (<span class="cloud-model"></span>) for this note instead</label></p>
-      <div id="cloud-preview" class="card" hidden></div>
+      <div class="layout">
+        <main>
+          <section class="capture" aria-labelledby="capture-title">
+            <h2 id="capture-title">Capture a note</h2>
+            <textarea id="note" rows="3" placeholder="Paste a message or meeting notes. For example: Dana says Thursday is fine for the proposal."></textarea>
+            <div class="capture-row">
+              <label>It is a <select id="note-kind"><option value="note">note</option><option value="meeting">meeting</option><option value="message">message</option></select></label>
+              <label>from <input type="datetime-local" id="note-when" /></label>
+              <div class="go">
+                <span id="route-stamp" class="stamp cloud">Cloud</span>
+                <button id="read-note" class="primary">Read this note</button>
+              </div>
+            </div>
+            <p class="notice" id="capture-notice">Demo workspace: <span id="demo-route">the note and your open commitments are sent to the cloud model (<span id="cloud-model"></span>).</span> What it reads waits below for you.</p>
+            <p id="demo-hybrid"><label><input type="checkbox" id="device-first" />Read on this device when its model is ready, otherwise in the cloud</label> <span id="device-first-state" class="muted"></span></p>
+            <div id="private-capture" hidden>
+              <p class="muted">The note is read by the model built into this browser and does not leave this device. <span id="device-state"></span> <button id="prepare-device" hidden>Download the device model</button></p>
+              <p><label><input type="checkbox" id="cloud-opt-in" />Use the cloud model (<span class="cloud-model"></span>) for this note instead</label></p>
+              <div id="cloud-preview" class="card" hidden></div>
+            </div>
+            <p id="capture-status"></p>
+          </section>
+
+          <div id="pending"></div>
+
+          <section aria-labelledby="review-title">
+            <h2 id="review-title">To review <span id="review-count" class="muted"></span></h2>
+            <div id="review"></div>
+            <div id="decided"></div>
+          </section>
+
+          <section aria-labelledby="commitments-title">
+            <h2 id="commitments-title">Commitments</h2>
+            <div id="commitments" class="list"></div>
+          </section>
+        </main>
+
+        <aside class="side">
+          <div id="answer-why" class="answer"></div>
+
+          <section class="panel" aria-labelledby="ask-title">
+            <h2 id="ask-title">Ask</h2>
+            <div class="ask">
+              <p><label class="ask-q">What do I owe on or before <input type="date" id="before" /></label><button id="ask-owe">Ask</button></p>
+              <div id="answer-owe" class="answer"></div>
+            </div>
+            <div class="ask">
+              <p><span class="ask-q">Which commitments are waiting on someone else?</span><button id="ask-waiting">Ask</button></p>
+              <div id="answer-waiting" class="answer"></div>
+            </div>
+            <div class="ask">
+              <p><span class="ask-q">What do others owe me?</span><button id="ask-owed">Ask</button></p>
+              <div id="answer-owed" class="answer"></div>
+            </div>
+            <div class="ask">
+              <p><label class="ask-q">What changed since the last meeting with <select id="person"></select></label></p>
+              <p><label><input type="checkbox" id="previous" />the meeting before that</label><button id="ask-changed">Ask</button></p>
+              <div id="answer-changed" class="answer"></div>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="people-title">
+            <h2 id="people-title">People</h2>
+            <div class="people-row">
+              <input id="person-name" placeholder="Someone not in the list yet" aria-label="Name of someone to add" />
+              <button id="add-person">Add person</button>
+            </div>
+            <span id="person-status" class="muted"></span>
+            <p id="people-list" class="muted"></p>
+          </section>
+
+          <section class="panel tools" aria-label="Demo data">
+            <button id="seed">Load the demo scenario</button>
+            <button id="reset" class="quiet">Empty the store</button>
+          </section>
+        </aside>
+      </div>
     </div>
-    <p id="capture-status"></p>
-    <p>
-      <label>Someone not in the list yet: <input id="person-name" placeholder="Name" size="14" /></label>
-      <button id="add-person">Add person</button>
-      <span id="person-status" class="muted"></span>
-    </p>
-    <p id="people-list" class="muted"></p>
-    <div id="pending"></div>
-
-    <h2>To review <span id="review-count" class="muted"></span></h2>
-    <div id="review"></div>
-    <div id="decided"></div>
-
-    <h2>Commitments</h2>
-    <div id="commitments"></div>
-
-    <h2>Questions</h2>
-    <p>
-      <label>What do I owe on or before <input type="date" id="before" /></label>
-      <button id="ask-owe">Ask</button>
-    </p>
-    <div id="answer-owe" class="answer"></div>
-    <p><button id="ask-waiting">Which commitments are waiting on someone else?</button></p>
-    <div id="answer-waiting" class="answer"></div>
-    <p><button id="ask-owed">What do others owe me?</button></p>
-    <div id="answer-owed" class="answer"></div>
-    <p>
-      <label>What changed since the last meeting with <select id="person"></select></label>
-      <label><input type="checkbox" id="previous" /> the meeting before that</label>
-      <button id="ask-changed">Ask</button>
-    </p>
-    <div id="answer-changed" class="answer"></div>
-    <div id="answer-why" class="answer"></div>
 
     <script type="module" src="/src/review.js"></script>
   </body>
