@@ -191,11 +191,15 @@
       .ask > p label { margin: 0; }
       .ask > p button { margin: 0; }
       .ask > p { justify-content: space-between; flex-wrap: nowrap; align-items: flex-start; }
-      .ask > p + p { margin-top: 8px; }
       .ask > p > .ask-q, .ask > p > label { flex: 1 1 0; min-width: 0; font-weight: 500; }
       .ask > p > label:not(.ask-q) { font-weight: 400; }
       .ask > p > button { flex: none; }
-      .ask-q input, .ask-q select { margin-top: 4px; }
+      .ask-q input { margin-top: 4px; }
+      .ask .ask-prompt { margin-bottom: 8px; font-weight: 500; }
+      .ask-fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+      .ask-fields label { margin: 0; color: var(--ink-2); font-size: 13px; }
+      .ask-fields select { display: block; min-width: 100px; margin-top: 4px; color: var(--ink); font-size: 15px; }
+      .ask-fields button { margin: 0 0 0 auto; }
       .answer { margin: 8px 0 0; font-size: 14px; overflow-x: auto; }
       #answer-waiting table, #answer-owed table { min-width: 520px; }
       .answer:empty { display: none; }
@@ -319,7 +323,12 @@
               <div id="answer-owed" class="answer"></div>
             </div>
             <div class="ask">
-              <p><span class="ask-q">What changed since <select id="previous" aria-label="Which meeting"><option value="last">the last</option><option value="before">the one before</option></select> meeting with <select id="person" aria-label="Person"></select></span><button id="ask-changed">Ask</button></p>
+              <p class="ask-prompt">What changed since a meeting?</p>
+              <div class="ask-fields">
+                <label>Meeting<select id="previous"><option value="last">Last</option><option value="before">One before</option></select></label>
+                <label>Person<select id="person"></select></label>
+                <button id="ask-changed">Ask</button>
+              </div>
               <div id="answer-changed" class="answer"></div>
             </div>
           </section>
