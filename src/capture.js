@@ -150,6 +150,15 @@ export function withoutRecipient(what, recipient) {
   return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
+// The wording without the owner's name where a recipient would be: a model
+// sometimes words "Dana owes me a ticket" as "Send Dana a ticket", which reads
+// as the user sending it. Whoever owes a commitment is never what it goes to,
+// so "to/for Dana" or Dana right after the verb is taken out, by the same rules
+// as the recipient: "Send a ticket". "Review Dana's draft" is left alone.
+export function withoutOwner(what, owner) {
+  return withoutRecipient(what, owner);
+}
+
 // --- Candidates ---
 
 // A short label for a commitment, the same every time it is offered, so a
@@ -274,10 +283,12 @@ export async function capture(q, { text, kind = 'note', occurredAt, baseDate, an
     const guess = guessPeople(n.quote, persons);
     const toId = matchPerson(n.to, persons) ?? guess.toId;
     const recipient = persons.find((p) => p.id === toId && !p.isMe);
+    const ownerId = matchPerson(n.owner, persons) ?? guess.ownerId;
+    const owner = persons.find((p) => p.id === ownerId);
     return {
-      type: 'new', what: withoutRecipient(n.what, recipient), quote: n.quote, dueText: n.due, due: resolveDate(n.due, baseDate),
+      type: 'new', what: withoutOwner(withoutRecipient(n.what, recipient), owner), quote: n.quote, dueText: n.due, due: resolveDate(n.due, baseDate),
       ownerName: n.owner, toName: n.to,
-      ownerId: matchPerson(n.owner, persons) ?? guess.ownerId,
+      ownerId,
       toId,
     };
   };

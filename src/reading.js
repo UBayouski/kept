@@ -99,6 +99,19 @@ export function validateReading(answer, { shape, candidates, note }) {
   const labels = new Set(candidates.map((c) => c.label));
   const noteText = norm(note);
   const inNote = (quote) => norm(quote).length > 0 && noteText.includes(norm(quote));
+  // The deadline as the note words it, or null when the note does not say it.
+  // The model is asked for the date exactly as written; a model that writes
+  // its own ("Monday" for "by next Tuesday") would otherwise be resolved into
+  // a believable wrong date. "next" in the note is kept, so "next Tuesday"
+  // stays unresolved instead of becoming the coming Tuesday.
+  const dueAsWritten = (due) => {
+    const words = norm(due).replace(/^((by|on|until|till|before|due|this)\s+)+/, '');
+    if (!words) return due;
+    const padded = ` ${noteText} `;
+    const at = padded.indexOf(` ${words} `);
+    if (at < 0) return null;
+    return /\snext$/.test(padded.slice(0, at)) && !/^next\s/.test(words) ? `next ${String(due).trim()}` : due;
+  };
   const check = (e) => {
     if (e.problem) return e.problem;
     if (e.target !== 'new' && e.target !== 'unclear' && !labels.has(e.target)) return `"${e.target}" is not a commitment the model was given`;
@@ -109,6 +122,7 @@ export function validateReading(answer, { shape, candidates, note }) {
       return `an existing commitment cannot be "${e.change}"`;
     }
     if (e.change === 'new deadline' && !norm(e.due)) return 'a new deadline has no date';
+    if (e.change === 'new deadline' && !e.anyDate && dueAsWritten(e.due) === null) return `the date "${String(e.due).trim()}" is not in the note`;
     if (!inNote(e.quote)) return norm(e.quote) ? 'the quote is not in the note' : 'there is no quote';
     return null;
   };
@@ -132,11 +146,18 @@ export function validateReading(answer, { shape, candidates, note }) {
         continue;
       }
     }
+    // A new commitment's date that is not in the note is left out, not
+    // guessed: the commitment is still proposed, with the date to fill in.
+    if (!e.problem && typeof e.due === 'string' && norm(e.due)) {
+      const written = dueAsWritten(e.due);
+      if (written === null && e.change !== 'new deadline') e.due = '';
+      else if (written !== null) e.due = written;
+    }
     const reason = check(e);
     // Device readings often add an empty deadline beside a valid new
     // commitment. It adds no date to review; keep the new commitment and
     // record the ignored extra only in the log. Other validation still applies.
-    if (reason === 'a new deadline has no date' && hasValidNew && !check({ ...e, due: 'date' })) {
+    if (reason === 'a new deadline has no date' && hasValidNew && !check({ ...e, due: 'date', anyDate: true })) {
       problems.push({ reason: 'an empty deadline beside a valid new commitment was dropped', entry: e.raw });
       continue;
     }

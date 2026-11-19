@@ -150,7 +150,7 @@ test('two different changes to one commitment are a conflict: neither is propose
   assert.equal(r.manual.length, 1);
   assert.deepEqual([r.manual[0].commitment, r.manual[0].options.map((o) => o.change)], ['Q4', ['new deadline', 'done', 'cancelled']]);
   // Two different dates are a conflict too.
-  const dates = v2({ items: [item('K7', 'new deadline', 'Tuesday', 'send the proposal Tuesday'), item('K7', 'new deadline', 'Wednesday', 'the proposal Tuesday')] });
+  const dates = v2({ items: [item('K7', 'new deadline', 'Tuesday', 'send the proposal Tuesday'), item('K7', 'new deadline', 'Wednesday', 'the proposal Tuesday')] }, `${note} Or Wednesday.`);
   assert.deepEqual([dates.updates, dates.manual[0].options.map((o) => o.due)], [[], ['Tuesday', 'Wednesday']]);
 });
 
@@ -641,4 +641,21 @@ test('the model\'s own "unclear" from words naming someone offers only that pers
   assert.deepEqual(r.questions[0].options.map((o) => o.label ?? o.type), ['K7', 'R2', 'new', 'all']);
   const none = 'Sent it this morning.';
   assert.equal(readNote({ updates: [up('unclear', 'done', '', none)], newCommitments: [] }, { shape: 'v1', candidates: list, note: none }).questions[0].options.length, 6);
+});
+
+test('a date has to be in the words of the note; "next" in the note is kept', () => {
+  const text = 'I need to update a contract with John, by next Tuesday.';
+  const quote = 'I need to update a contract with John, by next Tuesday';
+  // Seen on the device: "Monday" for "by next Tuesday", resolved to a believable wrong date.
+  const made = v2({ items: [item('new', 'new commitment', 'Monday', quote, 'Update a contract with John')] }, text);
+  assert.deepEqual(made.newCommitments.map((n) => n.due), ['']);
+  // The day alone is kept with its "next", so it is not read as the coming Tuesday.
+  const day = v2({ items: [item('new', 'new commitment', 'Tuesday', quote, 'Update a contract with John')] }, text);
+  assert.deepEqual(day.newCommitments.map((n) => n.due), ['next Tuesday']);
+  const words = v2({ items: [item('new', 'new commitment', 'by next Tuesday', quote, 'Update a contract with John')] }, text);
+  assert.deepEqual(words.newCommitments.map((n) => n.due), ['by next Tuesday']);
+  // A deadline change with a day the note does not say is refused, with the reason.
+  const change = v2({ items: [item('K7', 'new deadline', 'Friday', 'send the proposal Tuesday')] });
+  assert.deepEqual(change.updates, []);
+  assert.match(change.problems.map((p) => p.reason).join(' '), /"Friday" is not in the note/);
 });

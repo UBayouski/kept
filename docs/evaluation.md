@@ -811,6 +811,30 @@ says forget the proposal, we'll talk on the phone instead." became the
 question **"Send the proposal": cancelled** instead of being held back.
 Dismissed.
 
+## A date the note does not say (by hand, private workspace, device model)
+
+2026-11-18, the user's own note on the hosted site: "I need to update a
+contract with John, by next Tuesday." became a new commitment due **"Monday"
+(2026-11-23)**, and was accepted. The device model wrote its own day; the
+prompt asks for the date as written, but nothing checked it, and "Monday"
+resolved to a believable wrong date. Unsafe, with no question.
+
+Fixed after it: a date has to be in the words of the note. A new
+commitment's date that is not is left empty for the user to fill in; a
+deadline change with one is refused and linked by hand, with the reason. A
+"next" in the note is kept ("Tuesday" becomes "next Tuesday"), so it stays
+unresolved instead of becoming the coming Tuesday. Not yet measured on a
+round.
+
+## Owed to the user, worded as the user sending it (by hand, private workspace, device model)
+
+2026-11-18, the user's own note: "Dana owes me a ticket to the Wizard of
+Oz" became the card **"Send Dana a ticket to the Wizard of Oz"**, with the
+owner and recipient right (Dana to Me). The wording reads as the user
+sending it. Fixed after it: the owner's name is taken out of the wording
+where a recipient would be (right after the verb, or after "to"/"for"), by
+the same rules as the recipient: "Send a ticket to the Wizard of Oz".
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device

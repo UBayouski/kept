@@ -52,9 +52,15 @@ test('a right deadline change passes; the same change on the twin commitment goe
 });
 
 test('a wrong date is unsafe; a note that says nothing passes only with nothing', async () => {
-  const wrongDay = await run(byId('a1'), fake({ linking: (label) => ({ items: [
+  // A wrong day the note does mention is proposed, and scored unsafe.
+  const both = { ...byId('a1'), note: 'Dana is fine getting the contract on Monday instead of Tuesday.' };
+  const wrongDay = await run(both, fake({ linking: (label) => ({ items: [
     { quote: 'getting the contract on Monday', about: label('Send the contract', 'Dana'), change: 'new deadline', due: 'Tuesday', what: '' }] }) }));
   assert.equal(wrongDay.score.verdict, 'unsafe');
+  // A day the note does not mention is refused before it is proposed.
+  const madeUp = await run(byId('a1'), fake({ linking: (label) => ({ items: [
+    { quote: 'getting the contract on Monday', about: label('Send the contract', 'Dana'), change: 'new deadline', due: 'Tuesday', what: '' }] }) }));
+  assert.notEqual(madeUp.score.verdict, 'unsafe');
   assert.equal((await run(byId('d1'), fake({ linking: { items: [] } }))).score.verdict, 'pass');
 });
 

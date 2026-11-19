@@ -95,6 +95,11 @@ test('a new commitment\'s wording leaves out its recipient, who has a field of t
   assert.equal(c.withoutRecipient("Review Dana's draft", dana), "Review Dana's draft", 'a possessive is part of what it is');
   assert.equal(c.withoutRecipient('Send the invoice to Danae', dana), 'Send the invoice to Danae');
   assert.equal(c.withoutRecipient('Call Dana', dana), 'Call Dana', 'never shorter than a verb and an object');
+  // Seen on the device: "Dana owes me a ticket to the Wizard of Oz" worded as the user sending it.
+  assert.equal(c.withoutOwner('Send Dana a ticket to the Wizard of Oz', dana), 'Send a ticket to the Wizard of Oz');
+  assert.equal(c.withoutOwner('Get a ticket for Dana', dana), 'Get a ticket');
+  assert.equal(c.withoutOwner("Review Dana's draft", dana), "Review Dana's draft");
+  assert.equal(c.withoutOwner('Send a ticket to the Wizard of Oz', dana), 'Send a ticket to the Wizard of Oz');
   assert.equal(c.withoutRecipient('Send Dana the invoice', null), 'Send Dana the invoice');
 });
 
@@ -324,4 +329,17 @@ test('a captured meeting is the baseline for "what changed since"', async () => 
 test('dates: a meal or "at the latest" around a day does not stop it resolving', () => {
   assert.equal(c.resolveDate('tomorrow lunch', '2026-11-25'), '2026-11-26');
   assert.equal(c.resolveDate('Friday at the latest', '2026-11-25'), '2026-11-27');
+});
+
+test('a commitment owed to the user is not worded as the user sending it', async () => {
+  const q = open();
+  await r.seedDemo(q, DEMO);
+  const text = 'Dana owes me a ticket to the Wizard of Oz';
+  const ready = await c.prepare(q, text);
+  // The device model's reading on 2026-11-18, on the user's own note.
+  const answer = { items: [{ quote: text, about: 'new', change: 'new commitment', due: '', what: 'Send Dana a ticket to the Wizard of Oz' }] };
+  const result = await c.capture(q, { text, answer, shape: 'v2', ...ready, ...WHEN });
+  const ids = Object.fromEntries(ready.people.map((p) => [p.name, p.id]));
+  const [item] = result.pending;
+  assert.deepEqual([item.type, item.what, item.ownerId, item.toId], ['new', 'Send a ticket to the Wizard of Oz', ids.Dana, ids.Me]);
 });
