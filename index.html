@@ -68,8 +68,8 @@
 
       /* Header */
       .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--rule); }
-      .brand h1 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 34px; line-height: 1; font-weight: 700; letter-spacing: -0.02em; }
-      .brand h1 img { display: block; width: 38px; height: 38px; flex: none; }
+      .brand h1 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 34px; line-height: 1; font-weight: 700; letter-spacing: -0.02em; }
+      .brand h1 img { display: block; width: 30px; height: 30px; flex: none; }
       .brand p { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
       .ws { display: inline-flex; padding: 3px; border: 1px solid var(--rule-strong); border-radius: 999px; background: var(--surface); }
       .ws a { padding: 6px 16px; border-radius: 999px; color: var(--ink-2); text-decoration: none; font-weight: 500; }
@@ -221,7 +221,8 @@
       @media (max-width: 640px) {
         .page { padding: 20px 16px 48px; }
         .brand h1 { font-size: 28px; }
-        .brand h1 img { width: 32px; height: 32px; }
+        .brand h1 { gap: 8px; }
+        .brand h1 img { width: 26px; height: 26px; }
         .capture-row .go { margin-left: 0; width: 100%; justify-content: space-between; }
         td { padding-right: 8px; }
         /* The commitments list as stacked entries: the wording first, the rest as a line under it. */
