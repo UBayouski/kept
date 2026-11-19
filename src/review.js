@@ -254,9 +254,20 @@ async function why(commitment) {
     const basis = current.source === 'manual'
       ? 'You set this yourself.'
       : [`${current.state === 'accepted' ? 'Confirmed' : 'Not confirmed yet'}. Read from a note of ${when(current.said)}:`, el('blockquote', {}, quoted(current.note ?? '', current.quote))];
+    const past = await data.historyItems(q, commitment.id);
+    const decided = (h) => (h.state === 'proposed' ? 'waiting for review'
+      : h.state === 'rejected' ? 'rejected'
+        : h.source === 'manual' ? 'set by you' : h.applied ? 'accepted' : 'accepted, history only');
     answer('answer-why',
       el('p', {}, el('strong', {}, `"${commitment.what}" is ${current.owner === 'Me' ? 'yours' : `${current.owner}'s`}. `), basis),
-      proposals.map((p) => el('p', { class: 'muted' }, `Waiting for review: a note says ${p.proposedOwner} should own it ("${p.quote ?? ''}").`)));
+      proposals.map((p) => el('p', { class: 'muted' }, `Waiting for review: a note says ${p.proposedOwner} should own it ("${p.quote ?? ''}").`)),
+      el('p', { class: 'muted' }, 'Its history, oldest first:'),
+      table([
+        ['Learned', (h) => when(h.learned)],
+        ['What', (h) => h.summary],
+        ['From', (h) => (h.note ? el('span', {}, quoted(h.note, h.quote), h.extractedBy === 'device' ? el('span', { class: 'muted' }, ' (device)') : '') : 'no note')],
+        ['', decided],
+      ], past, 'No history.'));
     $('answer-why').scrollIntoView({ block: 'nearest' });
   } catch (err) {
     answer('answer-why', el('p', { class: 'bad' }, `Error: ${err.message}`));

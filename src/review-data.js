@@ -167,6 +167,39 @@ export async function people(q) {
   return q('MATCH (p:Person) RETURN p.id AS id, p.name AS name, p.isMe AS isMe ORDER BY isMe DESC, name');
 }
 
+// A commitment's history for "Why?": every change recorded on it, oldest
+// first, as a sentence, with the words and the note it came from and what was
+// decided. Shows, for instance, which note marked something done.
+export async function historyItems(q, commitmentId) {
+  const rows = await q(
+    `MATCH (ch:Change)-[:ON]->(:Commitment {id: $commitmentId})
+     OPTIONAL MATCH (ch)-[:FROM]->(n:Note)
+     OPTIONAL MATCH (ch)-[:NAMES]->(named)
+     RETURN ch.id AS changeId, ch.kind AS kind, ch.state AS state, ch.applied AS applied, ch.source AS source,
+            ch.reason AS reason, ch.namedWhat AS namedWhat, ch.clear AS clear, toString(ch.due) AS due, ch.dueText AS dueText,
+            ch.quote AS quote, toString(ch.recordedAt) AS learned, toString(ch.decidedAt) AS decided,
+            n.text AS note, n.extractedBy AS extractedBy, coalesce(named.name, named.what) AS names
+     ORDER BY learned, changeId`,
+    { commitmentId },
+  );
+  const said = (row) => {
+    switch (row.kind) {
+      case 'created': return 'Created';
+      case 'deadline': return row.clear ? 'Deadline removed' : `Deadline set to ${date(row.due, row.dueText)}`;
+      case 'owner': return `Owner set to ${row.names}`;
+      case 'recipient': return row.clear ? 'Recipient removed' : `Owed to ${row.names}`;
+      case 'blocked': return `Waits for "${row.names}"`;
+      case 'unblocked': return `No longer waits for "${row.names ?? row.namedWhat}"${row.reason ? ` (${row.reason})` : ''}`;
+      case 'completed': return 'Marked done';
+      case 'cancelled': return 'Marked cancelled';
+      case 'reopened': return 'Reopened';
+      case 'evidence': return 'Another passage supporting it';
+      default: return row.kind;
+    }
+  };
+  return rows.map((row) => ({ ...row, summary: said(row) }));
+}
+
 // Everyone in the workspace, with how many open commitments they owe and are
 // owed, for the People line. Unconfirmed new commitments count too: they are
 // on the screen already, waiting for review.

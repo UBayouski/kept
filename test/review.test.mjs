@@ -233,3 +233,16 @@ test('"What do others owe me?": open commitments to the user, with what each one
   await m.addChange(q, { commitmentId: pricing, kind: 'completed' });
   assert.deepEqual(await m.owedTo(q, { personId: me }), []);
 });
+
+test('"Why?" history: every change with its words, its note and what was decided, oldest first', async () => {
+  const q = open();
+  await r.seedDemo(q, DEMO);
+  const pricing = (await r.commitments(q)).find((c) => c.what === 'Confirm pricing').id;
+  const note = await m.createNote(q, { text: 'Lee confirmed the pricing.', occurredAt: '2026-11-25T10:00:00Z', now: '2026-11-25T10:05:00Z' });
+  const done = await m.addChange(q, { commitmentId: pricing, kind: 'completed', quote: 'Lee confirmed the pricing', noteId: note, now: '2026-11-25T10:05:00Z' });
+  await m.accept(q, done.changeId, { now: '2026-11-25T10:06:00Z' });
+  const past = await r.historyItems(q, pricing);
+  assert.deepEqual(past.map((h) => h.summary), ['Created', 'Deadline set to Monday (2026-11-23)', 'Marked done']);
+  const last = past.at(-1);
+  assert.deepEqual([last.state, last.applied, last.quote, last.note], ['accepted', true, 'Lee confirmed the pricing', 'Lee confirmed the pricing.']);
+});
