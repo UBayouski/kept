@@ -126,8 +126,8 @@
       #note::placeholder { color: var(--ink-2); font-style: italic; }
       .capture-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 12px 0 6px; }
       .capture-row label { margin: 0; }
-      .capture-row .go { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-      .capture-row .go button { margin: 0; }
+      .capture-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px -18px 0; padding: 12px 18px 0; border-top: 1px solid var(--rule); }
+      .capture-foot button { margin: 0; }
       .stamp {
         display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
         font-size: 13px; font-weight: 500; border: 1px solid currentColor; white-space: nowrap;
@@ -223,7 +223,6 @@
         .brand h1 { font-size: 28px; }
         .brand h1 { gap: 8px; }
         .brand h1 img { width: 26px; height: 26px; }
-        .capture-row .go { margin-left: 0; width: 100%; justify-content: space-between; }
         td { padding-right: 8px; }
         /* The commitments list as stacked entries: the wording first, the rest as a line under it. */
         .list table, .list tbody, .list tr, .list td { display: block; }
@@ -262,10 +261,6 @@
             <div class="capture-row">
               <label>It is a <select id="note-kind"><option value="note">note</option><option value="meeting">meeting</option><option value="message">message</option></select></label>
               <label>from <input type="datetime-local" id="note-when" /></label>
-              <div class="go">
-                <span id="route-stamp" class="stamp cloud">Cloud</span>
-                <button id="read-note" class="primary">Read this note</button>
-              </div>
             </div>
             <p class="notice" id="capture-notice">Demo workspace: <span id="demo-route">the note and your open commitments are sent to the cloud model (<span id="cloud-model"></span>).</span> What it reads waits below for you.</p>
             <p id="demo-hybrid"><label><input type="checkbox" id="device-first" />Read on this device when its model is ready, otherwise in the cloud</label> <span id="device-first-state" class="muted"></span></p>
@@ -273,6 +268,10 @@
               <p class="muted">The note is read by the model built into this browser and does not leave this device. <span id="device-state"></span> <button id="prepare-device" hidden>Download the device model</button></p>
               <p><label><input type="checkbox" id="cloud-opt-in" />Use the cloud model (<span class="cloud-model"></span>) for this note instead</label></p>
               <div id="cloud-preview" class="card" hidden></div>
+            </div>
+            <div class="capture-foot">
+              <span id="route-stamp" class="stamp cloud">Cloud</span>
+              <button id="read-note" class="primary">Read this note</button>
             </div>
             <p id="capture-status"></p>
           </section>
