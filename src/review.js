@@ -670,7 +670,13 @@ $('add-person').onclick = async () => {
 const LOCKED_MESSAGE = `The ${PRIVATE ? 'private' : 'demo'} workspace is open in another tab, and only one tab can use it at a time. Use that tab, or close it and reload this one.`;
 
 // The demo's Friday, which moves with the date the demo is loaded on.
-$('before').value = data.demoDates().friday;
+// The demo asks about the scenario's Friday; your own workspace about the
+// coming Friday (today, if it is a Friday), in local time.
+function comingFriday(now = new Date()) {
+  const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + ((5 - now.getDay() + 7) % 7));
+  return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+}
+$('before').value = PRIVATE ? comingFriday() : data.demoDates().friday;
 
 db.init(async (msg) => {
   if (msg.type === 'open-failed') {
