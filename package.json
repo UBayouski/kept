@@ -6,12 +6,14 @@
   "description": "Kept: a private commitment memory. Relate in the browser, Firebase AI Logic hybrid inference (Gemini Nano on the device, Gemini in the cloud).",
   "license": "Apache-2.0",
   "scripts": {
-    "copy-relate": "mkdir -p public/relate && cp -R node_modules/@relate/relate-wasm/relate.js node_modules/@relate/relate-wasm/relate_bg.wasm node_modules/@relate/relate-wasm/trap.js node_modules/@relate/relate-wasm/snippets public/relate/",
+    "copy-relate": "node scripts/copy-relate.mjs",
     "postinstall": "npm run copy-relate",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "seed-store": "node scripts/seed-store.mjs",
+    "graph": "node scripts/graph.mjs",
+    "query": "node scripts/query.mjs",
     "test": "node --test test/*.test.mjs",
     "test:wasm": "node scripts/test-wasm.mjs",
     "eval": "node scripts/run-eval.mjs"

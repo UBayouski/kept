@@ -44,7 +44,7 @@ Every answer, from either model, passes through validation (`src/reading.js`) an
 - **In the browser:** Relate's WebAssembly build, opened from a dedicated worker (`src/db.worker.js`) and persisted to OPFS. The demo and the private workspace are separate stores (`opfs://kept-demo`, `opfs://kept-private`), so private notes never share a store with demo data.
 - **In the repository:** `store/kept.rl`, a single-file store built with the Node binding from the demo scenario, through the same rules the app uses (`npm run seed-store`). It is there so you can inspect the graph without a browser.
 
-Graph: `Person`, `Commitment`, `Note` and `Change` nodes; `OWES`, `TO`, `BLOCKED_BY`, `ON`, `FROM`, `NAMES`, `INVOLVES` and `ESTABLISHED_BY` relationships (each current value points at the change that set it). Queries use quantified path patterns, `EXISTS` subqueries and a full-text index. The model and its queries are in `docs/data-model.md`.
+Graph: `Person`, `Commitment`, `Note` and `Change` nodes; `OWES`, `TO`, `BLOCKED_BY`, `ON`, `FROM`, `NAMES`, `INVOLVES` and `ESTABLISHED_BY` relationships (each current value points at the change that set it). Queries and rules use quantified path patterns (`(c)-[:BLOCKED_BY]->+(b)`) and `EXISTS` subqueries, and each decision is one statement with its guard inside. The model and its queries are in `docs/data-model.md`.
 
 ## Run it
 
@@ -52,12 +52,13 @@ Needs Node.js (tested with 24) and desktop Chrome.
 
 ```
 npm install
+npm run graph     # the graph in store/kept.rl: counts, commitments, what waits on what, why
 npm run dev
 ```
 
 Open http://localhost:5173/ and press **Load the demo scenario**.
 
-- On Windows, `npm install`'s copy step uses `mkdir -p` and `cp`: run `npm ci --ignore-scripts`, then `npm run copy-relate` in Git Bash.
+- `npm install` also copies Relate's browser build into `public/relate/` (a Node script, so it works on Windows, macOS and Linux).
 - **The cloud model on localhost** needs this browser's App Check debug token registered in the Firebase console (App Check > Apps > Manage debug tokens); the page prints it. Or use the hosted site, which needs no setup.
 - **The device model.** Chrome serves Gemini Nano 3 by default. For Gemma 4, set `chrome://flags/#gemma4-for-built-in-ai` to Enabled and relaunch. The private workspace says whether the model is ready and answering.
 
@@ -65,14 +66,25 @@ Other pages, for development: `/slice.html` (the feasibility slice), `/linking.h
 
 ## Where the data lives
 
-- `store/kept.rl`: the inspectable store. Regenerate it with `npm run seed-store`, which also prints the node and relationship counts and the answers to the core questions. With the Relate CLI:
+- **`store/kept.rl`**: a single-file Relate store with the demo scenario (13 nodes, 30 relationships), built through the app's own rules. It is for inspecting the graph; the app does not read it. Open it read-only after `npm install`:
 
   ```
-  relate -d store/kept.rl "MATCH (n) RETURN labels(n)[0] AS label, count(*) AS nodes"
-  relate -d store/kept.rl "MATCH (c:Commitment)-[:BLOCKED_BY]->(b:Commitment)<-[:OWES]-(p:Person) RETURN c.what, b.what, p.name"
+  npm run graph
+  npm run query -- "MATCH (c:Commitment)-[:BLOCKED_BY]->(b:Commitment)<-[:OWES]-(p:Person) RETURN c.what, b.what, p.name"
   ```
 
-- In the browser: OPFS, per workspace, on your machine only.
+  Rebuild it with `npm run seed-store` (new ids each time, so git shows it changed).
+
+  Or with the Relate CLI ([install](https://relatedb.ai/docs/get-started/install); checked with v1.1.0). Use `--read-only`: without it the CLI rewrites the file even for a read.
+
+  ```
+  relate query --database store/kept.rl --read-only "MATCH (n) RETURN labels(n)[0] AS label, count(*) AS nodes"
+  relate info --database store/kept.rl --json
+  ```
+
+  The CLI sends anonymous usage data by default; `relate telemetry off` turns it off.
+
+- **In the browser**: OPFS, one store per workspace, on your machine only: `opfs://kept-demo` for the demo workspace, `opfs://kept-private` for your own notes. Neither is in the repository.
 - Nothing in the repository is real personal data. The demo scenario is invented.
 
 ## Tests
