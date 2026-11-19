@@ -158,6 +158,13 @@ async function refresh() {
     ['', (c) => el('button', { onclick: () => why(c) }, 'Why?')],
   ], list, 'No commitments yet. Load the demo scenario.'));
 
+  const summary = await data.peopleSummary(q);
+  const counts = (p) => [p.owes && `owes ${p.owes}`, p.owed && `owed ${p.owed}`].filter(Boolean).join(', ');
+  $('people-list').replaceChildren(...(summary.length
+    ? ['People: ', ...summary.flatMap((p, i) => [i ? ' · ' : '',
+        el('strong', {}, p.isMe ? `${p.name} (you)` : p.name), counts(p) ? `: ${counts(p)}` : ''])]
+    : ['No people yet. They are added by the first note, or by hand above.']));
+
   const select = $('person');
   const chosen = select.value;
   select.replaceChildren(...persons.filter((p) => !p.isMe).map((p) => el('option', { value: p.id }, p.name)));

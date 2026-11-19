@@ -167,6 +167,20 @@ export async function people(q) {
   return q('MATCH (p:Person) RETURN p.id AS id, p.name AS name, p.isMe AS isMe ORDER BY isMe DESC, name');
 }
 
+// Everyone in the workspace, with how many open commitments they owe and are
+// owed, for the People line. Unconfirmed new commitments count too: they are
+// on the screen already, waiting for review.
+export function peopleSummary(q) {
+  return q(
+    `MATCH (p:Person)
+     OPTIONAL MATCH (p)-[:OWES]->(o:Commitment {status: 'open'})
+     WITH p, count(o) AS owes
+     OPTIONAL MATCH (t:Commitment {status: 'open'})-[:TO]->(p)
+     RETURN p.id AS id, p.name AS name, p.isMe AS isMe, owes, count(t) AS owed
+     ORDER BY isMe DESC, name`,
+  );
+}
+
 // The user says a proposal is about another commitment. That is the user's
 // own decision about that commitment, so the change is applied there, keeping
 // the note and the quote as its evidence and the note's time as when it

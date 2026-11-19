@@ -209,3 +209,15 @@ test('what changed since the last meeting, as sentences', async () => {
   const after = await r.changesWithCommitments(q, { since: thursday.since, baselineNoteId: thursday.noteId });
   assert.deepEqual(after.map((c) => [c.summary, c.source, c.applied]), [['"Send the proposal": done.', 'manual', true]]);
 });
+
+test('the People line: everyone, with the open commitments they owe and are owed', async () => {
+  const q = open();
+  assert.deepEqual(await r.peopleSummary(q), []);
+  await r.seedDemo(q, DEMO);
+  assert.deepEqual((await r.peopleSummary(q)).map((p) => [p.name, p.isMe, p.owes, p.owed]), [
+    ['Me', true, 1, 1], ['Dana', false, 0, 1], ['Lee', false, 1, 0],
+  ]);
+  const done = await m.addChange(q, { commitmentId: (await r.commitments(q)).find((c) => c.what === 'Confirm pricing').id, kind: 'completed' });
+  assert.equal(done.outcome, 'applied');
+  assert.deepEqual((await r.peopleSummary(q)).map((p) => [p.name, p.owes, p.owed]), [['Me', 1, 0], ['Dana', 0, 1], ['Lee', 0, 0]]);
+});
