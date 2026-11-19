@@ -73,7 +73,7 @@ export async function seedDemo(q, { today = new Date() } = {}) {
   return true;
 }
 
-const date = (due, dueText) => (due && dueText ? `${dueText} (${due})` : due || dueText || 'no date');
+const date = (due, dueText) => (due && dueText && dueText.trim() !== due ? `${dueText} (${due})` : due || dueText || 'no date');
 
 // What accepting a proposal would do, in a sentence.
 export function describe(item) {
@@ -217,7 +217,8 @@ export async function historyItems(q, commitmentId) {
     }[row.kind],
   }));
   return [...rows.map((row) => ({ ...row, summary: said(row) })), ...follows]
-    .sort((a, b) => (a.learned < b.learned ? -1 : a.learned > b.learned ? 1 : 0));
+    // Oldest first; at the same moment, the commitment's creation comes first.
+    .sort((a, b) => (a.learned < b.learned ? -1 : a.learned > b.learned ? 1 : (b.kind === 'created') - (a.kind === 'created')));
 }
 
 // Everyone in the workspace, with how many open commitments they owe and are

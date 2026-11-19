@@ -23,6 +23,7 @@ import { readBy } from './hybrid.js';
 
 const PRIVATE = new URLSearchParams(location.search).get('workspace') === 'private';
 const STORE = PRIVATE ? 'opfs://kept-private' : 'opfs://kept-demo';
+const START_HINT = PRIVATE ? 'Capture a note or add a person first.' : 'Load the demo scenario or capture a note first.';
 const $ = (id) => document.getElementById(id);
 const q = (statement, params) => db.query(statement, params);
 
@@ -47,7 +48,8 @@ function table(columns, rows, empty) {
 }
 
 const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'date unknown');
-const dueOf = (due, dueText) => (due && dueText ? `${dueText} (${due})` : due || dueText || '');
+// The words and the date, once when they are the same ("2026-11-20", not "2026-11-20 (2026-11-20)").
+const dueOf = (due, dueText) => (due && dueText && dueText.trim() !== due ? `${dueText} (${due})` : due || dueText || '');
 
 // The note with the quoted words marked, so the claim can be checked against its source.
 function quoted(text, quote) {
@@ -179,7 +181,7 @@ async function refresh() {
 const pending = (n) => (n ? `${n} change(s) waiting for review` : '');
 const answer = (id, ...nodes) => $(id).replaceChildren(...nodes);
 const needMe = (id) => {
-  if (!me) answer(id, el('p', { class: 'muted' }, 'Load the demo scenario first.'));
+  if (!me) answer(id, el('p', { class: 'muted' }, START_HINT));
   return Boolean(me);
 };
 const guard = (id, work) => async () => {
@@ -227,7 +229,7 @@ $('ask-owed').onclick = guard('answer-owed', async () => {
 $('ask-changed').onclick = guard('answer-changed', async () => {
   const personId = $('person').value;
   if (!personId) {
-    answer('answer-changed', el('p', { class: 'muted' }, 'Load the demo scenario first.'));
+    answer('answer-changed', el('p', { class: 'muted' }, START_HINT));
     return;
   }
   const baseline = await m.meetingBaseline(q, { personId, previous: $('previous').checked });
@@ -264,7 +266,7 @@ async function why(commitment) {
       el('h3', {}, 'History'),
       past.length
         ? el('ol', { class: 'timeline' }, past.map((h) => el('li', { class: h.derived ? 'derived' : h.state },
-          el('div', { class: 'when' }, when(h.learned), el('span', { class: 'decision' }, decided(h))),
+          el('div', { class: 'when' }, el('span', {}, when(h.learned)), el('span', { class: 'decision' }, decided(h))),
           el('div', { class: 'what' }, h.summary),
           h.note && el('blockquote', {}, quoted(h.note, h.quote)),
           h.note && h.extractedBy === 'device' && el('div', { class: 'by' }, 'Read on this device')))
@@ -445,7 +447,8 @@ function pendingCard(entry) {
 
 function renderPending() {
   $('pending').replaceChildren(...(pendingItems.length
-    ? [el('p', { class: 'muted' }, `${pendingItems.length} thing(s) from captured notes need you before they can be proposed. They are kept with their notes until you deal with them.`),
+    ? [el('h2', {}, `Needs your input (${pendingItems.length})`),
+      el('p', { class: 'muted' }, `${pendingItems.length} thing(s) from captured notes need you before they can be proposed. They are kept with their notes until you deal with them.`),
       ...pendingItems.map(pendingCard)]
     : []));
 }
