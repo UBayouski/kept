@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Kept</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -54,6 +55,7 @@
       }
 
       * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
       html { background: var(--paper); }
       body {
         margin: 0;
@@ -133,6 +135,7 @@
       .stamp.device { color: var(--device); background: var(--device-soft); }
       .stamp.cloud { color: var(--accent); background: var(--accent-soft); }
       .stamp.hybrid { color: var(--device); background: linear-gradient(90deg, var(--device-soft), var(--accent-soft)); }
+      .stamp.unavailable { color: var(--warn); background: var(--warn-soft); }
       .capture .notice { font-size: 13.5px; color: var(--ink-2); margin: 8px 0 6px; }
       #demo-hybrid { font-size: 14px; margin: 6px 0; }
       #private-capture p { font-size: 14px; }

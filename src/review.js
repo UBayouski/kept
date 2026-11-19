@@ -461,6 +461,7 @@ for (const node of document.querySelectorAll('.cloud-model')) node.textContent =
 // --- Workspace switch and where a note will be read ---
 
 $(PRIVATE ? 'ws-private' : 'ws-demo').setAttribute('aria-current', 'page');
+let privateDeviceStatus = null;
 
 // The stamp beside "Read this note": where this note would be read now.
 async function showRoute() {
@@ -469,6 +470,9 @@ async function showRoute() {
   let text = 'Cloud';
   if (PRIVATE) {
     [kind, text] = $('cloud-opt-in').checked ? ['cloud', 'Cloud, this note only'] : ['device', 'On this device'];
+    if (!$('cloud-opt-in').checked && privateDeviceStatus && privateDeviceStatus !== 'available') {
+      [kind, text] = ['unavailable', privateDeviceStatus === 'not_answering' ? 'Device not answering' : 'Device not ready'];
+    }
   } else if ($('device-first').checked) {
     const ready = !ai.deviceStuck() && (await ai.deviceModelState().catch(() => 'unavailable')) === 'available';
     [kind, text] = ready ? ['hybrid', 'Device first, cloud if needed'] : ['cloud', 'Cloud (device not ready)'];
@@ -502,12 +506,15 @@ async function showDeviceState() {
 }
 // Once, when the workspace opens: does the ready model also answer?
 async function checkDeviceAnswers() {
-  if ((await showDeviceState()) !== 'available') return;
+  privateDeviceStatus = await showDeviceState();
+  if (privateDeviceStatus !== 'available') { showRoute(); return; }
   $('device-state').textContent = 'The device model is ready; checking that it answers…';
   const answers = await ai.deviceResponds();
+  privateDeviceStatus = answers ? 'available' : 'not_answering';
   $('device-state').textContent = answers
     ? 'The device model is ready.'
     : "Chrome's on-device model is not answering. Restart Chrome (close every Chrome window), then reload this page. You can still use the cloud model below.";
+  showRoute();
 }
 if (PRIVATE) checkDeviceAnswers();
 if (PRIVATE) showRoute();
@@ -519,7 +526,7 @@ $('prepare-device').onclick = async () => {
     $('device-state').textContent = `The device model could not be prepared: ${err.message}`;
   }
   $('prepare-device').disabled = false;
-  await showDeviceState();
+  await checkDeviceAnswers();
 };
 
 // Before anything goes to the cloud from the private workspace, the page shows
