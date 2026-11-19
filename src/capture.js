@@ -155,8 +155,16 @@ export function withoutRecipient(what, recipient) {
 // as the user sending it. Whoever owes a commitment is never what it goes to,
 // so "to/for Dana" or Dana right after the verb is taken out, by the same rules
 // as the recipient: "Send a ticket". "Review Dana's draft" is left alone.
+// "from Dana" goes too: the owner is who it comes from, which the owner field
+// already says ("Get a ticket to the Wizard of Oz from Dana").
 export function withoutOwner(what, owner) {
-  return withoutRecipient(what, owner);
+  const text = withoutRecipient(what, owner);
+  const names = owner ? [owner.name, ...(owner.aliases ?? [])].map((n) => String(n ?? '').trim()).filter(Boolean) : [];
+  if (!names.length) return text;
+  const alternatives = names.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const out = text.replace(new RegExp(`\\s+from\\s+(?:${alternatives})(?![\\p{L}\\p{N}'’])`, 'giu'), '').replace(/\s+/g, ' ').trim();
+  if (out.split(' ').length < 2) return text;
+  return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
 // The note's own preposition in front of words the wording takes from the

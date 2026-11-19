@@ -847,6 +847,16 @@ a different preposition, the note's preposition is used ("Get a ticket to the
 Wizard of Oz"). One word after it is not enough to tell, and a phrase the
 note has after two different prepositions is left alone.
 
+A third reading of the same note: **"Get a ticket to the Wizard of Oz from
+Dana"**. Right in meaning, but it repeats the owner and reads as the user's
+errand. The owner is always who a commitment comes from, so "from <owner>"
+is now taken out as well ("Get a ticket to the Wizard of Oz"); "from" any
+other person stays.
+
+Three readings of one note on the device, three wordings: the wording of a
+new commitment is the least stable part of a device reading, and the user
+should read it on every card.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device

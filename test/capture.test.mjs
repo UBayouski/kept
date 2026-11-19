@@ -100,6 +100,12 @@ test('a new commitment\'s wording leaves out its recipient, who has a field of t
   assert.equal(c.withoutOwner('Get a ticket for Dana', dana), 'Get a ticket');
   assert.equal(c.withoutOwner("Review Dana's draft", dana), "Review Dana's draft");
   assert.equal(c.withoutOwner('Send a ticket to the Wizard of Oz', dana), 'Send a ticket to the Wizard of Oz');
+  // The third device reading: the owner as who it comes from.
+  assert.equal(c.withoutOwner('Get a ticket to the Wizard of Oz from Dana', dana), 'Get a ticket to the Wizard of Oz');
+  assert.equal(c.withoutOwner('Collect the keys from D.W.', dana), 'Collect the keys');
+  assert.equal(c.withoutOwner('Get the keys from Danae', dana), 'Get the keys from Danae');
+  // The recipient rule does not take "from" out: what comes from someone else stays.
+  assert.equal(c.withoutRecipient('Get the keys from Dana', dana), 'Get the keys from Dana');
 });
 
 test("a wording keeps the note's preposition in front of the note's own words", () => {
