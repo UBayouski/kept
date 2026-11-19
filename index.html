@@ -205,6 +205,19 @@
       .answer:empty { display: none; }
       .answer td, .answer th { font-size: 13.5px; }
       .answer td span.muted { font-family: var(--ui); }
+      /* Answers in the side column: each row as a stacked entry (the first cell as its title,
+         the rest as a line under it), so no column is cut off in a narrow panel. */
+      .side .answer table, .side .answer tbody, .side .answer tr, .side .answer td { display: block; }
+      .side #answer-waiting table, .side #answer-owed table, .side .answer table { min-width: 0; }
+      .side .answer tr:first-child { display: none; }
+      .side .answer tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--rule); line-height: 1.6; }
+      .side .answer td:not(:first-child) { display: inline; margin-right: 12px; }
+      .side .answer tr:last-child { border-bottom: 0; }
+      .side .answer td { border: 0; padding: 0; color: var(--ink-2); min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+      .side .answer td:not(:first-child)[data-label]::before { content: attr(data-label) ': '; color: var(--ink-2); opacity: .8; }
+      .side .answer td:first-child { flex-basis: 100%; color: var(--ink); font-weight: 500; font-size: 14px; }
+      .side .answer td:empty { display: none; }
+      .side .answer td button { margin: 2px 0 0; }
       #answer-why { margin: 0; }
       #answer-why:not(:empty) { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
       #answer-why h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 600; }

@@ -44,7 +44,8 @@ function table(columns, rows, empty) {
   if (!rows.length) return el('p', { class: 'muted' }, empty);
   return el('table', {},
     el('tr', {}, columns.map(([title]) => el('th', {}, title))),
-    rows.map((row) => el('tr', {}, columns.map(([, cell]) => el('td', {}, cell(row) ?? '')))));
+    // data-label: the column's title, shown inline where rows are stacked (narrow panels, phones).
+    rows.map((row) => el('tr', {}, columns.map(([title, cell]) => el('td', { 'data-label': title || null }, cell(row) ?? '')))));
 }
 
 const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'date unknown');
