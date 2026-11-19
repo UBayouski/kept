@@ -126,7 +126,7 @@
       #note::placeholder { color: var(--ink-2); font-style: italic; }
       .capture-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 12px 0 6px; }
       .capture-row label { margin: 0; }
-      .capture-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px -18px 0; padding: 12px 18px 0; border-top: 1px solid var(--rule); }
+      .capture-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin: 12px -18px 0; padding: 12px 18px 0; border-top: 1px solid var(--rule); }
       .capture-foot button { margin: 0; }
       .stamp {
         display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
@@ -223,6 +223,9 @@
         .brand h1 { font-size: 28px; }
         .brand h1 { gap: 8px; }
         .brand h1 img { width: 26px; height: 26px; }
+        .capture-foot { flex-wrap: wrap; }
+        .capture-foot .stamp { margin-left: auto; }
+        .capture-foot button { width: 100%; justify-content: center; }
         td { padding-right: 8px; }
         /* The commitments list as stacked entries: the wording first, the rest as a line under it. */
         .list table, .list tbody, .list tr, .list td { display: block; }
