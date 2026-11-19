@@ -109,6 +109,8 @@
       button.quiet:hover { color: var(--ink); text-decoration: underline; }
       button.danger { color: var(--bad); border-color: var(--rule-strong); }
       button.danger:hover { border-color: var(--bad); }
+      button.quiet.danger { color: var(--ink-2); border-color: transparent; }
+      button.quiet.danger:hover, button.quiet.danger:focus-visible { color: var(--bad); }
       input[type="text"], input:not([type]), input[type="date"], input[type="datetime-local"], select {
         padding: 5px 8px; border: 1px solid var(--rule-strong); border-radius: 7px; background: var(--surface);
       }
@@ -218,8 +220,9 @@
       .people-row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
       .people-row input { flex: 1 1 140px; }
       #people-list { margin: 10px 0 0; font-size: 14px; line-height: 1.7; }
-      .tools { margin-top: 6px; }
-      .tools button { font-size: 13.5px; }
+      .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 4px 0 0; padding-top: 12px; border-top: 1px solid var(--rule); }
+      .tools button { font-size: 13.5px; margin: 0; }
+      .ask-q select { margin: 2px 0; }
 
       @media (max-width: 640px) {
         .page { padding: 20px 16px 48px; }
@@ -314,8 +317,7 @@
               <div id="answer-owed" class="answer"></div>
             </div>
             <div class="ask">
-              <p><label class="ask-q">What changed since the last meeting with <select id="person"></select></label></p>
-              <p><label><input type="checkbox" id="previous" />the meeting before that</label><button id="ask-changed">Ask</button></p>
+              <p><span class="ask-q">What changed since <select id="previous" aria-label="Which meeting"><option value="last">the last</option><option value="before">the one before</option></select> meeting with <select id="person" aria-label="Person"></select></span><button id="ask-changed">Ask</button></p>
               <div id="answer-changed" class="answer"></div>
             </div>
           </section>
@@ -330,9 +332,9 @@
             <p id="people-list" class="muted"></p>
           </section>
 
-          <section class="panel tools" aria-label="Demo data">
+          <section class="tools" aria-label="Workspace data">
             <button id="seed">Load the demo scenario</button>
-            <button id="reset" class="danger">Empty the store</button>
+            <button id="reset" class="quiet danger">Delete everything in this workspace</button>
           </section>
         </aside>
       </div>

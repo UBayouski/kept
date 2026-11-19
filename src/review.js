@@ -232,7 +232,7 @@ $('ask-changed').onclick = guard('answer-changed', async () => {
     answer('answer-changed', el('p', { class: 'muted' }, START_HINT));
     return;
   }
-  const baseline = await m.meetingBaseline(q, { personId, previous: $('previous').checked });
+  const baseline = await m.meetingBaseline(q, { personId, previous: $('previous').value === 'before' });
   if (!baseline) {
     answer('answer-changed', el('p', { class: 'muted' }, 'There is no meeting with this person in the store.'));
     return;
@@ -290,7 +290,11 @@ $('seed').onclick = async () => {
 
 $('reset').onclick = async () => {
   const workspace = PRIVATE ? 'private' : 'demo';
-  if (!window.confirm(`Empty the ${workspace} workspace? Its notes and commitments in this browser will be permanently deleted.`)) return;
+  // Name what goes, so the confirmation is read, not clicked through.
+  const counted = Object.fromEntries((await q('MATCH (n) RETURN labels(n)[0] AS label, count(*) AS n').catch(() => [])).map((r) => [r.label, r.n]));
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  const what = [plural(counted.Commitment ?? 0, 'commitment'), plural(counted.Note ?? 0, 'note'), plural(counted.Person ?? 0, 'person').replace(/persons$/, 'people')];
+  if (!window.confirm(`Delete everything in the ${workspace} workspace? ${what[0]}, ${what[1]} and ${what[2]} in this browser will be permanently deleted. This cannot be undone.`)) return;
   try {
     await db.reset();
     messages.clear();
