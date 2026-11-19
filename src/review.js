@@ -289,6 +289,8 @@ $('seed').onclick = async () => {
 };
 
 $('reset').onclick = async () => {
+  const workspace = PRIVATE ? 'private' : 'demo';
+  if (!window.confirm(`Empty the ${workspace} workspace? Its notes and commitments in this browser will be permanently deleted.`)) return;
   try {
     await db.reset();
     messages.clear();
