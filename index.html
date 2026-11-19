@@ -109,8 +109,10 @@
       button.quiet:hover { color: var(--ink); text-decoration: underline; }
       button.danger { color: var(--bad); border-color: var(--rule-strong); }
       button.danger:hover { border-color: var(--bad); }
-      button.quiet.danger { color: var(--ink-2); border-color: transparent; }
-      button.quiet.danger:hover, button.quiet.danger:focus-visible { color: var(--bad); }
+      /* A destructive action that is clearly a control, without the weight of a button: red, underlined, with a bin. */
+      button.quiet.danger { color: var(--bad); border-color: transparent; padding-left: 2px; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--bad) 45%, transparent); text-underline-offset: 3px; }
+      button.quiet.danger:hover, button.quiet.danger:focus-visible { text-decoration-color: var(--bad); }
+      button.quiet.danger svg { width: 14px; height: 14px; flex: none; }
       input[type="text"], input:not([type]), input[type="date"], input[type="datetime-local"], select {
         padding: 5px 8px; border: 1px solid var(--rule-strong); border-radius: 7px; background: var(--surface);
       }
@@ -334,7 +336,7 @@
 
           <section class="tools" aria-label="Workspace data">
             <button id="seed">Load the demo scenario</button>
-            <button id="reset" class="quiet danger">Delete everything in this workspace</button>
+            <button id="reset" class="quiet danger"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.8 6.8v4.4M9.2 6.8v4.4"/></svg>Delete everything in this workspace</button>
           </section>
         </aside>
       </div>
