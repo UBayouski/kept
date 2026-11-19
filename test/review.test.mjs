@@ -246,3 +246,26 @@ test('"Why?" history: every change with its words, its note and what was decided
   const last = past.at(-1);
   assert.deepEqual([last.state, last.applied, last.quote, last.note], ['accepted', true, 'Lee confirmed the pricing', 'Lee confirmed the pricing.']);
 });
+
+test('"Why?" history of a commitment that waits: when what it waits for is done, a line says so', async () => {
+  const q = open();
+  await r.seedDemo(q, DEMO);
+  const list = await r.commitments(q);
+  const proposal = list.find((c) => c.what === 'Send the proposal').id;
+  const pricing = list.find((c) => c.what === 'Confirm pricing').id;
+  const lines = async () => (await r.historyItems(q, proposal)).filter((h) => h.derived).map((h) => h.summary);
+  assert.deepEqual(await lines(), []);
+  const note = await m.createNote(q, { text: 'Lee confirmed the pricing.', occurredAt: '2026-11-25T10:00:00Z', now: '2026-11-25T10:05:00Z' });
+  const done = await m.addChange(q, { commitmentId: pricing, kind: 'completed', quote: 'Lee confirmed the pricing', noteId: note, now: '2026-11-25T10:05:00Z' });
+  assert.deepEqual(await lines(), [], 'a proposal that is not accepted says nothing');
+  await m.accept(q, done.changeId, { now: '2026-11-25T10:06:00Z' });
+  const past = await r.historyItems(q, proposal);
+  const line = past.find((h) => h.derived);
+  assert.deepEqual([line.summary, line.note], ['"Confirm pricing" is done, so this no longer waits for it', 'Lee confirmed the pricing.']);
+  assert.equal(past.at(-1), line, 'in time order, after what came before');
+  // Reopened, it waits again, and both lines stay in the history.
+  await m.addChange(q, { commitmentId: pricing, kind: 'reopened', now: '2026-11-25T11:00:00Z' });
+  assert.deepEqual(await lines(), ['"Confirm pricing" is done, so this no longer waits for it', '"Confirm pricing" is open again, so this waits for it again']);
+  // The commitment's own history is unchanged.
+  assert.deepEqual((await r.historyItems(q, pricing)).filter((h) => h.derived), []);
+});

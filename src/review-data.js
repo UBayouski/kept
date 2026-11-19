@@ -197,7 +197,27 @@ export async function historyItems(q, commitmentId) {
       default: return row.kind;
     }
   };
-  return rows.map((row) => ({ ...row, summary: said(row) }));
+  // What follows from the commitments it waits for: when one became done or
+  // cancelled, this no longer waits for it; reopened, it waits again. Read
+  // through the dependency, not stored on this commitment.
+  const followed = await q(
+    `MATCH (:Commitment {id: $commitmentId})-[:BLOCKED_BY]->(b:Commitment)<-[:ON]-(ch:Change {state: 'accepted', applied: true})
+     WHERE ch.kind IN ['completed', 'cancelled', 'reopened']
+     OPTIONAL MATCH (ch)-[:FROM]->(n:Note)
+     RETURN ch.id AS changeId, ch.kind AS kind, b.what AS blocker, ch.quote AS quote, ch.source AS source,
+            toString(ch.recordedAt) AS learned, n.text AS note, n.extractedBy AS extractedBy`,
+    { commitmentId },
+  );
+  const follows = followed.map((row) => ({
+    ...row, derived: true,
+    summary: {
+      completed: `"${row.blocker}" is done, so this no longer waits for it`,
+      cancelled: `"${row.blocker}" is cancelled, so this no longer waits for it`,
+      reopened: `"${row.blocker}" is open again, so this waits for it again`,
+    }[row.kind],
+  }));
+  return [...rows.map((row) => ({ ...row, summary: said(row) })), ...follows]
+    .sort((a, b) => (a.learned < b.learned ? -1 : a.learned > b.learned ? 1 : 0));
 }
 
 // Everyone in the workspace, with how many open commitments they owe and are

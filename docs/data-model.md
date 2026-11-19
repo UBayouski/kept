@@ -17,6 +17,11 @@ Added on 2026-11-18, from the user's own notes: **What do others owe me?**
 (`owedTo` in `src/model.js`): open commitments to the user owed by someone
 else, each with the user's own open commitments it holds up (`BLOCKED_BY`).
 
+**Why?** also shows the commitment's history (`historyItems` in
+`src/review-data.js`): every change on it with its words, note and decision,
+and, read through `BLOCKED_BY`, when something it waits for became done,
+cancelled or open again. Those lines are derived, not stored on it.
+
 ## The rules the model is built on
 
 1. **The commitment holds the accepted state, and only that.** Its owner, deadline, status and blockers are what the user accepted. A newly extracted commitment is the one exception: it is stored as it was read and marked `unreviewed`, since it replaces nothing.

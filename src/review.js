@@ -255,7 +255,7 @@ async function why(commitment) {
       ? 'You set this yourself.'
       : [`${current.state === 'accepted' ? 'Confirmed' : 'Not confirmed yet'}. Read from a note of ${when(current.said)}:`, el('blockquote', {}, quoted(current.note ?? '', current.quote))];
     const past = await data.historyItems(q, commitment.id);
-    const decided = (h) => (h.state === 'proposed' ? 'waiting for review'
+    const decided = (h) => (h.derived ? `follows from "${h.blocker}"` : h.state === 'proposed' ? 'waiting for review'
       : h.state === 'rejected' ? 'rejected'
         : h.source === 'manual' ? 'set by you' : h.applied ? 'accepted' : 'accepted, history only');
     answer('answer-why',
@@ -264,7 +264,7 @@ async function why(commitment) {
       el('p', { class: 'muted' }, 'Its history, oldest first:'),
       table([
         ['Learned', (h) => when(h.learned)],
-        ['What', (h) => h.summary],
+        ['What', (h) => (h.derived ? el('span', { class: 'muted' }, h.summary) : h.summary)],
         ['From', (h) => (h.note ? el('span', {}, quoted(h.note, h.quote), h.extractedBy === 'device' ? el('span', { class: 'muted' }, ' (device)') : '') : 'no note')],
         ['', decided],
       ], past, 'No history.'));
