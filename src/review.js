@@ -161,7 +161,7 @@ async function refresh() {
     ['For', (c) => c.to],
     ['Due', (c) => dueOf(c.due, c.dueText)],
     ['Status', (c) => (c.review === 'unreviewed' ? `${c.status}, not confirmed` : c.status)],
-    ['Waiting for review', (c) => (c.pendingChanges ? `${c.pendingChanges} change(s)` : '')],
+    ['Waiting for review', (c) => (c.pendingChanges ? `${count(c.pendingChanges, 'change')}` : '')],
     ['', (c) => el('button', { onclick: () => why(c) }, 'Why?')],
   ], list, PRIVATE ? 'No commitments yet. Capture a note to start.' : 'No commitments yet. Load the demo scenario, or capture a note.'));
 
@@ -179,7 +179,7 @@ async function refresh() {
   $('status').replaceChildren(el('span', {}, `Kept in this browser (store open): ${list.length} commitment${list.length === 1 ? '' : 's'}, ${items.length} waiting for review.`));
 }
 
-const pending = (n) => (n ? `${n} change(s) waiting for review` : '');
+const pending = (n) => (n ? `${count(n, 'change')} waiting for review` : '');
 const answer = (id, ...nodes) => $(id).replaceChildren(...nodes);
 const needMe = (id) => {
   if (!me) answer(id, el('p', { class: 'muted' }, START_HINT));
@@ -452,10 +452,13 @@ function pendingCard(entry) {
     error);
 }
 
+// "1 proposal", "2 proposals".
+const count = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
 function renderPending() {
   $('pending').replaceChildren(...(pendingItems.length
     ? [el('h2', {}, `Needs your input (${pendingItems.length})`),
-      el('p', { class: 'muted' }, `${pendingItems.length} thing(s) from captured notes need you before they can be proposed. They are kept with their notes until you deal with them.`),
+      el('p', { class: 'muted' }, `${count(pendingItems.length, 'thing')} from captured notes ${pendingItems.length === 1 ? 'needs' : 'need'} you before ${pendingItems.length === 1 ? 'it' : 'they'} can be proposed. They are kept with their notes until you deal with them.`),
       ...pendingItems.map(pendingCard)]
     : []));
 }
@@ -566,7 +569,7 @@ async function showDeviceFirst() {
     : `the note and your open commitments are sent to the cloud model (${ai.CLOUD_MODEL}).`;
   if (!on) { $('device-first-state').textContent = ''; return; }
   const state = await ai.deviceModelState();
-  $('device-first-state').textContent = ai.deviceStuck() ? 'The device model is stuck: notes go to the cloud until Chrome is restarted.' : {
+  $('device-first-state').textContent = ai.deviceStuck() ? 'The device model is not answering: notes go to the cloud until it does. Restarting Chrome brings it back.' : {
     available: 'The device model is ready: notes are read here.',
     downloadable: 'This browser has not downloaded its model: notes go to the cloud.',
     downloading: 'The device model is downloading: notes go to the cloud until it is ready.',
@@ -642,11 +645,11 @@ $('read-note').onclick = async () => {
       r.linking.source === 'on_device' ? 'What it read is provisional: check each proposal, and the other commitments it could be about.' : '',
       out.usable ? '' : 'Its answer could not be used.',
       r.proposed || pendingItems.length
-        ? `${r.proposed} proposal(s) to review, ${pendingItems.length} thing(s) that need you first.`
+        ? `${count(r.proposed, 'proposal')} to review, ${count(pendingItems.length, 'thing')} that ${pendingItems.length === 1 ? 'needs' : 'need'} you first.`
         : 'It found nothing that promises or changes anything. The note is stored.',
       dependencyLine,
-      out.recorded.invalid.length ? `${out.recorded.invalid.length} proposal(s) were refused by the store rules.` : '',
-      r.leftOut ? `${r.leftOut} open commitment(s) were not offered to the model: only the ${r.offered} closest to the note are.` : '',
+      out.recorded.invalid.length ? `${count(out.recorded.invalid.length, 'proposal')} ${out.recorded.invalid.length === 1 ? 'was' : 'were'} refused by the store rules.` : '',
+      r.leftOut ? `${count(r.leftOut, 'open commitment')} ${r.leftOut === 1 ? 'was' : 'were'} not offered to the model: only the ${r.offered} closest to the note are.` : '',
       r.similarBefore ? 'The same text was captured before; this is stored as a new note.' : '',
     ].filter(Boolean).join(' '));
   } catch (err) {

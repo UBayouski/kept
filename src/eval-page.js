@@ -117,9 +117,7 @@ $('run').onclick = async () => {
 // What the device model says it is, so a report records whether Gemma 4 answered. Self-report only.
 async function deviceName() {
   try {
-    const session = await LanguageModel.create({ expectedInputs: [{ type: 'text', languages: ['en'] }], expectedOutputs: [{ type: 'text', languages: ['en'] }] });
-    const answer = await session.prompt('Which model are you, exactly? Give the model family and version only. If unsure of the version, say "unsure".');
-    session.destroy();
+    const answer = await ai.askDevice('Which model are you, exactly? Give the model family and version only. If unsure of the version, say "unsure".');
     return answer.trim().slice(0, 200);
   } catch (err) {
     return `could not ask: ${err.message}`;

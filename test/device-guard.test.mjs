@@ -30,3 +30,25 @@ test('a check that fails outright also counts as stuck', async () => {
   assert.equal(await guard.afterTimeout(), false);
   assert.equal(guard.stuck, true);
 });
+
+test('a stuck model that answers a later check is used again', async () => {
+  let up = false;
+  const guard = makeDeviceGuard({ probe: async () => { if (!up) throw new Error('no answer'); } });
+  await guard.afterTimeout();
+  assert.equal(await guard.retry(), true);
+  up = true;
+  assert.equal(await guard.retry(), false);
+  assert.doesNotThrow(() => guard.check());
+});
+
+test('only one later check runs at a time', async () => {
+  let probes = 0;
+  let release;
+  const guard = makeDeviceGuard({ probe: () => { probes += 1; return probes === 1 ? Promise.reject(new Error('no answer')) : new Promise((resolve) => { release = resolve; }); } });
+  await guard.afterTimeout();
+  const first = guard.retry();
+  assert.equal(await guard.retry(), true);
+  release();
+  assert.equal(await first, false);
+  assert.equal(probes, 2);
+});

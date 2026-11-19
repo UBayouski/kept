@@ -11,13 +11,22 @@
 // Returns the answer ({source, ms, parsed, ...}) and, when the cloud answered
 // in place of the device, `fallback`: why.
 
+import { STUCK_MESSAGE } from './device-guard.js';
+
+const STUCK = 'the device model is stuck (restart Chrome to use it again)';
+
+// The device error, as a reason for the cloud read: without "Nothing was sent
+// anywhere", which is not true once the cloud has the note.
+const reason = (message) => (message === STUCK_MESSAGE ? STUCK
+  : `the device model failed: ${message.replace(/\s*Nothing was sent anywhere\.?\s*$/, '').replace(/\.$/, '')}`);
+
 export async function hybridCall({ deviceState, stuck = false, callDevice, callCloud }) {
-  if (stuck) return { ...(await callCloud()), fallback: 'the device model is stuck' };
+  if (stuck) return { ...(await callCloud()), fallback: STUCK };
   if (deviceState !== 'available') return { ...(await callCloud()), fallback: `the device model is ${deviceState}` };
   try {
     return await callDevice();
   } catch (err) {
-    return { ...(await callCloud()), fallback: `the device model failed: ${err.message}` };
+    return { ...(await callCloud()), fallback: reason(err.message) };
   }
 }
 

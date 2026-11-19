@@ -123,12 +123,27 @@ export async function deviceModelState() {
 // A device answer takes 2 to 6 s; one still going after 45 s is not ending.
 const DEVICE_TIMEOUT_MS = 45000;
 
+// One short prompt through the raw Prompt API, in a session that is always
+// closed afterwards. Every direct use of LanguageModel goes through here.
+async function promptOnce(prompt, signal) {
+  const session = await LanguageModel.create({ ...deviceOptions, signal });
+  try { return await session.prompt(prompt, { signal }); } finally { session.destroy(); }
+}
+
 const guard = makeDeviceGuard({
   probe: async (signal) => {
-    const session = await LanguageModel.create({ ...deviceOptions, signal });
-    try { await session.prompt('Say OK.', { signal }); } finally { session.destroy(); }
+    await whenVisible();
+    await promptOnce('Say OK.', signal);
   },
 });
+
+// One idle session, kept while the page is open. Each read closes its own
+// session when it ends (see generateStructured); with no session left open
+// Chrome may unload the model and take about 20 s to load it for the next note.
+let warm = null;
+function keepWarm() {
+  warm ??= LanguageModel.create(deviceOptions).catch(() => { warm = null; });
+}
 
 function whenVisible() {
   if (typeof document === 'undefined' || document.visibilityState === 'visible') return Promise.resolve();
@@ -145,17 +160,26 @@ function whenVisible() {
 // True when the device model answers a short prompt within `ms`. Chrome's
 // model sometimes stops answering until Chrome is restarted, most often when
 // a session starts; the private workspace checks once when it opens, so the
-// user learns it before writing a note, not after a 45 s wait.
-export async function deviceResponds(ms = 20000) {
+// user learns it before writing a note, not after a 45 s wait. It is given
+// 45 s: loading the model after a Chrome restart alone takes about 20 s.
+export async function deviceResponds(ms = 45000) {
+  try {
+    await askDevice('Say OK.', ms);
+    keepWarm();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Asks the device model one short question: waits for the tab to be shown,
+// stops after `ms`, and closes its session. Throws if there is no answer.
+export async function askDevice(prompt, ms = 45000) {
   await whenVisible();
   const stop = new AbortController();
   const timer = setTimeout(() => stop.abort(), ms);
   try {
-    const session = await LanguageModel.create({ ...deviceOptions, signal: stop.signal });
-    try { await session.prompt('Say OK.', { signal: stop.signal }); } finally { session.destroy(); }
-    return true;
-  } catch {
-    return false;
+    return await promptOnce(prompt, stop.signal);
   } finally {
     clearTimeout(timer);
   }
@@ -183,6 +207,9 @@ export async function generateStructured(prompt, schema, mode) {
   // the model is there (generatePreferDevice only calls it then).
   const onDevice = mode === InferenceMode.ONLY_ON_DEVICE || mode === InferenceMode.PREFER_ON_DEVICE;
   if (onDevice) {
+    // Stuck earlier: this read still fails at once, and one more check starts
+    // in the background, so a later read can use the model if it came back.
+    if (guard.stuck) guard.retry();
     guard.check();
     await whenVisible();
   }
@@ -195,10 +222,18 @@ export async function generateStructured(prompt, schema, mode) {
       result = await modelFor(mode, schema, stop.signal).generateContent(prompt);
     } catch (err) {
       if (!stop.signal.aborted) throw err;
+      await whenVisible();
       if (!(await guard.afterTimeout())) throw new Error(STUCK_MESSAGE);
       throw new Error(`The device model did not answer within ${DEVICE_TIMEOUT_MS / 1000} s, so it was stopped. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`);
     } finally {
       clearTimeout(timer);
+      // The SDK opens a session for each call and closes it only when the same
+      // model object is used again, which never happens here: every call builds
+      // its own. Stopping the signal the session was created with closes it.
+      // Left open, sessions pile up (three a note), and Chrome's model failed
+      // with kErrorUnknown at about 85 of them (measured 2026-11-19).
+      if (result) keepWarm();
+      stop.abort();
     }
   } else {
     result = await modelFor(mode, schema).generateContent(prompt);
@@ -228,6 +263,9 @@ export const deviceStuck = () => guard.stuck;
 // says which model answered (`source`) and, if the cloud stood in, why
 // (`fallback`). Only for demo data: a private note must never fall back.
 export async function generatePreferDevice(prompt, schema) {
+  // Stuck earlier: this note goes to the cloud, and the model is checked again
+  // in the background, so a later note can be read on the device.
+  if (guard.stuck) guard.retry();
   return hybridCall({
     deviceState: await deviceModelState(),
     stuck: guard.stuck,

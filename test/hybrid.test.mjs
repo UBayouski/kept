@@ -29,7 +29,7 @@ test('the cloud answers at once when the device model is not there, and says why
 test('a stuck device model is not tried', async () => {
   const c = calls();
   const r = await hybridCall({ deviceState: 'available', stuck: true, ...c });
-  assert.deepEqual([r.source, r.fallback, c.made], ['in_cloud', 'the device model is stuck', ['cloud']]);
+  assert.deepEqual([r.source, r.fallback, c.made], ['in_cloud', 'the device model is stuck (restart Chrome to use it again)', ['cloud']]);
 });
 
 test('a device call that fails or times out is answered by the cloud', async () => {
@@ -46,4 +46,13 @@ test('a cloud failure is not hidden', async () => {
 test('the note records the model that actually answered', () => {
   assert.equal(readBy('on_device', 'gemini-x'), 'device');
   assert.equal(readBy('in_cloud', 'gemini-x'), 'cloud:gemini-x');
+});
+
+test('a device error read as a reason does not claim nothing was sent', async () => {
+  const { STUCK_MESSAGE } = await import('../src/device-guard.js');
+  const cloud = async () => ({ source: 'in_cloud' });
+  const stuck = await hybridCall({ deviceState: 'available', callDevice: async () => { throw new Error(STUCK_MESSAGE); }, callCloud: cloud });
+  assert.equal(stuck.fallback, 'the device model is stuck (restart Chrome to use it again)');
+  const late = await hybridCall({ deviceState: 'available', callDevice: async () => { throw new Error('It did not answer, so it was stopped. Nothing was sent anywhere.'); }, callCloud: cloud });
+  assert.equal(late.fallback, 'the device model failed: It did not answer, so it was stopped');
 });
