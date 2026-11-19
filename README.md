@@ -27,8 +27,11 @@ It answers four questions: what do I owe before a date, which commitments are wa
 | Workspace | Mode | Where the note goes |
 |---|---|---|
 | Demo (`/`) | Cloud (`gemini-3.5-flash-lite`) | The note and your open commitments go to the cloud model; demo data only |
+| Demo, "read on this device when its model is ready" ticked | `PREFER_ON_DEVICE` | Gemini Nano in Chrome when its model is ready; the cloud when it is not, or when the device call fails or takes over 45 s. The status line says which model answered and, if the cloud stood in, why |
 | Private (`/?workspace=private`) | `ONLY_ON_DEVICE` | Read by Gemini Nano in Chrome, never leaves the device. Proposals are marked provisional |
 | Private, cloud opt-in | Cloud, for one note | Only after ticking a box and seeing a preview of exactly what will be sent. The box unticks itself after that note |
+
+The private workspace never uses `PREFER_ON_DEVICE`: when the model is missing, that mode sends the note to the cloud with nothing but the reported source to show it. The fallback is offered only where the data is demo data, and the prefer-on-device decision is in `src/hybrid.js`, tested on its own.
 
 Before an on-device call the app checks itself that the model is available and answering, because the SDK alone would start a multi-gigabyte download instead of failing. A device call that takes over 45 s is stopped.
 

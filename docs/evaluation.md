@@ -835,6 +835,18 @@ sending it. Fixed after it: the owner's name is taken out of the wording
 where a recipient would be (right after the verb, or after "to"/"for"), by
 the same rules as the recipient: "Send a ticket to the Wizard of Oz".
 
+The same note read again on the device: **"Get a ticket from the Wizard of
+Oz"**, Dana to Me. A wording that changes the meaning ("to" became "from"),
+with no name to take out; no rule catches it without catching sound
+wordings too. The card shows the quote beside the wording and the form lets
+the user correct it before proposing.
+
+It recurred the same day, so fixed after it: where the wording has a
+preposition followed by two or more words the note has in that order, after
+a different preposition, the note's preposition is used ("Get a ticket to the
+Wizard of Oz"). One word after it is not enough to tell, and a phrase the
+note has after two different prepositions is left alone.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device

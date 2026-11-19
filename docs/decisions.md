@@ -72,6 +72,7 @@ In `linking-experiment.md`. Decided on 2026-11-15:
 | Demo workspace | In the cloud | Proposals to confirm |
 | Private workspace | On the device | Provisional proposals to confirm, with the alternatives visible |
 | Private workspace, cloud assistance | In the cloud, only after an opt-in that shows the note and the candidate commitments being sent | Proposals to confirm |
+| Demo workspace, "read on this device when its model is ready" (added 2026-11-18, off by default) | Prefer-on-device: on the device when Chrome's model is ready, else in the cloud; a device call that fails or takes over 45 s is retried in the cloud | Provisional when the device answered; the status line says which model answered and why the cloud stood in |
 
 On both routes a model's answer is validated, becomes proposals, and changes accepted state only when the user confirms. A clean answer does not establish an unambiguous link, and a model asking when unsure does not justify accepting anything automatically.
 

@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import * as e from '../src/evaluation.js';
 import * as pipeline from '../src/pipeline.js';
 import { openStore } from './store.mjs';
+import { readBy } from '../src/hybrid.js';
 
 const open = () => openStore('kept-eval');
 
@@ -131,6 +132,20 @@ test('the device route: prompt v1 answers go through the same path', async () =>
   assert.equal(e.score(observed, byId('a1').expect).verdict, 'pass');
   const [note] = await q('MATCH (n:Note) RETURN n.extractedBy AS by');
   assert.equal(note.by, 'device');
+});
+
+test('prefer-on-device: the note records the model that actually answered', async () => {
+  for (const [source, by] of [['on_device', 'device'], ['in_cloud', 'cloud:gemini-x']]) {
+    const q = open();
+    await e.seedWorkspace(q);
+    const generate = async (prompt) => {
+      const label = /\[([A-Z0-9]+)\] Send the contract\. Owner: me\. For: Dana\./.exec(prompt)?.[1];
+      return { parsed: { updates: [{ quote: 'getting the contract on Monday', commitment: label, change: 'new deadline', due: 'Monday' }], newCommitments: [] }, ms: 1, source };
+    };
+    await pipeline.readNote(q, { text: byId('a1').note, ...e.NOTE_TIME, generate, shape: 'v1', extractedBy: (s) => readBy(s, 'gemini-x') });
+    const [note] = await q('MATCH (n:Note) RETURN n.extractedBy AS by');
+    assert.equal(note.by, by, source);
+  }
 });
 
 test('a listed commitment said again as new, beside a dependency on it: no question about the copy', async () => {

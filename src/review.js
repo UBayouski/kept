@@ -1,7 +1,10 @@
 // The review screen, for one of two workspaces, each with its own store
 // (docs/linking-experiment.md, "Routing"):
 //   demo     (default)  notes are read by the cloud model with prompt v2; the
-//                       demo scenario can be loaded
+//                       demo scenario can be loaded. With "read on this device
+//                       when its model is ready" on, Firebase AI Logic's
+//                       prefer-on-device is used, with prompt v1, and the
+//                       cloud stands in when the device model is not there
 //   private  (?workspace=private)  notes are read by the model built into this
 //            browser with prompt v1 and the app rules, and do not leave the
 //            device; what it proposes is provisional. The cloud model is used
@@ -16,6 +19,7 @@ import * as data from './review-data.js';
 import * as capture from './capture.js';
 import * as ai from './ai.js';
 import * as pipeline from './pipeline.js';
+import { readBy } from './hybrid.js';
 
 const PRIVATE = new URLSearchParams(location.search).get('workspace') === 'private';
 const STORE = PRIVATE ? 'opfs://kept-private' : 'opfs://kept-demo';
@@ -434,6 +438,7 @@ if (PRIVATE) {
   $('workspace-switch').href = '?';
   $('seed').hidden = true;
   $('capture-notice').hidden = true;
+  $('demo-hybrid').hidden = true;
   $('private-capture').hidden = false;
 }
 
@@ -489,17 +494,54 @@ async function showCloudPreview() {
 $('cloud-opt-in').onchange = () => showCloudPreview().catch(() => {});
 $('note').addEventListener('input', () => { if ($('cloud-opt-in').checked) showCloudPreview().catch(() => {}); });
 
-// How a note is read here: the cloud, or this browser's model.
-function route() {
+// Demo workspace: prefer the device when the user turns it on. Demo data
+// only, so falling back to the cloud is allowed here; the private workspace
+// never falls back. The choice is remembered in this browser.
+const DEVICE_FIRST_KEY = 'kept.demo.deviceFirst';
+async function showDeviceFirst() {
+  const on = $('device-first').checked;
+  $('demo-route').textContent = on
+    ? `the note is read by the model built into this browser when it is ready, and sent with your open commitments to the cloud model (${ai.CLOUD_MODEL}) when it is not.`
+    : `the note and your open commitments are sent to the cloud model (${ai.CLOUD_MODEL}).`;
+  if (!on) { $('device-first-state').textContent = ''; return; }
+  const state = await ai.deviceModelState();
+  $('device-first-state').textContent = ai.deviceStuck() ? 'The device model is stuck: notes go to the cloud until Chrome is restarted.' : {
+    available: 'The device model is ready: notes are read here.',
+    downloadable: 'This browser has not downloaded its model: notes go to the cloud.',
+    downloading: 'The device model is downloading: notes go to the cloud until it is ready.',
+    unavailable: 'This browser has no device model: notes go to the cloud.',
+  }[state] ?? `Device model: ${state}; notes go to the cloud.`;
+}
+if (!PRIVATE) {
+  try { $('device-first').checked = localStorage.getItem(DEVICE_FIRST_KEY) === '1'; } catch {}
+  showDeviceFirst().catch(() => {});
+  $('device-first').onchange = () => {
+    try { localStorage.setItem(DEVICE_FIRST_KEY, $('device-first').checked ? '1' : '0'); } catch {}
+    showDeviceFirst().catch(() => {});
+  };
+}
+
+// How a note is read here: the cloud, this browser's model, or (demo, when
+// turned on) this browser's model with the cloud as the fallback.
+async function route() {
   if (PRIVATE && !$('cloud-opt-in').checked) {
     return {
       shape: 'v1', extractedBy: 'device',
       generate: (prompt, schema) => ai.generateStructured(prompt, schema, ai.InferenceMode.ONLY_ON_DEVICE),
     };
   }
+  // The device prompt (v1) when the device is going to answer; if it fails
+  // mid-way, the cloud model answers the same prompt, which it reads as well.
+  if (!PRIVATE && $('device-first').checked && !ai.deviceStuck() && (await ai.deviceModelState()) === 'available') {
+    return {
+      shape: 'v1', extractedBy: (source) => readBy(source, ai.CLOUD_MODEL),
+      generate: (prompt, schema) => ai.generatePreferDevice(prompt, schema),
+    };
+  }
   return {
     shape: 'v2', extractedBy: `cloud:${ai.CLOUD_MODEL}`,
     generate: (prompt, schema) => ai.generateStructured(prompt, schema, ai.InferenceMode.ONLY_IN_CLOUD),
+    ...(!PRIVATE && $('device-first').checked ? { fallback: 'the device model is not ready' } : {}),
   };
 }
 
@@ -514,11 +556,14 @@ $('read-note').onclick = async () => {
   const when = $('note-when').value || localNow();
   $('read-note').disabled = true;
   status('muted', 'Reading the note…');
+  let chosen = null;
   try {
+    chosen = await route();
     const r = await pipeline.readNote(q, {
       text, kind: $('note-kind').value, occurredAt: new Date(when).toISOString(), baseDate: when.slice(0, 10),
-      ...route(),
+      shape: chosen.shape, extractedBy: chosen.extractedBy, generate: chosen.generate,
     });
+    const fallback = r.linking.fallback ?? chosen.fallback;
     $('cloud-opt-in').checked = false;
     $('cloud-preview').hidden = true;
     for (const item of r.pending) pendingItems.push({ session: r.out.session, noteText: text, item });
@@ -531,7 +576,7 @@ $('read-note').onclick = async () => {
       : deps.error ? `Dependencies were not read: ${deps.error}`
         : `${deps.proposed + deps.waiting ? `Dependencies: ${deps.proposed} proposed, ${deps.waiting} waiting for you` : 'No dependency found'} (${deps.ms} ms).${deps.problems.filter((p) => !p.repaired).length ? ` ${deps.problems.filter((p) => !p.repaired).length} refused.` : ''}`;
     status(out.usable ? 'ok' : 'bad', [
-      `Read by ${{ in_cloud: 'the cloud model', on_device: 'the model on this device' }[r.linking.source] ?? r.linking.source} in ${r.linking.ms} ms.`,
+      `Read by ${{ in_cloud: 'the cloud model', on_device: 'the model on this device' }[r.linking.source] ?? r.linking.source} in ${r.linking.ms} ms${fallback ? `, because ${fallback}` : ''}.`,
       r.linking.source === 'on_device' ? 'What it read is provisional: check each proposal, and the other commitments it could be about.' : '',
       out.usable ? '' : 'Its answer could not be used.',
       r.proposed || pendingItems.length
@@ -550,7 +595,7 @@ $('read-note').onclick = async () => {
       ? `The cloud model's free quota is used up${retry ? `; it should work again in about ${retry[2] ? `${retry[2]} h ` : ''}${retry[4] ?? 0} min` : ''}.${PRIVATE ? ' The model on this device is not affected.' : ''}`
       : /storage locked/i.test(err.message) ? LOCKED_MESSAGE : err.message;
     status('bad', `Not read, and nothing was stored: ${message}`,
-      ai.debugToken && route().shape === 'v2' && /app.?check|\b40[13]\b/i.test(err.message) ? ` On localhost the cloud model needs this browser's App Check debug token registered in the Firebase console: ${ai.debugToken}` : '');
+      ai.debugToken && chosen?.shape !== 'v1' && /app.?check|\b40[13]\b/i.test(err.message) ? ` On localhost the cloud model needs this browser's App Check debug token registered in the Firebase console: ${ai.debugToken}` : '');
   } finally {
     $('read-note').disabled = false;
   }

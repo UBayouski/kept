@@ -100,6 +100,20 @@ test('a new commitment\'s wording leaves out its recipient, who has a field of t
   assert.equal(c.withoutOwner('Get a ticket for Dana', dana), 'Get a ticket');
   assert.equal(c.withoutOwner("Review Dana's draft", dana), "Review Dana's draft");
   assert.equal(c.withoutOwner('Send a ticket to the Wizard of Oz', dana), 'Send a ticket to the Wizard of Oz');
+});
+
+test("a wording keeps the note's preposition in front of the note's own words", () => {
+  const note = 'Dana owes me a ticket to the Wizard of Oz';
+  // Seen on the device, twice: "to" became "from".
+  assert.equal(c.notesPrepositions('Get a ticket from the Wizard of Oz', note), 'Get a ticket to the Wizard of Oz');
+  assert.equal(c.notesPrepositions('Get a ticket to the Wizard of Oz', note), 'Get a ticket to the Wizard of Oz');
+  assert.equal(c.notesPrepositions('Book a room for the offsite', 'Lee will book a room at the offsite'), 'Book a room at the offsite');
+  // One word after it is not enough to tell ("to Dana" in "send Dana the invoice").
+  assert.equal(c.notesPrepositions('Send the invoice to Dana', "I'll send Dana the invoice"), 'Send the invoice to Dana');
+  // Words the note does not have, or has after different prepositions, are left alone.
+  assert.equal(c.notesPrepositions('Call about the venue', 'Sam will ring me tomorrow'), 'Call about the venue');
+  assert.equal(c.notesPrepositions('Send notes to the team', 'notes from the team, then notes to the team'), 'Send notes to the team');
+  assert.equal(c.notesPrepositions('Write up notes from the team', 'notes from the team, then notes to the team'), 'Write up notes from the team');
   assert.equal(c.withoutRecipient('Send Dana the invoice', null), 'Send Dana the invoice');
 });
 
@@ -342,4 +356,7 @@ test('a commitment owed to the user is not worded as the user sending it', async
   const ids = Object.fromEntries(ready.people.map((p) => [p.name, p.id]));
   const [item] = result.pending;
   assert.deepEqual([item.type, item.what, item.ownerId, item.toId], ['new', 'Send a ticket to the Wizard of Oz', ids.Dana, ids.Me]);
+  // The second device reading of the same note.
+  const again = await c.capture(q, { text, answer: { items: [{ ...answer.items[0], what: 'Get a ticket from the Wizard of Oz' }] }, shape: 'v2', ...ready, ...WHEN });
+  assert.equal(again.pending[0].what, 'Get a ticket to the Wizard of Oz');
 });

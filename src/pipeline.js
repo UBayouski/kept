@@ -22,6 +22,7 @@ import { variants } from './linking-cases.js';
 //   leftOut, similarBefore  for the status line
 // shape: 'v2' (one list, for the cloud model) or 'v1' (two lists, for the
 // device model with the app rules); see docs/linking-experiment.md.
+// extractedBy: a string, or a function of the linking call's source.
 export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, generate, extractedBy = 'model', now, shape = 'v2' }) {
   const ready = await capture.prepare(q, text);
   const similarBefore = (await findSimilarNotes(q, text)).length > 0;
@@ -49,7 +50,9 @@ export async function readNote(q, { text, kind = 'note', occurredAt, baseDate, g
   }
   const out = await capture.capture(q, {
     text, kind, occurredAt, baseDate, answer: linking.parsed, shape,
-    candidates: ready.candidates, people: ready.people, extractedBy, ...(now ? { now } : {}), happened,
+    candidates: ready.candidates, people: ready.people, ...(now ? { now } : {}), happened,
+    // With prefer-on-device, which model read the note is known only now.
+    extractedBy: typeof extractedBy === 'function' ? extractedBy(linking.source) : extractedBy,
   });
   const pending = [...out.pending];
   let proposed = out.recorded.added.length;

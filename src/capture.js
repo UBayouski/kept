@@ -159,6 +159,39 @@ export function withoutOwner(what, owner) {
   return withoutRecipient(what, owner);
 }
 
+// The note's own preposition in front of words the wording takes from the
+// note. Seen on the device: "Dana owes me a ticket to the Wizard of Oz" worded
+// "Get a ticket from the Wizard of Oz", which reverses it. Where the wording
+// has a preposition followed by two or more words that the note has in that
+// order, after a different preposition, the note's is used. A phrase the note
+// has twice, after different prepositions, is left alone.
+const PREPOSITIONS = new Set(['to', 'from', 'for', 'with', 'at', 'by', 'on', 'in', 'into', 'about', 'onto', 'off']);
+export function notesPrepositions(what, quote) {
+  const words = String(what ?? '').trim().split(/\s+/).filter(Boolean);
+  const low = (w) => norm(w);
+  const note = tokens(quote);
+  if (words.length < 3 || note.length < 3) return String(what ?? '').trim();
+  for (let i = 0; i < words.length - 2; i += 1) {
+    if (!PREPOSITIONS.has(low(words[i]))) continue;
+    const rest = words.slice(i + 1).map(low).filter(Boolean);
+    // The longest run of the following words, at least two, found in the note.
+    let found = null;
+    for (let k = rest.length; k >= 2 && !found; k -= 1) {
+      const run = rest.slice(0, k);
+      const before = new Set();
+      for (let j = 1; j + k <= note.length; j += 1) {
+        if (run.every((w, x) => note[j + x] === w)) before.add(note[j - 1]);
+      }
+      if (before.size) found = before;
+    }
+    if (!found || found.size !== 1) continue;
+    const [theirs] = found;
+    if (PREPOSITIONS.has(theirs) && theirs !== low(words[i])) words[i] = theirs;
+  }
+  const out = words.join(' ');
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
 // --- Candidates ---
 
 // A short label for a commitment, the same every time it is offered, so a
@@ -286,7 +319,7 @@ export async function capture(q, { text, kind = 'note', occurredAt, baseDate, an
     const ownerId = matchPerson(n.owner, persons) ?? guess.ownerId;
     const owner = persons.find((p) => p.id === ownerId);
     return {
-      type: 'new', what: withoutOwner(withoutRecipient(n.what, recipient), owner), quote: n.quote, dueText: n.due, due: resolveDate(n.due, baseDate),
+      type: 'new', what: notesPrepositions(withoutOwner(withoutRecipient(n.what, recipient), owner), n.quote), quote: n.quote, dueText: n.due, due: resolveDate(n.due, baseDate),
       ownerName: n.owner, toName: n.to,
       ownerId,
       toId,

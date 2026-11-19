@@ -6,6 +6,7 @@ import { getAI, getGenerativeModel, GoogleAIBackend, InferenceMode } from 'fireb
 import { initializeAppCheck, CustomProvider, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { firebaseConfig, recaptchaSiteKey } from './firebase-config.js';
 import { makeDeviceGuard, STUCK_MESSAGE } from './device-guard.js';
+import { hybridCall } from './hybrid.js';
 
 export { InferenceMode };
 
@@ -178,13 +179,16 @@ export async function generateStructured(prompt, schema, mode) {
   // wait with no error. It starts when the tab is shown. A call that still does
   // not answer is stopped, not only given up on: the model answers one call at
   // a time, and an answer that never ends would hold up every later one.
-  if (mode === InferenceMode.ONLY_ON_DEVICE) {
+  // Prefer-on-device is guarded the same way: it runs on the device whenever
+  // the model is there (generatePreferDevice only calls it then).
+  const onDevice = mode === InferenceMode.ONLY_ON_DEVICE || mode === InferenceMode.PREFER_ON_DEVICE;
+  if (onDevice) {
     guard.check();
     await whenVisible();
   }
   const started = performance.now();
   let result;
-  if (mode === InferenceMode.ONLY_ON_DEVICE) {
+  if (onDevice) {
     const stop = new AbortController();
     const timer = setTimeout(() => stop.abort(), DEVICE_TIMEOUT_MS);
     try {
@@ -214,4 +218,20 @@ export async function generateStructured(prompt, schema, mode) {
     parseError,
     raw: text,
   };
+}
+
+export const deviceStuck = () => guard.stuck;
+
+// Hybrid inference for the demo workspace, when the user turns it on: Firebase
+// AI Logic in PREFER_ON_DEVICE when Chrome's model is ready, the cloud model
+// when it is not, or when the device call fails or takes over 45 s. The answer
+// says which model answered (`source`) and, if the cloud stood in, why
+// (`fallback`). Only for demo data: a private note must never fall back.
+export async function generatePreferDevice(prompt, schema) {
+  return hybridCall({
+    deviceState: await deviceModelState(),
+    stuck: guard.stuck,
+    callDevice: () => generateStructured(prompt, schema, InferenceMode.PREFER_ON_DEVICE),
+    callCloud: () => generateStructured(prompt, schema, InferenceMode.ONLY_IN_CLOUD),
+  });
 }

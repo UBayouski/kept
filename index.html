@@ -45,7 +45,8 @@
       <label>from <input type="datetime-local" id="note-when" /></label>
       <button id="read-note">Read this note</button>
     </p>
-    <p class="muted" id="capture-notice">Demo workspace: the note and your open commitments are sent to the cloud model (<span id="cloud-model"></span>). What it reads waits below for you.</p>
+    <p class="muted" id="capture-notice">Demo workspace: <span id="demo-route">the note and your open commitments are sent to the cloud model (<span id="cloud-model"></span>).</span> What it reads waits below for you.</p>
+    <p id="demo-hybrid"><label><input type="checkbox" id="device-first" /> Read on this device when its model is ready, otherwise in the cloud (Firebase AI Logic, prefer on-device)</label> <span id="device-first-state" class="muted"></span></p>
     <div id="private-capture" hidden>
       <p class="muted">Private workspace: the note is read by the model built into this browser and does not leave this device. <span id="device-state"></span> <button id="prepare-device" hidden>Download the device model</button></p>
       <p><label><input type="checkbox" id="cloud-opt-in" /> Use the cloud model (<span class="cloud-model"></span>) for this note instead</label></p>
