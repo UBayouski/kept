@@ -8,14 +8,10 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as m from '../src/model.js';
+import { openStore } from './store.mjs';
 
-const { Database } = createRequire(import.meta.url)('@relate/relate');
 
-function open() {
-  const db = Database.open(join(mkdtempSync(join(tmpdir(), 'kept-model-')), 'store.rl'));
-  const conn = db.connect();
-  return (cypher, params) => conn.query(cypher, params ?? {}).rows;
-}
+const open = () => openStore('kept-model');
 
 const at = (day, time = '09:00') => `2026-11-${day}T${time}:00Z`;
 
@@ -406,6 +402,30 @@ test('rejecting a provisional blocker that something depends on needs explicit c
   assert.deepEqual([removal.state, removal.applied, removal.reason, removal.currentFor], ['accepted', true, 'blocker rejected', [`blocker:${legal.commitmentId}`]]);
   // The earlier acceptance of the dependency is still in the proposal's history.
   assert.equal(hist.find((h) => h.changeId === dep.changeId).state, 'accepted');
+});
+
+test('a confirmed rejection writes nothing if what depends on it changed after it was read', async () => {
+  const s = await scenario();
+  const note = await m.createNote(s.q, { text: 'Proposal also needs the legal review from Dana.', occurredAt: at(18), now: at(18) });
+  const legal = await m.addCommitment(s.q, { what: 'Legal review', ownerId: s.dana, noteId: note, now: at(18) });
+  const dep = await m.addChange(s.q, { commitmentId: s.proposal, kind: 'blocked', namesId: legal.commitmentId, noteId: note, now: at(18) });
+  await m.accept(s.q, dep.changeId, { now: at(18, '10:00') });
+
+  // Between the read of the consequences and the write, another commitment
+  // comes to depend on the one being rejected.
+  const racing = (cypher, params) => {
+    if (cypher.includes('DETACH DELETE c')) {
+      s.q('MATCH (a:Commitment {id: $a}), (b:Commitment {id: $b}) CREATE (a)-[:BLOCKED_BY]->(b)', { a: s.pricing, b: legal.commitmentId });
+    }
+    return s.q(cypher, params);
+  };
+  const before = await count(s.q, 'MATCH (n) RETURN count(n) AS n');
+  const done = await m.reject(racing, legal.changeId, { now: at(19), confirmConsequences: true });
+  assert.equal(done.outcome, 'busy');
+  assert.equal(await count(s.q, 'MATCH (c:Commitment {id: $id}) RETURN count(c) AS n', { id: legal.commitmentId }), 1);
+  assert.equal(await count(s.q, 'MATCH (n) RETURN count(n) AS n'), before);
+  assert.equal(await count(s.q, "MATCH (ch:Change {id: $id}) RETURN ch.state = 'proposed' AS n", { id: legal.changeId }), true);
+  assert.equal(await count(s.q, 'MATCH (:Commitment {id: $id})-[r:BLOCKED_BY]->(:Commitment {id: $b}) RETURN count(r) AS n', { id: s.proposal, b: legal.commitmentId }), 1);
 });
 
 test('a manual decision on a new commitment also guards its rejection', async () => {

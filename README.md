@@ -2,74 +2,114 @@
 
 **Know what you owe. See what changed.**
 
-A private commitment memory: it turns passages from messages and meeting notes into an evidence-backed view of who owes what, what changed, and what is blocked. The graph lives in the browser in [Relate](https://relatedb.ai), and extraction runs through [Firebase AI Logic](https://firebase.google.com/docs/ai-logic) on the device model built into Chrome, with the cloud as a fallback where that is allowed.
+A private commitment memory. Paste a passage from a message or meeting notes, and Kept turns it into an evidence-backed view of who owes what, what changed and what is blocked. Nothing a model reads changes a commitment until you confirm it.
 
-## Status
+- **Hybrid inference.** Notes are read through [Firebase AI Logic](https://firebase.google.com/docs/ai-logic): by the model built into Chrome (Gemini Nano) on the device, or by Gemini in the cloud. The workspace decides which, not the model.
+- **A graph that does the reasoning.** Commitments, people, notes and every proposed change live in [Relate](https://relatedb.ai), in the browser. "What do I owe before Friday?" and "what is waiting on someone else?" are graph queries over accepted state, each answer linked to the words it came from.
 
-As of 2026-11-15 this repository holds the groundwork, not the finished app.
+Hosted: https://relate-hybrid.web.app
 
-| Part | State |
-|---|---|
-| Feasibility slice (`index.html`) | Works: Relate in a worker with a persistent store, hybrid extraction on device and in the cloud, App Check, a hosted build |
-| Commitment model (`src/model.js`) | Rules written and tested on Relate's Node binding. Not run in the browser build, not used by the page yet |
-| Answer validation (`src/reading.js`) | Written and tested. Not used by the page yet |
-| Linking experiment (`linking.html`) | A development tool. Results in `docs/linking-experiment.md` |
-| Review screen (`review.html`) | Checked by hand in Chrome 157 on Windows, on the demo scenario: the scenario loaded through the model's rules, the review queue with accept, reject and "it is about another commitment", and the four core questions |
-| Capture (`src/capture.js`, on the review screen) | First increment. Tried by hand in Chrome 157 on Windows on 2026-11-15, with the cloud model answering in 0.8 to 1.4 s: a deadline change proposed on the right commitment; a new commitment confirmed through its card (twice the model gave it a listed label as well, which validation refused and the card's one-click "it is new" recovered); and an ambiguous note answered through its question card. A pasted note is read by the cloud model (prompt v2), validated, and recorded as proposals; new commitments, questions and refused entries wait for the user first. Dates such as "Friday" are resolved only when they have one reading. Dependencies ("once Lee confirms pricing") come from a second, small cloud call (`src/dependencies.js`), made only when the note has a word such as "once" or "after". Run on 2026-11-15 in headless Chromium through Playwright against the real cloud model: the demo sentence into an empty store gave both commitments and the dependency between them, and once accepted "waiting on someone else" answered with Lee. Waiting cards are kept with their note, so a reload does not lose them. Not covered yet: changes of owner or recipient. |
-| Private workspace (`review.html?workspace=private`) | Its own store (`opfs://kept-private`). Notes are read by the model built into the browser with prompt v1 and the app rules, and do not leave the device; proposals are marked provisional. The cloud model is used for a note only when the user ticks a box, after a preview of exactly what would be sent. Checked in headless Chromium, which has no device model: without the box nothing is sent. **Not yet run on a device model**; `eval.html?route=device` runs the evaluation on it in a Chrome that has one |
-| Cloud quota | The free tier allows 500 cloud requests a day for the model; one evaluation run of round 1 uses about 50. On 2026-11-15 the evaluation runs used up the day's quota, which also stops the hosted demo until it resets |
-| Store file in the repository (`store/kept.rl`) | **Out of date:** still the slice's first seed model. See "The graph" |
+## The use case
+
+Commitments get lost in the middle of conversations: "I'll send Dana the proposal Friday, once Lee confirms pricing." Two days later Lee's pricing slips; the next day Dana moves the date. Kept keeps:
+
+- the **commitment** (owner, recipient, deadline, status), holding only what you accepted;
+- every **change** as its own record, with the quote and the note it came from, waiting for review;
+- **dependencies** between commitments ("once Lee confirms pricing"), so blockers come from traversal, not from a model;
+- the **notes** themselves, so "why does the app think this is mine?" is answered with the original sentence.
+
+It answers four questions: what do I owe before a date, which commitments are waiting on someone else, what changed since the last meeting with someone, and why the app thinks a commitment is yours.
+
+## How it uses Firebase AI Logic
+
+`src/ai.js` creates the models with `getGenerativeModel` and an `InferenceMode`, behind App Check (reCAPTCHA Enterprise on the hosted site, a debug token on localhost). The output is JSON constrained by a schema.
+
+| Workspace | Mode | Where the note goes |
+|---|---|---|
+| Demo (`/`) | Cloud (`gemini-3.5-flash-lite`) | The note and your open commitments go to the cloud model; demo data only |
+| Private (`/?workspace=private`) | `ONLY_ON_DEVICE` | Read by Gemini Nano in Chrome, never leaves the device. Proposals are marked provisional |
+| Private, cloud opt-in | Cloud, for one note | Only after ticking a box and seeing a preview of exactly what will be sent. The box unticks itself after that note |
+
+Before an on-device call the app checks itself that the model is available and answering, because the SDK alone would start a multi-gigabyte download instead of failing. A device call that takes over 45 s is stopped.
+
+Every answer, from either model, passes through validation (`src/reading.js`) and the app rules (`src/model.js`). It becomes proposals, questions or refused entries, and only a confirmation changes a commitment. The routing comes from measurement: on the same notes the cloud model was right or asked, and the device model sometimes proposed something wrong without saying it was unsure (`docs/linking-experiment.md`, `docs/evaluation.md`). So on the device every link is provisional and review is mandatory.
+
+## How it uses Relate
+
+**Mode: single file** in the repository, and a persistent OPFS store in the browser.
+
+- **In the browser:** Relate's WebAssembly build, opened from a dedicated worker (`src/db.worker.js`) and persisted to OPFS. The demo and the private workspace are separate stores (`opfs://kept-demo`, `opfs://kept-private`), so private notes never share a store with demo data.
+- **In the repository:** `store/kept.rl`, a single-file store built with the Node binding from the demo scenario, through the same rules the app uses (`npm run seed-store`). It is there so you can inspect the graph without a browser.
+
+Graph: `Person`, `Commitment`, `Note` and `Change` nodes; `OWES`, `TO`, `BLOCKED_BY`, `ON`, `FROM`, `NAMES`, `INVOLVES` and `ESTABLISHED_BY` relationships (each current value points at the change that set it). Queries use quantified path patterns, `EXISTS` subqueries and a full-text index. The model and its queries are in `docs/data-model.md`.
 
 ## Run it
 
-Needs Node.js and desktop Chrome. The tests were run with Node.js 24.
+Needs Node.js (tested with 24) and desktop Chrome.
 
 ```
 npm install
 npm run dev
 ```
 
-Then open http://localhost:5173/ for the feasibility slice, http://localhost:5173/review.html for the review screen, and http://localhost:5173/linking.html for the linking experiment. The review screen uses its own store (`opfs://kept-demo`), so it can be open beside the slice.
+Open http://localhost:5173/ and press **Load the demo scenario**.
 
-- `npm install` copies Relate's browser files into `public/relate/` with `mkdir -p` and `cp`. On Windows, run `npm ci --ignore-scripts` and then the `copy-relate` command from `package.json` in Git Bash.
-- **The device model.** Chrome serves Gemini Nano 3 by default. For Gemma 4, set `chrome://flags/#gemma4-for-built-in-ai` to Enabled and relaunch. The linking page shows which model answers.
-- **The cloud model on localhost** needs this browser's App Check debug token registered in the Firebase console (App Check > Apps > Manage debug tokens). Both pages print the token. The hosted build uses reCAPTCHA Enterprise and needs no setup.
+- On Windows, `npm install`'s copy step uses `mkdir -p` and `cp`: run `npm ci --ignore-scripts`, then `npm run copy-relate` in Git Bash.
+- **The cloud model on localhost** needs this browser's App Check debug token registered in the Firebase console (App Check > Apps > Manage debug tokens); the page prints it. Or use the hosted site, which needs no setup.
+- **The device model.** Chrome serves Gemini Nano 3 by default. For Gemma 4, set `chrome://flags/#gemma4-for-built-in-ai` to Enabled and relaunch. The private workspace says whether the model is ready and answering.
 
-A hosted build of the slice is at https://relate-hybrid.web.app.
+Other pages, for development: `/slice.html` (the feasibility slice), `/linking.html` (the linking experiment), `/eval.html` (the capture evaluation, `npm run eval`).
+
+## Where the data lives
+
+- `store/kept.rl`: the inspectable store. Regenerate it with `npm run seed-store`, which also prints the node and relationship counts and the answers to the core questions. With the Relate CLI:
+
+  ```
+  relate -d store/kept.rl "MATCH (n) RETURN labels(n)[0] AS label, count(*) AS nodes"
+  relate -d store/kept.rl "MATCH (c:Commitment)-[:BLOCKED_BY]->(b:Commitment)<-[:OWES]-(p:Person) RETURN c.what, b.what, p.name"
+  ```
+
+- In the browser: OPFS, per workspace, on your machine only.
+- Nothing in the repository is real personal data. The demo scenario is invented.
 
 ## Tests
 
 ```
-npm test
+npm test            # on Relate's Node binding, about 2 s
+npm run test:wasm   # on Relate's browser build, in headless Chromium, about 15 s
 ```
 
-125 tests: the commitment rules, the review screen's data and capture against a real Relate store through the Node binding, the validation of model answers, and the scoring of the linking experiment. No model and no browser are involved.
+200 tests against a real Relate store: the commitment rules, the review screen's data and capture, validation of model answers, dependencies, the device guard and the evaluation scoring. `test:wasm` runs the same tests on the WebAssembly build the app uses, in a dedicated worker on an OPFS store (`test/store.mjs`); it needs Playwright's Chromium (`npx playwright install chromium`). No model is involved. The model itself is measured separately, in `docs/evaluation.md` (21 rounds on the device, written before any model saw them).
 
-## The graph
+## Status
 
-> **The store file is out of date.** `store/kept.rl` still holds the first seed model of the feasibility slice (`Evidence` and `Deadline` nodes), not the model described in `docs/data-model.md` and implemented in `src/model.js`. It has to be regenerated from the accepted model before submission.
+| Part | State |
+|---|---|
+| Review screen (`/`) | Demo scenario, capture, review queue with accept, reject and "it is about another commitment", the four core questions. Checked by hand in Chrome 157 on Windows |
+| Capture, cloud | Deadline changes, new commitments, done and cancelled, dependencies, questions for ambiguous notes. Run end to end in Chromium against the real model |
+| Private workspace, device | Run on the hosted site on Gemini Nano on 2026-11-16, and in 21 evaluation rounds on the device (the last six clean: no unsafe proposals) |
+| Store file | Generated from the current model |
+| Not covered yet | Changes of owner or recipient; a second tab on the same store (`storage locked`); splitting a long note with many commitments |
 
-- **In the browser:** a Relate store in OPFS, opened from a dedicated worker (`src/db.worker.js`).
-- **In the repository:** `store/kept.rl`, a single-file Relate store built from the same seed data as the browser's demo (`npm run seed-store`). Inspect it with the Relate CLI:
-
-  ```
-  relate -d store/kept.rl "MATCH (n) RETURN labels(n)[0] AS label, count(*) AS nodes"
-  ```
-
-Relate features in use: the WebAssembly build with OPFS persistence, the Node binding (tests and the store file), Cypher with quantified path patterns and `EXISTS` subqueries, and a full-text index.
+The free tier allows 500 cloud requests a day for the model, and an evaluation run uses about 50; if the hosted demo's cloud reading fails, the day's quota may be spent.
 
 ## Documentation
 
 | File | What it holds |
 |---|---|
-| `docs/decisions.md` | Product definition, platform, privacy and inference policy, and the decisions the other documents refer to |
-| `docs/data-model.md` | The commitment model, its write rules, the core questions as queries, and what the tests establish |
-| `docs/linking-experiment.md` | Whether a model attaches a note to the right existing commitment: runs on device and in the cloud, and the routing decided from them |
-| `docs/slice-results.md` | What the feasibility slice tested, on which machines, and what it found |
+| `docs/decisions.md` | Product definition, platform, privacy and inference policy |
+| `docs/data-model.md` | The commitment model, its write rules and the core questions as queries |
+| `docs/linking-experiment.md` | Whether a model attaches a note to the right commitment, on the device and in the cloud |
+| `docs/evaluation.md` | Capture measured end to end, round by round |
+| `docs/slice-results.md` | What the feasibility slice tested and found |
 
 ## How this was built
 
-- **Start.** The first commit is dated 2026-11-14. The research behind it began the same day.
-- **Reused code.** Not yet declared. Whether any code here comes from an earlier project is for the author to state before submission. It has not been verified by the AI tools or reviews named below, and a first commit date does not establish it.
-- **Third-party.** Relate (`@relate/relate-wasm`, `@relate/relate`), the Firebase JS SDK (AI Logic, App Check, Hosting), Vite.
-- **AI assistance.** Substantial. The research notes, the documents in `docs/`, and most of the code and tests were written with Claude Code (Anthropic) under the author's direction. Implementation and tests were iteratively reviewed with OpenAI Codex, whose findings were reproduced and fixed with tests. The author ran every browser and device experiment, supplied the results, and made the product decisions.
+- **Start.** The first commit is dated 2026-11-14, within both contest periods. The research behind it began the same day.
+- **Reused code.** None. All code here was written for this project, starting 2026-11-14; the only code not written for it is the third-party packages listed below.
+- **Third-party.** Relate (`@relate/relate-wasm`, `@relate/relate`), the Firebase JS SDK (AI Logic, App Check, Hosting), Vite, Playwright (evaluation only).
+- **AI assistance.** Substantial. The research notes, the documents in `docs/` and most of the code and tests were written with Claude Code (Anthropic) under the author's direction. Implementation and tests were reviewed with OpenAI Codex, whose findings were reproduced and fixed with tests. The author ran every browser and device experiment, supplied the results, and made the product decisions.
+
+## License
+
+Apache-2.0. See `LICENSE`.

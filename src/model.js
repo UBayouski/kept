@@ -323,7 +323,8 @@ async function removalConsequences(q, commitmentId) {
 // 'needs-confirmation' with those consequences listed. Called again with
 // confirmConsequences, each dependent gets an 'unblocked' change in its own
 // history saying why, and the commitment and the decisions on it are removed.
-// That path is several statements and is not atomic.
+// That is one statement, so it is atomic; if the consequences changed after
+// they were read, nothing is written and the outcome is 'busy'.
 export const reject = (q, changeId, options) => serial(q, () => rejectNow(q, changeId, options));
 
 async function rejectNow(q, changeId, { now = nowIso(), confirmConsequences = false } = {}) {
@@ -348,33 +349,51 @@ async function rejectNow(q, changeId, { now = nowIso(), confirmConsequences = fa
   if (consequences.any && !confirmConsequences) {
     return { outcome: 'needs-confirmation', decisions: consequences.decisions, dependents: consequences.dependents };
   }
-  for (const dependent of consequences.dependents) {
-    await q(
-      `MATCH (a:Commitment {id: $dependentId})-[r:BLOCKED_BY]->(:Commitment {id: $commitmentId})
-       OPTIONAL MATCH (a)-[old:ESTABLISHED_BY {field: $field}]->(:Change)
-       DELETE r, old
-       CREATE (u:Change {id: $id, kind: 'unblocked', field: $field, state: 'accepted', applied: true, source: 'manual',
-         reason: 'blocker rejected', namedWhat: $what, recordedAt: datetime($now), decidedAt: datetime($now),
+  // One statement, so it commits whole or not at all: each dependent is
+  // unblocked with a change in its own history saying why, the decisions on
+  // the commitment are removed, its open proposals are rejected, and it goes.
+  // The guard re-checks, inside the statement, that the change is still
+  // proposed and that the consequences are the ones the user confirmed; if
+  // anything moved, nothing is written.
+  const done = await q(
+    `MATCH (ch:Change {id: $changeId, state: 'proposed', kind: 'created'})-[:ON]->(c:Commitment)
+     OPTIONAL MATCH (a:Commitment)-[:BLOCKED_BY]->(c)
+     WITH ch, c, collect(DISTINCT a.id) AS dependentIds
+     OPTIONAL MATCH (d:Change {state: 'accepted'})-[:ON]->(c) WHERE d.kind <> 'created'
+     WITH ch, c, dependentIds, collect(DISTINCT d.id) AS decisionIds
+     WHERE size(dependentIds) = size($dependentIds) AND all(x IN dependentIds WHERE x IN $dependentIds)
+       AND size(decisionIds) = size($decisionIds) AND all(x IN decisionIds WHERE x IN $decisionIds)
+     OPTIONAL MATCH (a:Commitment)-[r:BLOCKED_BY]->(c)
+     OPTIONAL MATCH (a)-[old:ESTABLISHED_BY {field: $field}]->(:Change)
+     WITH ch, c, collect(DISTINCT a) AS dependents, collect(DISTINCT r) AS blocks, collect(DISTINCT old) AS olds
+     FOREACH (x IN blocks | DELETE x)
+     FOREACH (x IN olds | DELETE x)
+     FOREACH (a IN dependents |
+       CREATE (u:Change {id: $unblockIds[a.id], kind: 'unblocked', field: $field, state: 'accepted', applied: true, source: 'manual',
+         reason: 'blocker rejected', namedWhat: c.what, recordedAt: datetime($now), decidedAt: datetime($now),
          effectiveAt: datetime($now), effectivePrecision: 'time'})
        CREATE (u)-[:ON]->(a)
-       CREATE (a)-[:ESTABLISHED_BY {field: $field}]->(u)`,
-      { dependentId: dependent.id, commitmentId: ch.commitmentId, field: `blocker:${ch.commitmentId}`, id: uid(), what: ch.what, now },
-    );
-  }
-  await q(
-    `MATCH (:Change {id: $changeId})-[:ON]->(c:Commitment)
+       CREATE (a)-[:ESTABLISHED_BY {field: $field}]->(u))
+     WITH ch, c
      OPTIONAL MATCH (decided:Change {state: 'accepted'})-[:ON]->(c)
-     DETACH DELETE decided`,
-    { changeId },
-  );
-  await q(
-    `MATCH (ch:Change {id: $changeId})-[:ON]->(c:Commitment)
+     WITH ch, c, collect(DISTINCT decided) AS decided
+     FOREACH (x IN decided | DETACH DELETE x)
+     WITH ch, c
      OPTIONAL MATCH (other:Change {state: 'proposed'})-[:ON|NAMES]->(c)
-     SET other.state = 'rejected', other.decidedAt = datetime($now)
-     WITH DISTINCT c
-     DETACH DELETE c`,
-    { changeId, now },
+     WITH c, collect(DISTINCT other) AS others
+     FOREACH (x IN others | SET x.state = 'rejected', x.decidedAt = datetime($now))
+     DETACH DELETE c
+     RETURN count(*) AS removed`,
+    {
+      changeId, now, field: `blocker:${ch.commitmentId}`,
+      dependentIds: consequences.dependents.map((d) => d.id),
+      // Ids made here: Cypher's randomUUID() traps Relate's WebAssembly build,
+      // which has no clock (found by npm run test:wasm).
+      unblockIds: Object.fromEntries(consequences.dependents.map((d) => [d.id, uid()])),
+      decisionIds: consequences.decisions.map((d) => d.changeId),
+    },
   );
+  if (!done[0]?.removed) return { outcome: 'busy' };
   return { outcome: 'rejected', removedCommitment: true, decisions: consequences.decisions, dependents: consequences.dependents };
 }
 

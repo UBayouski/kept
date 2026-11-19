@@ -8,12 +8,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as m from '../src/model.js';
 import * as r from '../src/review-data.js';
+import { openStore } from './store.mjs';
 
-const { Database } = createRequire(import.meta.url)('@relate/relate');
-function open() {
-  const conn = Database.open(join(mkdtempSync(join(tmpdir(), 'kept-review-')), 'store.rl')).connect();
-  return (cypher, params) => conn.query(cypher, params ?? {}).rows;
-}
+const open = () => openStore('kept-review');
 // A fixed "today" for the demo: Wednesday Nov 25, so last week runs Nov 16 to 20.
 const DEMO = { today: new Date('2026-11-25T12:00:00Z') };
 const meOf = async (q) => (await r.people(q)).find((p) => p.isMe).id;

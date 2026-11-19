@@ -10,12 +10,9 @@ import * as m from '../src/model.js';
 import * as r from '../src/review-data.js';
 import * as c from '../src/capture.js';
 import * as d from '../src/dependencies.js';
+import { openStore } from './store.mjs';
 
-const { Database } = createRequire(import.meta.url)('@relate/relate');
-function open() {
-  const conn = Database.open(join(mkdtempSync(join(tmpdir(), 'kept-deps-')), 'store.rl')).connect();
-  return (cypher, params) => conn.query(cypher, params ?? {}).rows;
-}
+const open = () => openStore('kept-deps');
 const DEMO = { today: new Date('2026-11-25T12:00:00Z') };
 const WHEN = { occurredAt: '2026-11-25T15:00:00Z', baseDate: '2026-11-25', now: '2026-11-25T15:05:00Z' };
 const dep = (quote, waiting, waitsFor, newWhat = '', newOwner = '') => ({ quote, waiting, waitsFor, newWhat, newOwner });

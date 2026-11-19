@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kept: feasibility slice</title>
+    <style>
+      body { font: 15px/1.5 system-ui, sans-serif; max-width: 760px; margin: 32px auto; padding: 0 16px; }
+      h1 { font-size: 20px; }
+      h2 { font-size: 16px; margin-top: 28px; }
+      button { font: inherit; padding: 6px 12px; margin-right: 8px; }
+      textarea { width: 100%; height: 70px; font: inherit; box-sizing: border-box; }
+      pre { background: #f4f4f4; padding: 12px; overflow: auto; white-space: pre-wrap; }
+      table { border-collapse: collapse; } th, td { border: 1px solid #ccc; padding: 4px 10px; text-align: left; }
+      .ok { color: #0a7a2f; } .bad { color: #b00020; }
+    </style>
+  </head>
+  <body>
+    <h1>Kept: feasibility slice</h1>
+    <p>Throwaway page that checks Relate's WebAssembly build in a worker with a persistent store, and Firebase AI Logic hybrid inference.</p>
+
+    <h2>Relate store</h2>
+    <p id="db-status">Starting…</p>
+    <textarea id="note">I'll send Dana the proposal Friday, once Lee confirms pricing.</textarea>
+    <p>
+      <button id="add">Save as commitment</button>
+      <button id="list">List commitments</button>
+      <button id="restart">Restart worker</button>
+      <button id="reset">Empty store</button>
+    </p>
+    <pre id="out"></pre>
+
+    <h2>Hybrid extraction (Firebase AI Logic)</h2>
+    <p>
+      <span id="ai-status">Checking the device model…</span>
+      <button id="download" hidden>Download device model</button>
+      <progress id="download-progress" max="1" value="0" hidden></progress>
+    </p>
+    <p>Uses the note above.</p>
+    <p>
+      <select id="mode">
+        <option value="prefer_on_device">Prefer on-device</option>
+        <option value="only_on_device">Only on-device</option>
+        <option value="prefer_in_cloud">Prefer cloud</option>
+        <option value="only_in_cloud">Only cloud</option>
+      </select>
+      <button id="extract">Extract only</button>
+      <button id="extract-save">Extract and save</button>
+    </p>
+    <pre id="ai-out"></pre>
+
+    <h2>What needs my attention</h2>
+    <p>
+      <button id="attention">Ask the graph</button>
+      <button id="seed">Load demo data</button>
+    </p>
+    <div id="attention-out"></div>
+
+    <p id="appcheck"></p>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

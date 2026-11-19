@@ -9,12 +9,9 @@ import { join } from 'node:path';
 import * as m from '../src/model.js';
 import * as r from '../src/review-data.js';
 import * as c from '../src/capture.js';
+import { openStore } from './store.mjs';
 
-const { Database } = createRequire(import.meta.url)('@relate/relate');
-function open() {
-  const conn = Database.open(join(mkdtempSync(join(tmpdir(), 'kept-capture-')), 'store.rl')).connect();
-  return (cypher, params) => conn.query(cypher, params ?? {}).rows;
-}
+const open = () => openStore('kept-capture');
 // Demo loaded on Wednesday Nov 25: last week runs Nov 16 to 20.
 const DEMO = { today: new Date('2026-11-25T12:00:00Z') };
 // A note taken on Wednesday Nov 25.

@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Relate browser-build test harness</title>
+<script type="module">
+  const worker = new Worker('/test/browser/worker.js', { type: 'module' });
+  const pending = new Map();
+  let next = 1;
+  worker.onmessage = ({ data }) => {
+    const waiter = pending.get(data.id);
+    pending.delete(data.id);
+    waiter(data);
+  };
+  window.run = (store, statement, params) => new Promise((resolve) => {
+    const id = next++;
+    pending.set(id, resolve);
+    worker.postMessage({ id, store, statement, params });
+  });
+  window.ready = true;
+</script>

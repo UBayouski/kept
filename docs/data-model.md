@@ -249,10 +249,10 @@ All agreed across the two reviews:
 
 The candidate-linking experiment has been run on the device with two prompts and in the cloud, including notes held out from tuning. The results are in `linking-experiment.md`. In short: the cloud model was right or asked on every note; the device model proposed something wrong on between a third and just over half of the runs and never said it was unsure. So linking belongs in the cloud where the cloud is allowed, and on the device every link is provisional and review is mandatory. One run each.
 
-Still open before private-data use:
+Before private-data use, both closed on 2026-11-18 (see `decisions.md`):
 
-1. Run the model tests against the browser build.
-2. Make the confirmed-rejection path atomic or recoverable.
+1. The model tests run against the browser build: `npm run test:wasm`, all passing.
+2. The confirmed-rejection path is one statement, so it is atomic.
 
 ## Not covered yet
 

@@ -1,9 +1,10 @@
 {
-  "name": "kept-slice",
+  "name": "kept",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Feasibility slice for Kept: Relate WASM in a worker with OPFS, and Firebase AI Logic hybrid inference.",
+  "description": "Kept: a private commitment memory. Relate in the browser, Firebase AI Logic hybrid inference (Gemini Nano on the device, Gemini in the cloud).",
+  "license": "Apache-2.0",
   "scripts": {
     "copy-relate": "mkdir -p public/relate && cp -R node_modules/@relate/relate-wasm/relate.js node_modules/@relate/relate-wasm/relate_bg.wasm node_modules/@relate/relate-wasm/trap.js node_modules/@relate/relate-wasm/snippets public/relate/",
     "postinstall": "npm run copy-relate",
@@ -12,6 +13,7 @@
     "preview": "vite preview",
     "seed-store": "node scripts/seed-store.mjs",
     "test": "node --test test/*.test.mjs",
+    "test:wasm": "node scripts/test-wasm.mjs",
     "eval": "node scripts/run-eval.mjs"
   },
   "dependencies": {

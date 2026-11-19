@@ -98,6 +98,8 @@ The web-core checks that `slice-results.md` reports against:
 
 ## Open before private-data use
 
-- The rules in `src/model.js` have run on Relate's Node binding only, not on the browser build.
-- Rejecting a commitment that other things depend on is several statements and not atomic.
-- Matching the people named in a new commitment, resolving dates such as "Friday", and choosing candidate commitments from a larger store are not built.
+Closed on 2026-11-18:
+
+- **The rules on the browser build.** `npm run test:wasm` runs the whole suite on Relate's WebAssembly build, in a dedicated worker on an OPFS store, in headless Chromium (`test/store.mjs`), the same path as the app. All 200 tests pass there as on the Node binding. It found one difference: Cypher's `randomUUID()` traps the WebAssembly build (it has no clock), so ids are made in JavaScript.
+- **Atomic rejection.** Rejecting a commitment that other things depend on is now one statement, which commits whole or not at all. It re-checks inside the statement that the consequences are the ones the user confirmed; if they changed, nothing is written and the outcome is `busy`.
+- Matching the people named in a new commitment, resolving dates such as "Friday" (only when they have one reading), and choosing candidate commitments from a larger store are built, in `src/capture.js`.

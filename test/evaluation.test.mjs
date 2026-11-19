@@ -9,12 +9,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as e from '../src/evaluation.js';
 import * as pipeline from '../src/pipeline.js';
+import { openStore } from './store.mjs';
 
-const { Database } = createRequire(import.meta.url)('@relate/relate');
-function open() {
-  const conn = Database.open(join(mkdtempSync(join(tmpdir(), 'kept-eval-')), 'store.rl')).connect();
-  return (cypher, params) => conn.query(cypher, params ?? {}).rows;
-}
+const open = () => openStore('kept-eval');
 
 // A fake model: answers by which prompt it is given. Labels are looked up by wording and recipient.
 function fake({ linking, deps = { items: [] } }) {

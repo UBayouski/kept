@@ -172,7 +172,7 @@ Runs 1 and 2 are transcribed in `test/fixtures/`. The raw reports of runs 4 to 6
 ## Next
 
 1. Capture, review and correction, per the schedule in `decisions.md`, built on `readNote` and the rules in `model.js`.
-2. Still open before private-data use (from `data-model.md`): the model tests against the browser build, and an atomic or recoverable rejection path.
+2. Before private-data use (from `data-model.md`): the model tests against the browser build, and an atomic rejection path. Both closed on 2026-11-18.
 3. If the experiment is taken up again: repeat the cloud run, and write new held-out notes before changing any prompt or rule.
 
 Not established by any of this: more than four candidates, how the candidates are chosen from a larger store, date resolution, whether Nano 3 behaves the same, and how much any of these numbers moves between runs.

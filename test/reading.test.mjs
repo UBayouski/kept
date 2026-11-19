@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { validateReading, readNote, toExtraction } from '../src/reading.js';
 import * as m from '../src/model.js';
+import { openStore } from './store.mjs';
 
 const candidates = [
   { label: 'K7', id: 'id-proposal', what: 'Send the proposal', owner: 'me', to: 'Dana' },
@@ -189,9 +190,7 @@ test('readNote: an unusable answer gives nothing but the note to link by hand', 
 });
 
 test('validated proposals reach the store as proposals: nothing accepted changes', async () => {
-  const { Database } = createRequire(import.meta.url)('@relate/relate');
-  const conn = Database.open(join(mkdtempSync(join(tmpdir(), 'kept-reading-')), 'store.rl')).connect();
-  const q = (cypher, params) => conn.query(cypher, params ?? {}).rows;
+    const q = openStore('kept-reading');
   const me = await m.createPerson(q, { name: 'Me', isMe: true });
   const proposal = await m.addCommitment(q, { what: 'Send the proposal', ownerId: me, due: '2026-11-20', dueText: 'Friday' });
   const contract = await m.addCommitment(q, { what: 'Send the contract', ownerId: me, due: '2026-11-20', dueText: 'Friday' });
@@ -228,9 +227,7 @@ test('validated proposals reach the store as proposals: nothing accepted changes
 // --- Cases from the review of the validation boundary ---
 
 function store() {
-  const { Database } = createRequire(import.meta.url)('@relate/relate');
-  const conn = Database.open(join(mkdtempSync(join(tmpdir(), 'kept-reading-')), 'store.rl')).connect();
-  return (cypher, params) => conn.query(cypher, params ?? {}).rows;
+    return openStore('kept-reading');
 }
 
 test('an invalid re-reading does not withdraw the proposal an earlier reading made', async () => {
