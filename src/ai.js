@@ -88,6 +88,36 @@ if (isLocal) {
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
 
+// The SDK opens a Chrome session for each device call and closes it only when
+// the same model object is used again, which never happens here: every call
+// builds its own (the schema differs per call). Left open, sessions pile up,
+// three a note, and Chrome's model failed with kErrorUnknown at about 85 of
+// them (measured 2026-11-19). Stopping the signal a session was created with
+// does not close it in Chrome (also measured). So the SDK is given this
+// stand-in for LanguageModel: it creates the same sessions and remembers them,
+// and each call closes its own when it ends (closeSessions).
+const opened = new Set();
+const deviceApi = {
+  availability: (options) => LanguageModel.availability(options),
+  create: async (options) => {
+    const session = await LanguageModel.create(options);
+    opened.add(session);
+    return session;
+  },
+};
+const sdkAdapter = ai.chromeAdapterFactory;
+if (typeof sdkAdapter === 'function') {
+  ai.chromeAdapterFactory = (mode, scope, params) => sdkAdapter(mode, 'LanguageModel' in self ? { LanguageModel: deviceApi } : scope, params);
+} else {
+  console.warn('Kept: this Firebase AI SDK builds its Chrome adapter differently; device sessions are not closed after a read.');
+}
+function closeSessions() {
+  for (const session of opened) {
+    try { session.destroy(); } catch { /* already closed */ }
+  }
+  opened.clear();
+}
+
 const deviceOptions = {
   expectedInputs: [{ type: 'text', languages: ['en'] }],
   expectedOutputs: [{ type: 'text', languages: ['en'] }],
@@ -222,18 +252,18 @@ export async function generateStructured(prompt, schema, mode) {
       result = await modelFor(mode, schema, stop.signal).generateContent(prompt);
     } catch (err) {
       if (!stop.signal.aborted) throw err;
+      // Close the stopped call's session before checking: it may be what the
+      // model is still busy with.
+      closeSessions();
       await whenVisible();
       if (!(await guard.afterTimeout())) throw new Error(STUCK_MESSAGE);
       throw new Error(`The device model did not answer within ${DEVICE_TIMEOUT_MS / 1000} s, so it was stopped. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`);
     } finally {
       clearTimeout(timer);
-      // The SDK opens a session for each call and closes it only when the same
-      // model object is used again, which never happens here: every call builds
-      // its own. Stopping the signal the session was created with closes it.
-      // Left open, sessions pile up (three a note), and Chrome's model failed
-      // with kErrorUnknown at about 85 of them (measured 2026-11-19).
+      // Close the session this call opened (see deviceApi), and keep one idle
+      // session so Chrome does not unload the model between notes.
       if (result) keepWarm();
-      stop.abort();
+      closeSessions();
     }
   } else {
     result = await modelFor(mode, schema).generateContent(prompt);
