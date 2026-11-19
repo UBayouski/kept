@@ -653,6 +653,22 @@ export function owedBefore(q, { personId, date }) {
 // 2. Open commitments of a person that wait on someone else. A chain is
 // followed only through blockers that are still open: a done blocker no longer
 // blocks, and a cancelled one is reported itself, not what lay behind it.
+// What others owe the person: open commitments to them, owed by someone else,
+// with which of the person's own commitments each one holds up.
+export function owedTo(q, { personId }) {
+  return q(
+    `MATCH (o:Person)-[:OWES]->(c:Commitment {status: 'open'})-[:TO]->(:Person {id: $personId})
+     WHERE o.id <> $personId
+     OPTIONAL MATCH (p:Change {state: 'proposed'})-[:ON]->(c) WHERE p.kind <> 'created'
+     WITH o, c, count(p) AS pendingChanges
+     OPTIONAL MATCH (:Person {id: $personId})-[:OWES]->(mine:Commitment {status: 'open'})-[:BLOCKED_BY]->(c)
+     RETURN c.id AS id, c.what AS what, o.name AS owedBy, toString(c.due) AS due, c.dueText AS dueText,
+            c.review AS review, pendingChanges, collect(mine.what) AS holdsUp
+     ORDER BY owedBy, due, id`,
+    { personId },
+  );
+}
+
 export function waitingOn(q, { personId }) {
   return q(
     `MATCH (:Person {id: $personId})-[:OWES]->(c:Commitment {status: 'open'})

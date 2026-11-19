@@ -349,3 +349,55 @@ test('"can wait until Monday" is a deadline, not a dependency on a new "Wait unt
   const real = d.readDependencies({ items: [dep('after Priya approves the budget', 'L7', 'new', 'Approve the budget', 'Priya')] }, { list, note: "I'll send Lee the proposal after Priya approves the budget." });
   assert.equal(real.dependencies.length, 1);
 });
+
+test('"something new" to wait for that is a listed commitment of that person is the listed one: no copy', async () => {
+  const q = open();
+  await c.prepare(q, 'x');
+  await c.addPerson(q, 'Dana');
+  const people0 = await c.people(q);
+  const me = people0.find((p) => p.isMe).id;
+  const dana = people0.find((p) => p.name === 'Dana').id;
+  const ticket = await m.addCommitment(q, { what: 'Get a ticket to the Wizard of Oz', ownerId: dana, toId: me });
+  // The user's note on the device, 2026-11-18.
+  const text = "I'll book a table at Luigi's once Dana sends me the ticket.";
+  const ready = await c.prepare(q, text);
+  const out = await c.capture(q, { text, shape: 'v2', ...ready, ...WHEN,
+    answer: { items: [{ quote: "I'll book a table at Luigi's", about: 'new', change: 'new commitment', due: '', what: "Book a table at Luigi's" }] } });
+  const list = c.dependencyList(ready.candidates, out.pending);
+  const deps = await c.addDependencies(q, out.session, { list, note: text, people: ready.people,
+    answer: { items: [dep('once Dana sends me the ticket', 'N1', 'new', 'Dana sends me the ticket', 'Dana')] } });
+  assert.deepEqual(deps.pending.map((p) => p.type), ['dependency'], 'no new commitment for the ticket');
+  const [link] = deps.pending;
+  assert.deepEqual([link.waiting.what, link.waitsFor.what, link.waitsFor.commitmentId], ["Book a table at Luigi's", 'Get a ticket to the Wizard of Oz', ticket.commitmentId]);
+  assert.ok(deps.problems.some((p) => p.repaired && /is the listed "Get a ticket to the Wizard of Oz"/.test(p.reason)));
+
+  await c.proposeNew(q, out.session, out.pending[0]);
+  await c.proposeDependency(q, out.session, link);
+  for (const item of await r.reviewItems(q)) if (item.kind === 'created') await m.accept(q, item.changeId);
+  await m.accept(q, (await r.reviewItems(q)).find((i) => i.kind === 'blocked').changeId);
+  assert.deepEqual((await m.waitingOn(q, { personId: me })).map((w) => [w.what, w.blockedBy, w.waitingOn]),
+    [["Book a table at Luigi's", 'Get a ticket to the Wizard of Oz', 'Dana']]);
+});
+
+test('"something new" to wait for stays new when no listed commitment of that person is mentioned, or two are', async () => {
+  const q = open();
+  await c.prepare(q, 'x');
+  await c.addPerson(q, 'Dana');
+  const ppl = await c.people(q);
+  const me = ppl.find((p) => p.isMe).id;
+  const dana = ppl.find((p) => p.name === 'Dana').id;
+  await m.addCommitment(q, { what: 'Get a ticket to the Wizard of Oz', ownerId: dana, toId: me });
+  await m.addCommitment(q, { what: 'Get a ticket to the opera', ownerId: dana, toId: me });
+  const run = async (text, newWhat) => {
+    const ready = await c.prepare(q, text);
+    const out = await c.capture(q, { text, shape: 'v2', ...ready, ...WHEN,
+      answer: { items: [{ quote: "I'll book a table at Luigi's", about: 'new', change: 'new commitment', due: '', what: "Book a table at Luigi's" }] } });
+    const list = c.dependencyList(ready.candidates, out.pending);
+    const quote = text.slice(text.indexOf('once'), -1);
+    return c.addDependencies(q, out.session, { list, note: text, people: ready.people, answer: { items: [dep(quote, 'N1', 'new', newWhat, 'Dana')] } });
+  };
+  const two = await run("I'll book a table at Luigi's once Dana sends me the ticket.", 'Send me the ticket');
+  assert.deepEqual(two.pending.map((p) => p.type), ['new', 'dependency'], 'two listed tickets: which one is not guessed');
+  const other = await run("I'll book a table at Luigi's once Dana confirms the date.", 'Confirm the date');
+  assert.deepEqual(other.pending.map((p) => [p.type, p.what]), [['new', 'Confirm the date'], ['dependency', undefined]]);
+});

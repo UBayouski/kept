@@ -221,3 +221,15 @@ test('the People line: everyone, with the open commitments they owe and are owed
   assert.equal(done.outcome, 'applied');
   assert.deepEqual((await r.peopleSummary(q)).map((p) => [p.name, p.owes, p.owed]), [['Me', 1, 0], ['Dana', 0, 1], ['Lee', 0, 0]]);
 });
+
+test('"What do others owe me?": open commitments to the user, with what each one holds up', async () => {
+  const q = open();
+  await r.seedDemo(q, DEMO);
+  const me = await meOf(q);
+  assert.deepEqual((await m.owedTo(q, { personId: me })).map((c) => [c.what, c.owedBy, c.due, c.holdsUp, c.pendingChanges]),
+    [['Confirm pricing', 'Lee', null, ['Send the proposal'], 1]]);
+  // The user's own commitments are not in it, nor what is done.
+  const pricing = (await r.commitments(q)).find((c) => c.what === 'Confirm pricing').id;
+  await m.addChange(q, { commitmentId: pricing, kind: 'completed' });
+  assert.deepEqual(await m.owedTo(q, { personId: me }), []);
+});

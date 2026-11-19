@@ -857,6 +857,17 @@ Three readings of one note on the device, three wordings: the wording of a
 new commitment is the least stable part of a device reading, and the user
 should read it on every card.
 
+## Waiting for a listed commitment read as something new (by hand, private workspace, device model)
+
+2026-11-18, the user's own note, with Dana's "Get a ticket to the Wizard of
+Oz" (Dana to Me) already listed: "I'll book a table at Luigi's once Dana
+sends me the ticket." gave three cards: the new "Book a table at Luigi's",
+a new **"Dana sends me the ticket"** (Dana to Me), and the dependency on it.
+The second is a copy of the listed ticket. Fixed after it: something new to
+wait for is the listed commitment when exactly one listed commitment of that
+person is mentioned by the words of the dependency ("ticket"); two listed
+tickets, or none mentioned, still make a new one.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device

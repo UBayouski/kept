@@ -18,7 +18,7 @@ Commitments get lost in the middle of conversations: "I'll send Dana the proposa
 - **dependencies** between commitments ("once Lee confirms pricing"), so blockers come from traversal, not from a model;
 - the **notes** themselves, so "why does the app think this is mine?" is answered with the original sentence.
 
-It answers four questions: what do I owe before a date, which commitments are waiting on someone else, what changed since the last meeting with someone, and why the app thinks a commitment is yours.
+It answers five questions: what do I owe before a date, which commitments are waiting on someone else, what others owe me (and which of my commitments each one holds up), what changed since the last meeting with someone, and why the app thinks a commitment is yours.
 
 ## How it uses Firebase AI Logic
 
@@ -88,7 +88,7 @@ npm run test:wasm   # on Relate's browser build, in headless Chromium, about 15 
 
 | Part | State |
 |---|---|
-| Review screen (`/`) | Demo scenario, capture, review queue with accept, reject and "it is about another commitment", the four core questions. Checked by hand in Chrome 157 on Windows |
+| Review screen (`/`) | Demo scenario, capture, review queue with accept, reject and "it is about another commitment", the four core questions and "what do others owe me". Checked by hand in Chrome 157 on Windows |
 | Capture, cloud | Deadline changes, new commitments, done and cancelled, dependencies, questions for ambiguous notes. Run end to end in Chromium against the real model |
 | Private workspace, device | Run on the hosted site on Gemini Nano on 2026-11-16, and in 21 evaluation rounds on the device (the last six clean: no unsafe proposals) |
 | Store file | Generated from the current model |

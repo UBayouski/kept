@@ -452,7 +452,8 @@ export async function addDependencies(q, session, { answer, list, note, people: 
     return !named.length || named.some((w) => said.has(stem(w)));
   };
   const mainClause = beforeCue(note);
-  for (const dep of read.dependencies) {
+  for (let d = 0; d < read.dependencies.length; d += 1) {
+    let dep = read.dependencies[d];
     let waiting = byLabel.get(dep.waiting);
     let blocker = byLabel.get(dep.waitsFor);
     if (read.dependencies.length === 1 && !waiting.isNew && !mentions(mainClause, waiting.what)) {
@@ -496,6 +497,21 @@ export async function addDependencies(q, session, { answer, list, note, people: 
       if (acting && ownerId && acting !== ownerId) {
         problems.push({ reason: `"${blocker.what}" is not the action of the person the words name`, entry: dep });
         continue;
+      }
+    }
+    // "Something new" to wait for that is a listed commitment said again:
+    // "once Dana sends me the ticket" beside Dana's listed "Get a ticket to the
+    // Wizard of Oz". Exactly one listed commitment of the same person that the
+    // words of the dependency mention is what is waited for; no copy is made.
+    if (dep.waitsFor === 'new') {
+      const newOwnerId = matchPerson(dep.newOwner, persons);
+      const same = newOwnerId ? list.filter((x) => !x.isNew && x.commitmentId && x !== waiting
+        && matchPerson(x.owner, persons) === newOwnerId && mentions(dep.quote, x.what)) : [];
+      if (same.length === 1) {
+        problems.push({ reason: `something new to wait for, "${dep.newWhat}", is the listed "${same[0].what}"`, entry: dep, repaired: true });
+        blocker = same[0];
+        dep = { ...dep, waitsFor: same[0].label };
+        read.dependencies[d] = dep;
       }
     }
     if (dep.waitsFor === 'new') {

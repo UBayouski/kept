@@ -211,6 +211,19 @@ $('ask-waiting').onclick = guard('answer-waiting', async () => {
   ], rows, 'Nothing is waiting on anyone else.'));
 });
 
+$('ask-owed').onclick = guard('answer-owed', async () => {
+  if (!needMe('answer-owed')) return;
+  const rows = await m.owedTo(q, { personId: me.id });
+  answer('answer-owed', table([
+    ['What', (c) => c.what],
+    ['Owed by', (c) => c.owedBy],
+    ['Due', (c) => dueOf(c.due, c.dueText) || 'no date'],
+    ['Holds up', (c) => c.holdsUp.join(', ') || ''],
+    ['', (c) => [c.review === 'unreviewed' ? 'not confirmed' : '', pending(c.pendingChanges)].filter(Boolean).join('; ')],
+    ['', (c) => el('button', { onclick: () => why({ id: c.id, what: c.what }) }, 'Why?')],
+  ], rows, 'Nobody owes you anything open.'));
+});
+
 $('ask-changed').onclick = guard('answer-changed', async () => {
   const personId = $('person').value;
   if (!personId) {
@@ -268,7 +281,7 @@ $('reset').onclick = async () => {
     pendingItems.length = 0;
     $('capture-status').replaceChildren();
     summaries.clear();
-    for (const id of ['answer-owe', 'answer-waiting', 'answer-changed', 'answer-why']) answer(id);
+    for (const id of ['answer-owe', 'answer-waiting', 'answer-owed', 'answer-changed', 'answer-why']) answer(id);
     await refresh();
   } catch (err) {
     $('status').replaceChildren(el('span', { class: 'bad' }, `Error: ${err.message}`));
