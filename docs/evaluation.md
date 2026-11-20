@@ -951,9 +951,15 @@ timeouts sharing one check).
 - Read again with the model running: on the device in 4.0 s. A long note is
   well inside 20 s.
 
-**Fix after it (not measured yet).** The demo workspace now starts loading the
-model when "read on this device" is on and the model is available
-(`ai.warmDevice`), so the first note should not pay for the start.
+**Fix after it (282f8ee).** The demo workspace now starts loading the model
+when "read on this device" is on and the model is available
+(`ai.warmDevice`), so the first note does not pay for the start. Checked once
+on the hosted site: Chrome restarted, the demo workspace opened with the box
+ticked, about 30 s of waiting, then a new 130-word note with nine promises. It
+was read on the device in 10.8 s, with no fallback. That first read was slower
+than the 4.0 s of a later one. In it the device model found no dependency,
+though the note has two ("once Lee confirms the delivery dates", "after the
+launch date is fixed"); the answer was marked provisional as always.
 
 **Not checked.** No device evaluation round was run. The 20 s limit has not
 been reached by a real read, so the stop at 20 s itself was not seen live.
