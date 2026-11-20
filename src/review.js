@@ -120,14 +120,15 @@ function card(item) {
       el('button', { class: 'primary', onclick: () => act(item.changeId, () => m.accept(q, item.changeId)) }, 'Accept'),
       el('button', { class: 'quiet', onclick: () => act(item.changeId, () => m.reject(q, item.changeId)) }, 'Reject'),
       message?.outcome === 'stale' && el('button', { onclick: () => act(item.changeId, () => m.accept(q, item.changeId, { confirmStale: true })) }, 'Apply anyway'),
-      message?.outcome === 'needs-confirmation' && el('button', { onclick: () => act(item.changeId, () => m.reject(q, item.changeId, { confirmConsequences: true })) }, 'Reject and remove those too'),
-      movable && [' It is about another commitment: ', target,
-        el('button', { onclick: () => act(item.changeId, async () => {
+      message?.outcome === 'needs-confirmation' && el('button', { onclick: () => act(item.changeId, () => m.reject(q, item.changeId, { confirmConsequences: true })) }, 'Reject and remove those too')),
+    movable && el('div', { class: 'row move-proposal' },
+      el('label', {}, 'It is about another commitment: ', target),
+      el('button', { onclick: () => act(item.changeId, async () => {
           const where = target.selectedOptions[0]?.textContent ?? 'the other commitment';
           const result = await data.moveProposal(q, item.changeId, target.value);
           // Say what was done, not what was proposed: the proposal itself was rejected.
           return result.outcome === 'applied' ? { ...result, text: `Rejected as proposed. Applied to ${where} instead.` } : result;
-        }) }, 'Apply there')]),
+        }) }, 'Apply there')),
     message && el('div', { class: `message ${message.outcome === 'error' ? 'bad' : ''}` }, message.text));
 }
 

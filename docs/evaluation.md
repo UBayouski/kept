@@ -400,7 +400,8 @@ call at 45 s did not free it. After a timeout the app now makes one short
 check (15 s). If that does not answer either, the read fails with "Chrome's
 on-device model is stuck ... Restart Chrome", and every later device read
 fails at once with the same message instead of waiting 45 s. Seen live on
-round 8: the first note took 60 s, the other 11 failed at once.
+round 8: the first note took 60 s, the other 11 failed at once. (2026-11-19:
+part of the cause was this app; see "Device sessions left open".)
 
 ## Device model, round 8 (clean, three runs)
 
@@ -867,6 +868,57 @@ The second is a copy of the listed ticket. Fixed after it: something new to
 wait for is the listed commitment when exactly one listed commitment of that
 person is mentioned by the words of the dependency ("ticket"); two listed
 tickets, or none mentioned, still make a new one.
+
+## Device sessions left open (09f4ae2, 8905408)
+
+2026-11-19. The stuck model above was blamed on Chrome alone. Part of it was
+this app.
+
+**What was wrong.** The Firebase AI SDK opens a Chrome session for each device
+call and closes it only when the same model object is used again. The app
+builds a model object for every call (the schema differs per call), so no
+session was ever closed: up to three a note, about 36 an evaluation round,
+until the page was reloaded.
+
+**Measured in Chrome's console** (raw Prompt API, "Say OK." in a new session
+each time, none closed), after a Chrome restart:
+
+- The first call took 19.6 s (the model loading); the next ones 0.8 to 2.4 s.
+- 60 calls passed. A second run failed on its 26th call, at about 85 open
+  sessions, with `UnknownError: ... kErrorUnknown`.
+
+So two things looked like a stuck model. Open sessions pile up until the model
+fails; 2026-11-16, when it got stuck five times, was a day of evaluation
+rounds. And a model that is still loading was reported as stuck: the checks
+allowed 15 s (after a timeout) and 20 s (when the private workspace opens),
+and loading alone takes about 20 s.
+
+**Fixed.**
+
+- Each device call closes its session when it ends, also after a timeout. One
+  idle session is kept, so Chrome does not unload the model between notes.
+  Stopping the signal a session was created with does not close it in Chrome
+  (tried first, 09f4ae2: three open of three created), so the SDK is given a
+  stand-in for `LanguageModel` that remembers the sessions it creates
+  (`src/ai.js`, `deviceApi`). It replaces the SDK's `chromeAdapterFactory`,
+  which is not public API; the SDK version is pinned, and the page warns in
+  the console if that factory is ever missing.
+- The checks allow for loading: 30 s after a timeout, 45 s when the private
+  workspace opens, and both wait until the tab is shown.
+- "Stuck" no longer lasts until a reload. While it is set, each read starts
+  one more check in the background, and a model that answers is used again.
+- The two pages that ask the model its name (`linking.html`, `eval.html`) go
+  through the same guarded call: a time limit, a shown tab, a closed session.
+
+**Checked.** With a fake device model that records every session (real app,
+real SDK, headless Chromium, private workspace): one open after the page
+opened and after each of three notes, of 2, 3, 4 and 5 created. On the hosted
+site with Chrome's own model, demo workspace, device first, counted in the
+console after each note: "1 open, 1 closed, of 2 created", then "1 open, 2
+closed, of 3", then "1 open, 3 closed, of 4".
+
+**Not checked.** A full device evaluation round has not been run since; whether
+the model still gets stuck with the sessions closed is not known.
 
 ## Open
 
