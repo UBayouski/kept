@@ -920,6 +920,32 @@ closed, of 3", then "1 open, 3 closed, of 4".
 **Not checked.** A full device evaluation round has not been run since; whether
 the model still gets stuck with the sessions closed is not known.
 
+## A shorter wait before the cloud takes over (2026-11-20)
+
+With the cloud fallback on, a device read that never ended held the note for
+up to 75 s: 45 s until the call was stopped, then up to 30 s for the short
+check of the model, and only then the cloud. Two changes:
+
+- **The limit depends on whether the model has answered on this page.** The
+  first device call may have to load the model (19.6 s measured), so it keeps
+  45 s. After any device answer the limit is 20 s; device reads measured 0.8 to
+  6 s. After a timeout the next read gets 45 s again.
+- **With the fallback on, the cloud reads the note right after the stop.** The
+  30 s check runs in the background and still decides whether later notes skip
+  the device. The private workspace has no fallback and waits for the check as
+  before, because its error message depends on the answer.
+
+Worst case before the cloud answers: 20 s on a model that has answered, 45 s on
+the first call.
+
+**Checks.** `npm test` and `npm run test:wasm`, 222 each (three new tests in
+`test/device-guard.test.mjs`: the two limits, the limit after a timeout, two
+timeouts sharing one check).
+
+**Not checked.** No timeout was produced with Chrome's own model after this
+change, and no device evaluation round was run. Whether 20 s stops a healthy
+read of a long note is not known; the longest read measured so far is 6 s.
+
 ## Open
 
 - "About" notes: the right answer is a new commitment, which the device

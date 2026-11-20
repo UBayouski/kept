@@ -52,3 +52,32 @@ test('only one later check runs at a time', async () => {
   assert.equal(await first, false);
   assert.equal(probes, 2);
 });
+
+test('the first read gets the long limit, a read after an answer the short one', () => {
+  const guard = makeDeviceGuard({ probe: async () => {} });
+  assert.equal(guard.limitMs, 45000);
+  guard.answered();
+  assert.equal(guard.limitMs, 20000);
+});
+
+test('after a timeout the next read gets the long limit again, unless the check answers', async () => {
+  const guard = makeDeviceGuard({ probe: async () => { throw new Error('no answer'); } });
+  guard.answered();
+  await guard.afterTimeout();
+  assert.equal(guard.limitMs, 45000);
+  const fine = makeDeviceGuard({ probe: async () => {} });
+  await fine.afterTimeout();
+  assert.equal(fine.limitMs, 20000);
+});
+
+test('two timeouts during one check share it', async () => {
+  let probes = 0;
+  let release;
+  const guard = makeDeviceGuard({ probe: () => { probes += 1; return new Promise((resolve) => { release = resolve; }); } });
+  const first = guard.afterTimeout();
+  const second = guard.afterTimeout();
+  release();
+  assert.equal(await first, true);
+  assert.equal(await second, true);
+  assert.equal(probes, 1);
+});

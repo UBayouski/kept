@@ -150,9 +150,6 @@ export async function deviceModelState() {
   return LanguageModel.availability(deviceOptions);
 }
 
-// A device answer takes 2 to 6 s; one still going after 45 s is not ending.
-const DEVICE_TIMEOUT_MS = 45000;
-
 // One short prompt through the raw Prompt API, in a session that is always
 // closed afterwards. Every direct use of LanguageModel goes through here.
 async function promptOnce(prompt, signal) {
@@ -209,7 +206,9 @@ export async function askDevice(prompt, ms = 45000) {
   const stop = new AbortController();
   const timer = setTimeout(() => stop.abort(), ms);
   try {
-    return await promptOnce(prompt, stop.signal);
+    const answer = await promptOnce(prompt, stop.signal);
+    guard.answered();
+    return answer;
   } finally {
     clearTimeout(timer);
   }
@@ -220,7 +219,9 @@ export function extract(note, mode) {
 }
 
 // One schema-constrained call through Firebase AI Logic, in the given mode.
-export async function generateStructured(prompt, schema, mode) {
+// `checkLater`: after a device timeout, do not wait for the check of the model
+// (up to 30 s) before failing. For a caller that goes to the cloud next.
+export async function generateStructured(prompt, schema, mode, { checkLater = false } = {}) {
   // Only-on-device must fail at once when the model is not ready. Left to the
   // SDK, a click would start the model download and the call would wait for it.
   if (mode === InferenceMode.ONLY_ON_DEVICE) {
@@ -246,18 +247,20 @@ export async function generateStructured(prompt, schema, mode) {
   const started = performance.now();
   let result;
   if (onDevice) {
+    const limit = guard.limitMs;
     const stop = new AbortController();
-    const timer = setTimeout(() => stop.abort(), DEVICE_TIMEOUT_MS);
+    const timer = setTimeout(() => stop.abort(), limit);
     try {
       result = await modelFor(mode, schema, stop.signal).generateContent(prompt);
+      guard.answered();
     } catch (err) {
       if (!stop.signal.aborted) throw err;
       // Close the stopped call's session before checking: it may be what the
       // model is still busy with.
       closeSessions();
-      await whenVisible();
-      if (!(await guard.afterTimeout())) throw new Error(STUCK_MESSAGE);
-      throw new Error(`The device model did not answer within ${DEVICE_TIMEOUT_MS / 1000} s, so it was stopped. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`);
+      const answers = guard.afterTimeout();
+      if (!checkLater && !(await answers)) throw new Error(STUCK_MESSAGE);
+      throw new Error(`The device model did not answer within ${limit / 1000} s, so it was stopped. Keep this tab in front while a note is read, then try again. Nothing was sent anywhere.`);
     } finally {
       clearTimeout(timer);
       // Close the session this call opened (see deviceApi), and keep one idle
@@ -289,7 +292,8 @@ export const deviceStuck = () => guard.stuck;
 
 // Hybrid inference for the demo workspace, when the user turns it on: Firebase
 // AI Logic in PREFER_ON_DEVICE when Chrome's model is ready, the cloud model
-// when it is not, or when the device call fails or takes over 45 s. The answer
+// when it is not, or when the device call fails or takes too long (45 s for
+// the first call on a page, 20 s once the model has answered). The answer
 // says which model answered (`source`) and, if the cloud stood in, why
 // (`fallback`). Only for demo data: a private note must never fall back.
 export async function generatePreferDevice(prompt, schema) {
@@ -299,7 +303,9 @@ export async function generatePreferDevice(prompt, schema) {
   return hybridCall({
     deviceState: await deviceModelState(),
     stuck: guard.stuck,
-    callDevice: () => generateStructured(prompt, schema, InferenceMode.PREFER_ON_DEVICE),
+    // After a timeout the cloud reads the note at once; whether the model is
+    // stuck is found out in the background.
+    callDevice: () => generateStructured(prompt, schema, InferenceMode.PREFER_ON_DEVICE, { checkLater: true }),
     callCloud: () => generateStructured(prompt, schema, InferenceMode.ONLY_IN_CLOUD),
   });
 }

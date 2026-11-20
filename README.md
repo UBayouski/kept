@@ -27,13 +27,13 @@ It answers five questions: what do I owe before a date, which commitments are wa
 | Workspace | Mode | Where the note goes |
 |---|---|---|
 | Demo (`/`) | Cloud (`gemini-3.5-flash-lite`) | The note and your open commitments go to the cloud model; demo data only |
-| Demo, "read on this device when its model is ready" ticked | `PREFER_ON_DEVICE` | Gemini Nano in Chrome when its model is ready; the cloud when it is not, or when the device call fails or takes over 45 s. The status line says which model answered and, if the cloud stood in, why |
+| Demo, "read on this device when its model is ready" ticked | `PREFER_ON_DEVICE` | Gemini Nano in Chrome when its model is ready; the cloud when it is not, or when the device call fails or takes too long (45 s for the first call on a page, 20 s once the model has answered). The status line says which model answered and, if the cloud stood in, why |
 | Private (`/?workspace=private`) | `ONLY_ON_DEVICE` | Read by Gemini Nano in Chrome, never leaves the device. Proposals are marked provisional |
 | Private, cloud opt-in | Cloud, for one note | Only after ticking a box and seeing a preview of exactly what will be sent. The box unticks itself after that note |
 
 The private workspace never uses `PREFER_ON_DEVICE`: when the model is missing, that mode sends the note to the cloud with nothing but the reported source to show it. The fallback is offered only where the data is demo data, and the prefer-on-device decision is in `src/hybrid.js`, tested on its own.
 
-Before an on-device call the app checks itself that the model is available and answering, because the SDK alone would start a multi-gigabyte download instead of failing. A device call that takes over 45 s is stopped.
+Before an on-device call the app checks itself that the model is available and answering, because the SDK alone would start a multi-gigabyte download instead of failing. A device call that takes over 45 s is stopped; once the model has answered on the page, the limit is 20 s.
 
 Every answer, from either model, passes through validation (`src/reading.js`) and the app rules (`src/model.js`). It becomes proposals, questions or refused entries, and only a confirmation changes a commitment. The routing comes from measurement: on the same notes the cloud model was right or asked, and the device model sometimes proposed something wrong without saying it was unsure (`docs/linking-experiment.md`, `docs/evaluation.md`). So on the device every link is provisional and review is mandatory.
 
