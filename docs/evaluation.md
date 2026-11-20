@@ -942,9 +942,21 @@ the first call.
 `test/device-guard.test.mjs`: the two limits, the limit after a timeout, two
 timeouts sharing one check).
 
-**Not checked.** No timeout was produced with Chrome's own model after this
-change, and no device evaluation round was run. Whether 20 s stops a healthy
-read of a long note is not known; the longest read measured so far is 6 s.
+**On the hosted site (567e5b2, by hand, demo workspace, device first).** A
+230-word note with about ten promises:
+
+- First read on the page: the device did not answer within 45 s (the model was
+  starting), and the cloud read the note 2.5 s after the stop, with no wait
+  for the check.
+- Read again with the model running: on the device in 4.0 s. A long note is
+  well inside 20 s.
+
+**Fix after it (not measured yet).** The demo workspace now starts loading the
+model when "read on this device" is on and the model is available
+(`ai.warmDevice`), so the first note should not pay for the start.
+
+**Not checked.** No device evaluation round was run. The 20 s limit has not
+been reached by a real read, so the stop at 20 s itself was not seen live.
 
 ## Open
 

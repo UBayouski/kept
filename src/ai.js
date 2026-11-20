@@ -172,6 +172,13 @@ function keepWarm() {
   warm ??= LanguageModel.create(deviceOptions).catch(() => { warm = null; });
 }
 
+// Starts loading the device model, with no prompt. The demo workspace calls it
+// when "read on this device" is on, so the first note does not wait for the
+// model to start (20 s measured once, over 45 s another time).
+export function warmDevice() {
+  if (typeof LanguageModel !== 'undefined') keepWarm();
+}
+
 function whenVisible() {
   if (typeof document === 'undefined' || document.visibilityState === 'visible') return Promise.resolve();
   return new Promise((resolve) => {

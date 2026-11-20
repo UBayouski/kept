@@ -576,6 +576,7 @@ async function showDeviceFirst() {
     downloading: 'The device model is downloading: notes go to the cloud until it is ready.',
     unavailable: 'This browser has no device model: notes go to the cloud.',
   }[state] ?? `Device model: ${state}; notes go to the cloud.`;
+  if (state === 'available' && !ai.deviceStuck()) ai.warmDevice();
 }
 if (!PRIVATE) {
   try { $('device-first').checked = localStorage.getItem(DEVICE_FIRST_KEY) === '1'; } catch {}
