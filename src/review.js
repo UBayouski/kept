@@ -118,7 +118,7 @@ function card(item) {
       : el('div', { class: 'source muted' }, 'No source note.'),
     el('div', { class: 'actions' },
       el('button', { class: 'primary', onclick: () => act(item.changeId, () => m.accept(q, item.changeId)) }, 'Accept'),
-      el('button', { class: 'quiet', onclick: () => act(item.changeId, () => m.reject(q, item.changeId)) }, 'Reject'),
+      el('button', { onclick: () => act(item.changeId, () => m.reject(q, item.changeId)) }, 'Reject'),
       message?.outcome === 'stale' && el('button', { onclick: () => act(item.changeId, () => m.accept(q, item.changeId, { confirmStale: true })) }, 'Apply anyway'),
       message?.outcome === 'needs-confirmation' && el('button', { onclick: () => act(item.changeId, () => m.reject(q, item.changeId, { confirmConsequences: true })) }, 'Reject and remove those too')),
     movable && el('div', { class: 'row move-proposal' },
